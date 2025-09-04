@@ -1,67 +1,235 @@
-# main.py
-import asyncio
-import base64
-import os
+"""
+FastAPI Backend for GasOps Weld System
+Main entry point following centralized token management approach
+"""
+from fastapi import FastAPI, Header, Body, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+import logging
+from pydantic import BaseModel
+from typing import List, Optional
+from token_utils import decode_token, generate_auth_token
+from supervisor import Supervisor
 from datetime import datetime, timezone, timedelta
-from dotenv import load_dotenv
-from orchestrator_agent import OrchestratorAgent
+import json
 
-load_dotenv()
+# Setup logging
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def generate_auth_token():
-    """Generate auth token from .env variables"""
-    now_utc = datetime.now(timezone.utc)
-    date_plus_one = (now_utc + timedelta(days=1)).isoformat()
-    date_now = now_utc.isoformat()
-    
-    token_str = f"{date_plus_one}&{os.getenv('AUTH_TOKEN_LOGIN_MASTER_ID')}&{os.getenv('AUTH_TOKEN_DATABASE_NAME')}&{date_now}&{os.getenv('AUTH_TOKEN_ORG_ID')}"
-    return base64.b64encode(token_str.encode('utf-8')).decode('utf-8')
+# Initialize FastAPI app
+app = FastAPI(title="GasOps Weld Backend", version="1.0.0")
 
-async def handle_user_question(query):
-    """Main handler function"""
-    print(f"Processing: {query}")
-    
-    # Generate auth token
-    auth_token = generate_auth_token()
-    
-    # Create orchestrator and process
-    orchestrator = OrchestratorAgent()
-    result = await orchestrator.process(query, auth_token)
-    
-    return result
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://0.0.0.0:3000", "*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-async def test_system():
-    """Test the system"""
-    test_queries = [
-        "Show me work order 280489410001",
-        "Get all welds for WR Number ASTP312032020", 
-        "Find work orders in Manhattan",
-        "Show weld details for work order 10302024"
-    ]
+class Message(BaseModel):
+    role: str
+    content: str
+
+class AskRequest(BaseModel):
+    query: str
+    prev_msgs: Optional[List[Message]] = None
+    token: Optional[str] = None
+    session_id: Optional[str] = None
+
+class AuthRequest(BaseModel):
+    orgID: str
+    databasename: str
+    masterID: str
+
+# Session storage (in production, use Redis or similar)
+active_sessions = {}
+
+print("Main module loaded successfully.")
+
+@app.get("/")
+async def root():
+    return {"message": "GasOps Weld Backend API is running"}
+
+@app.post("/generate-token")
+async def generate_token(auth_request: AuthRequest):
+    """Generate authentication token from frontend credentials"""
+    try:
+        token = generate_auth_token(
+            auth_request.masterID,
+            auth_request.databasename, 
+            auth_request.orgID
+        )
+        return {
+            "success": True,
+            "token": token,
+            "expires_in": "24 hours"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Token generation failed: {str(e)}")
+
+@app.post("/ask")
+async def ask(
+    body: AskRequest = Body(...),
+    encoded_string: str = Header(...)
+):
+    """Process user query with centralized token management"""
+    print(f"Received request body: {body}")
+    query = body.query
+    prev_msgs = body.prev_msgs or []
+    session_id = body.session_id
     
-    print("🧪 Testing Agent System")
-    print("=" * 40)
+    # Build context from previous messages
+    last_msgs = prev_msgs[-3:]
+    context = "\n".join([f"Previous message {i+1} ({msg.role}): {msg.content}" for i, msg in enumerate(last_msgs)])
+    full_question = f"{context}\nCurrent question: {query}" if context else query
+    print(f"Full question: {full_question}")
+    logger.info(f"Full question: {full_question}")
+
+    # Decode token and extract credentials
+    database_name = None
+    decrypted_fields = {}
+    auth_token = None
     
-    for i, query in enumerate(test_queries, 1):
-        print(f"\n{i}. Query: '{query}'")
-        print("-" * 25)
-        
+    if encoded_string:
         try:
-            result = await handle_user_question(query)
+            decrypted_fields = decode_token(encoded_string)
+            print(f"Decrypted token: {decrypted_fields}")
+            database_name = decrypted_fields.get("Database_Name")
             
-            if result.get("success"):
-                print("✅ SUCCESS")
-                print(f"🤖 Agent: {result.get('agent')}")
-                print(f"🧠 AI: {result.get('ai_classification', {}).get('type')}")
-                print(f"📊 Data: {len(str(result.get('data', {})))} chars")
-            else:
-                print("❌ FAILED")
-                print(f"❗ Error: {result.get('error')}")
+            # Generate auth token for API calls
+            auth_token = generate_auth_token(
+                decrypted_fields.get('LoginMasterID'),
+                decrypted_fields.get('Database_Name'), 
+                decrypted_fields.get('OrgID')
+            )
+            print(f"Generated auth_token: {auth_token}")
+            
+            # Store session info if session_id provided
+            if session_id:
+                active_sessions[session_id] = {
+                    "credentials": decrypted_fields,
+                    "auth_token": auth_token,
+                    "last_access": datetime.now(timezone.utc)
+                }
                 
         except Exception as e:
-            print(f"💥 ERROR: {e}")
+            logger.error(f"Failed to decode token: {e}")
+            raise HTTPException(status_code=400, detail="Invalid token")
+
+    if not auth_token:
+        raise HTTPException(status_code=400, detail="Auth token required")
+
+    try:
+        # Process query using supervisor
+        supervisor = Supervisor()
+        result = await supervisor.process(full_question, auth_token)
+        print(f"Supervisor result: {result}")
         
-        await asyncio.sleep(1)
+        # Extract response text
+        response_text = None
+        if isinstance(result, dict):
+            if "data" in result:
+                response_text = result["data"]
+            elif "error" in result:
+                response_text = "Server is down, please try again in some time."
+            else:
+                response_text = str(result)
+        else:
+            response_text = str(result)
+
+        # If response_text is not a string, serialize to JSON
+        if not isinstance(response_text, str):
+            response_text = json.dumps(response_text, ensure_ascii=False)
+
+        # Build response context
+        timestamp_bot = datetime.utcnow().isoformat()
+        context_list = [
+            {
+                "role": "user",
+                "content": query,
+                "timestamp": timestamp_bot
+            },
+            {
+                "role": "assistant", 
+                "content": response_text,
+                "timestamp": timestamp_bot
+            }
+        ]
+
+        # User details
+        user_details = {
+            "session_id": session_id,
+            "token": body.token
+        }
+
+        # SQL queries if available
+        sql_queries = []
+        if isinstance(result, dict) and result.get("data"):
+            sql_queries.append({
+                "db": database_name or "",
+                "query": "API call executed"
+            })
+
+        # Sources if available
+        sources = []
+        if isinstance(result, dict) and "sources" in result:
+            sources = result["sources"]
+
+        return {
+            "answer": response_text,
+            "timestamp": timestamp_bot,
+            "context": context_list,
+            "user_details": user_details, 
+            "sql_queries": sql_queries,
+            "sources": sources,
+            "decrypted_fields": decrypted_fields,
+            "success": result.get("success", True),
+            "agent": result.get("agent"),
+            "ai_classification": result.get("ai_classification")
+        }
+        
+    except Exception as e:
+        logger.error(f"Query processing failed: {str(e)}")
+        timestamp_bot = datetime.utcnow().isoformat()
+        return {
+            "answer": "Server is down, please try again in some time.",
+            "timestamp": timestamp_bot,
+            "context": [
+                {"role": "user", "content": query, "timestamp": timestamp_bot},
+                {"role": "assistant", "content": "Server error occurred", "timestamp": timestamp_bot}
+            ],
+            "user_details": {"session_id": session_id, "token": body.token},
+            "sql_queries": [],
+            "sources": [],
+            "decrypted_fields": decrypted_fields,
+            "success": False,
+            "error": str(e)
+        }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy", 
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "active_sessions": len(active_sessions)
+    }
+
+@app.get("/session/{session_id}")
+async def get_session_info(session_id: str):
+    """Get session information for debugging"""
+    if session_id in active_sessions:
+        session = active_sessions[session_id]
+        return {
+            "exists": True,
+            "credentials": session["credentials"],
+            "last_access": session["last_access"].isoformat()
+        }
+    return {"exists": False}
 
 if __name__ == "__main__":
-    asyncio.run(test_system())
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

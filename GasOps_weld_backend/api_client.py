@@ -10,7 +10,6 @@ from typing import Dict, Any, Optional
 import logging
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
-
 # Load environment variables from .env file
 load_dotenv()
 
@@ -19,32 +18,19 @@ logger = logging.getLogger(__name__)
 class APIClient:
     def __init__(self, base_url: Optional[str] = None):
         """
-        Initialize the API client and generate the authentication token.
+        Initialize the API client. Auth token will be set externally.
         """
-        # Load credentials from environment variables
+        # Load basic config from environment variables
         self.base_url = base_url or os.environ.get("BASE_URL")
         self.pfx_source = os.environ.get("PFX_SOURCE")
         self.pfx_password = os.environ.get("PFX_PASSWORD")
-        self.login_master_id = os.environ.get("AUTH_TOKEN_LOGIN_MASTER_ID")
-        self.database_name = os.environ.get("AUTH_TOKEN_DATABASE_NAME")
-        self.org_id = os.environ.get("AUTH_TOKEN_ORG_ID")
         
-        if not all([self.base_url, self.pfx_source, self.pfx_password, self.login_master_id, self.database_name, self.org_id]):
-            raise ValueError("All required environment variables must be set.")
+        if not all([self.base_url, self.pfx_source, self.pfx_password]):
+            raise ValueError("Base URL, PFX source, and PFX password must be set.")
 
         self.base_url = self.base_url.rstrip('/')
         self.temp_file = None
-        
-        self.auth_token = self._generate_auth_token()
-        
-    def _generate_auth_token(self):
-        """Generates an authentication token based on class attributes."""
-        now_utc = datetime.now(timezone.utc)
-        date_plus_one = (now_utc + timedelta(days=1)).isoformat()
-        date_now = now_utc.isoformat()
-        
-        token_str = f"{date_plus_one}&{self.login_master_id}&{self.database_name}&{date_now}&{self.org_id}"
-        return base64.b64encode(token_str.encode('utf-8')).decode('utf-8')
+        self.auth_token = None  # Will be set externally
     
     def _prepare_certificate(self):
         """Prepare the certificate for use"""
@@ -91,7 +77,7 @@ class APIClient:
             headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "auth-token": self.auth_token # Use the internally stored token
+                "auth-token": self.auth_token  # Use the externally set token
             }
             
             logger.info(f"Making {method} request to {url}")
