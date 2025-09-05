@@ -244,6 +244,8 @@ Rules:
 6. If you find the information, explain where it was found (e.g., "From the chemical composition section...")
 7. Be precise and technical in your response
 
+Important: Do not include "Source:" information at the end of your response.
+
 Answer:
 """
         

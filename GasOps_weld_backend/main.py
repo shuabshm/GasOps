@@ -134,7 +134,8 @@ async def ask(
             if "data" in result:
                 response_text = result["data"]
             elif "error" in result:
-                response_text = "Server is down, please try again in some time."
+                # Use the actual error message from the agent instead of generic message
+                response_text = result["error"]
             else:
                 response_text = str(result)
         else:
