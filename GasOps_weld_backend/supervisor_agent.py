@@ -2,7 +2,7 @@ from langchain.schema import HumanMessage, SystemMessage
 import json
 from azure_client import get_azure_chat_openai
 
-class Supervisor:
+class SupervisorAgent:
     def __init__(self):
         try:
             self.azure_client = get_azure_chat_openai()
@@ -23,7 +23,7 @@ class Supervisor:
             return {
                 "success": False, 
                 "error": f"Supervisor processing failed: {str(e)}", 
-                "agent": "supervisor",
+                "agent": "supervisor agent",
                 "classification": "error"
             }
     
@@ -35,17 +35,17 @@ You are a query classification system for a GasOps Weld management system. Analy
 1. **general**: General questions, greetings, help requests, or queries not related to specific weld operations or property extraction
    - Examples: "Hi", "Hello", "How are you?", "What can you do?", "Help me", "Thank you"
 
-2. **weld_agent**: Queries related to weld operations, work orders, welding details, MTR data, or industrial API calls
+2. **weldInsight agent**: Queries related to weld operations, work orders, welding details, MTR data, or industrial API calls
    - Examples: "Show me work order 12345", "Get weld details for WR123", "Find welds in project ABC", "MTR information for heat number XYZ"
 
-3. **property_extractor**: Queries that require extracting specific properties, measurements, or technical specifications from documents or data
+3. **MTR agent**: Queries that require extracting specific properties, measurements, or technical specifications from documents or data
    - Examples: "Extract material properties", "Get pipe specifications", "What are the dimensions?", "Extract technical data"
 
 Query to classify: "{query}"
 
 Respond with ONLY a JSON object in this exact format:
 {{
-    "category": "general|weld_agent|property_extractor",
+    "category": "general|weldInsight agent|MTR agent",
     "confidence": 0.95,
     "reasoning": "Brief explanation of why this category was chosen"
 }}
@@ -62,7 +62,7 @@ Respond with ONLY a JSON object in this exact format:
             classification = json.loads(classification_text)
             
             # Validate the response
-            valid_categories = ["general", "weld_agent", "property_extractor"]
+            valid_categories = ["general", "weldInsight agent", "MTR agent"]
             if classification.get("category") not in valid_categories:
                 raise ValueError(f"Invalid category: {classification.get('category')}")
                 
@@ -85,14 +85,14 @@ Respond with ONLY a JSON object in this exact format:
             # Handle general queries directly in supervisor using AI knowledge
             result = self._handle_general_query(query)
             
-        elif category == "weld_agent":
-            from weld_agent import WeldAgent
-            agent = WeldAgent()
+        elif category == "weldInsight agent":
+            from weldInsight_agent import WeldInsightAgent
+            agent = WeldInsightAgent()
             result = await agent.process(query, auth_token)
             
-        elif category == "property_extractor":
-            from property_extractor_agent import PropertyExtractorAgent
-            agent = PropertyExtractorAgent()
+        elif category == "MTR agent":
+            from mtr_agent import MTRAgent
+            agent = MTRAgent()
             result = await agent.process(query, auth_token)
             
         else:
@@ -102,7 +102,7 @@ Respond with ONLY a JSON object in this exact format:
         # Add classification info to result
         if isinstance(result, dict):
             result["classification"] = classification
-            result["supervisor"] = "handled_directly" if category == "general" else "routing_successful"
+            result["supervisor agent"] = "handled_directly" if category == "general" else "routing_successful"
         
         return result
     
@@ -142,7 +142,7 @@ Guidelines:
             return {
                 "success": True,
                 "data": ai_response,
-                "agent": "supervisor",
+                "agent": "supervisor agent",
                 "query_type": "general"
             }
             
@@ -172,7 +172,7 @@ Try asking me something like "Show me work order 12345" or "What are the weld de
             return {
                 "success": True,
                 "data": fallback_response,
-                "agent": "supervisor", 
+                "agent": "supervisor agent", 
                 "query_type": "general",
                 "note": "fallback_response_used"
             }

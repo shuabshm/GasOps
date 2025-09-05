@@ -8,7 +8,7 @@ import logging
 from pydantic import BaseModel
 from typing import List, Optional
 from token_utils import decode_token, generate_auth_token
-from supervisor import Supervisor
+from supervisor_agent import SupervisorAgent
 from datetime import datetime, timezone, timedelta
 import json
 
@@ -123,10 +123,10 @@ async def ask(
         raise HTTPException(status_code=400, detail="Auth token required")
 
     try:
-        # Process query using supervisor
-        supervisor = Supervisor()
+        # Process query using supervisor agent
+        supervisor = SupervisorAgent()
         result = await supervisor.process(full_question, auth_token)
-        print(f"Supervisor result: {result}")
+        print(f"Supervisor agent result: {result}")
         
         # Extract response text
         response_text = None

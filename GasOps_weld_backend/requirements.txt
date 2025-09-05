@@ -7,3 +7,6 @@ langchain-openai==0.1.23
 langchain==0.2.16
 azure-keyvault-secrets
 azure-identity
+azure-search-documents
+azure-ai-documentintelligence
+openai

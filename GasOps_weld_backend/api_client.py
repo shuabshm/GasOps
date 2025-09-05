@@ -10,6 +10,8 @@ from typing import Dict, Any, Optional
 import logging
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
+import asyncio
+import time
 # Load environment variables from .env file
 load_dotenv()
 
@@ -66,7 +68,8 @@ class APIClient:
                 pass
     
     def _make_request(self, method: str, endpoint: str, 
-                      params: Optional[Dict] = None, json_data: Optional[Dict] = None) -> Dict[str, Any]:
+                      params: Optional[Dict] = None, json_data: Optional[Dict] = None, 
+                      retry: bool = True) -> Dict[str, Any]:
         """
         Make an API request. The auth token is handled internally.
         """
@@ -126,6 +129,11 @@ class APIClient:
                 
         except Exception as e:
             logger.error(f"API request failed: {str(e)}")
+            # Retry logic with 10-second delay
+            if retry:
+                logger.info("Retrying request after 10 seconds...")
+                time.sleep(10)
+                return self._make_request(method, endpoint, params, json_data, retry=False)
             return {
                 "success": False,
                 "error": str(e)
@@ -136,13 +144,25 @@ class APIClient:
     # MTR/Material APIs
     def get_mtr_metadata(self, company_mtr_file_id: str, heat_number: str) -> Dict[str, Any]:
         """Get MTR Metadata by CompanyMTRFileID and HeatNumber"""
-        params = {
-            "companyMTRFileID": company_mtr_file_id,
-            "heatNumber": heat_number
-        }
+        params = {"heatNumber": heat_number}
+        
+        # Only include companyMTRFileID if it's not empty/None
+        if company_mtr_file_id and company_mtr_file_id.strip():
+            params["companyMTRFileID"] = company_mtr_file_id
         return self._make_request(
             "GET", 
             "/api/AIMTRMetaData/GetMTRMetadataByCompanyMTRFileIDAndHeatNumber",
+            params=params
+        )
+    
+    def get_mtr_file_data_by_heat_number(self, heat_number: str, company_mtr_file_id: Optional[str] = None) -> Dict[str, Any]:
+        """Get MTR File Data by HeatNumber and optional CompanyMTRFileID"""
+        params = {"heatNumber": heat_number}
+        if company_mtr_file_id:
+            params["companyMTRFileID"] = company_mtr_file_id
+        return self._make_request(
+            "GET",
+            "/api/AIMTRMetaData/GetMTRFileDatabyHeatNumber",
             params=params
         )
     

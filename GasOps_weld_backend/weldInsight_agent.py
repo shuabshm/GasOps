@@ -3,7 +3,7 @@ from api_client import APIClient
 import json
 from azure_client import get_azure_chat_openai
 
-class WeldAgent:
+class WeldInsightAgent:
     def __init__(self):
         try:
             self.azure_client = get_azure_chat_openai()
@@ -27,7 +27,7 @@ class WeldAgent:
                 "data": api_result.get("data"),
                 "error": api_result.get("error"),
                 "ai_classification": ai_result,
-                "agent": "weld_agent"
+                "agent": "weldInsight agent"
             }
             
         except Exception as e:
