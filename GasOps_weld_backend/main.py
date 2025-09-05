@@ -178,22 +178,63 @@ async def ask(
         if isinstance(result, dict) and "sources" in result:
             sources = result["sources"]
 
+        # Extract APIs called from agent response
+        apis_called = []
+        if isinstance(result, dict):
+            # Get APIs from agent response or default to supervisor for general queries
+            if "apis_called" in result:
+                apis_called = result["apis_called"]
+            elif result.get("agent") == "supervisor agent":
+                apis_called = ["/supervisor"]
+            elif result.get("agent") == "weldInsight agent" and result.get("success"):
+                # Extract API info from weldInsight agent if available
+                apis_called = ["/openai/chat/completions"]  # At minimum it uses OpenAI for classification
+            
+        # Comment out old return structure
+        # return {
+        #     "answer": response_text,
+        #     "timestamp": timestamp_bot,
+        #     "context": context_list,
+        #     "user_details": user_details, 
+        #     "sql_queries": sql_queries,
+        #     "sources": sources,
+        #     "decrypted_fields": decrypted_fields,
+        #     "success": result.get("success", True),
+        #     "agent": result.get("agent"),
+        #     "ai_classification": result.get("ai_classification")
+        # }
+        
+        # New 6-field return structure
         return {
             "answer": response_text,
             "timestamp": timestamp_bot,
             "context": context_list,
-            "user_details": user_details, 
-            "sql_queries": sql_queries,
-            "sources": sources,
-            "decrypted_fields": decrypted_fields,
-            "success": result.get("success", True),
-            "agent": result.get("agent"),
-            "ai_classification": result.get("ai_classification")
+            "user_details": user_details,
+            "Apis": apis_called,
+            "decrypted_fields": decrypted_fields
         }
         
     except Exception as e:
         logger.error(f"Query processing failed: {str(e)}")
         timestamp_bot = datetime.utcnow().isoformat()
+        
+        # Comment out old error return structure
+        # return {
+        #     "answer": "Server is down, please try again in some time.",
+        #     "timestamp": timestamp_bot,
+        #     "context": [
+        #         {"role": "user", "content": query, "timestamp": timestamp_bot},
+        #         {"role": "assistant", "content": "Server error occurred", "timestamp": timestamp_bot}
+        #     ],
+        #     "user_details": {"session_id": session_id, "token": body.token},
+        #     "sql_queries": [],
+        #     "sources": [],
+        #     "decrypted_fields": decrypted_fields,
+        #     "success": False,
+        #     "agent": "unknown"
+        # }
+        
+        # New 6-field error return structure
         return {
             "answer": "Server is down, please try again in some time.",
             "timestamp": timestamp_bot,
@@ -202,11 +243,8 @@ async def ask(
                 {"role": "assistant", "content": "Server error occurred", "timestamp": timestamp_bot}
             ],
             "user_details": {"session_id": session_id, "token": body.token},
-            "sql_queries": [],
-            "sources": [],
-            "decrypted_fields": decrypted_fields,
-            "success": False,
-            "error": str(e)
+            "Apis": [],
+            "decrypted_fields": decrypted_fields
         }
 
 @app.get("/health")

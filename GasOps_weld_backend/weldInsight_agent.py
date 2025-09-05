@@ -20,18 +20,19 @@ class WeldInsightAgent:
             ai_result = self._classify_query(query)
             
             # Call appropriate API
-            api_result = self._call_api(ai_result, api_client, auth_token)
+            api_result, apis_called = self._call_api(ai_result, api_client, auth_token)
             
             return {
                 "success": api_result.get("success", False),
                 "data": api_result.get("data"),
                 "error": api_result.get("error"),
                 "ai_classification": ai_result,
-                "agent": "weldInsight agent"
+                "agent": "weldInsight agent",
+                "apis_called": apis_called
             }
             
         except Exception as e:
-            return {"success": False, "error": str(e), "agent": "weld_agent"}
+            return {"success": False, "error": str(e), "agent": "weldInsight agent", "apis_called": ["/openai/chat/completions"]}
     
     def _classify_query(self, query):
         prompt = f"""
@@ -70,6 +71,7 @@ JSON format:
     def _call_api(self, ai_result, api_client, auth_token):
         query_type = ai_result.get("type", "work_order")
         params = ai_result.get("parameters", {})
+        apis_called = ["/openai/chat/completions"]  # Always includes OpenAI for classification
         
         # Set auth token for this API client instance
         api_client.auth_token = auth_token
@@ -77,19 +79,22 @@ JSON format:
         if query_type == "weld":
             wr_number = params.get("wr_number", "")
             if wr_number:
-                return api_client.get_all_weld_details_by_work_order(wr_number)
+                apis_called.append("/api/WeldDetails/GetAllWeldDetailsByWorkOrder")
+                return api_client.get_all_weld_details_by_work_order(wr_number), apis_called
             else:
-                return {"success": False, "error": "WR Number required for weld queries"}
+                return {"success": False, "error": "WR Number required for weld queries"}, apis_called
         elif query_type == "mtr":
             company_mtr_file_id = params.get("company_mtr_file_id", "")
             heat_number = params.get("heat_number", "")
             if company_mtr_file_id and heat_number:
-                return api_client.get_mtr_metadata(company_mtr_file_id, heat_number)
+                apis_called.append("/api/AIMTRMetaData/GetMTRMetaData")
+                return api_client.get_mtr_metadata(company_mtr_file_id, heat_number), apis_called
             else:
-                return {"success": False, "error": "Company MTR File ID and Heat Number required for MTR queries"}
+                return {"success": False, "error": "Company MTR File ID and Heat Number required for MTR queries"}, apis_called
         else:
             wr_number = params.get("wr_number", "")
             if wr_number:
-                return api_client.get_work_order_information(wr_number)
+                apis_called.append("/api/WorkOrder/GetWorkOrderInformation")
+                return api_client.get_work_order_information(wr_number), apis_called
             else:
-                return {"success": False, "error": "WR Number required for work order queries"}
+                return {"success": False, "error": "WR Number required for work order queries"}, apis_called

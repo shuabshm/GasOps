@@ -13,6 +13,7 @@ env/
 ENV/
 
 # IDE files
+
 .vscode/
 .idea/
 *.swp

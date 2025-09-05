@@ -1,6 +1,6 @@
 """
 MTR Agent for extracting specific properties, measurements, and technical specifications
-Uses OCR extraction from MTR documents and AI knowledge for compliance validation
+Integrates both OCR extraction from MTR documents and AI Search on pre-indexed specs
 """
 from langchain.schema import HumanMessage, SystemMessage
 import json
@@ -64,6 +64,58 @@ class MTRAgent:
                 "apis_called": []
             }
     
+    def _should_use_ai_search(self, query, heat_number):
+        """Determine if query should use AI Search vs OCR approach"""
+        if not self.ai_search_enabled:
+            return False
+        
+        # Use AI Search for general material property questions without specific heat numbers
+        general_terms = [
+            "material property", "specification", "requirement", "standard", 
+            "chemical composition", "mechanical property", "welding procedure",
+            "carbon content", "tensile strength", "yield strength", "pipe specification",
+            "material grade", "steel grade", "allowable stress", "temperature rating"
+        ]
+        
+        query_lower = query.lower()
+        has_general_terms = any(term in query_lower for term in general_terms)
+        has_specific_heat_number = heat_number is not None
+        
+        # Use AI Search if:
+        # 1. Query has general material/spec terms AND no specific heat number
+        # 2. OR query has general terms and we want to supplement with specs
+        return has_general_terms and not has_specific_heat_number
+    
+    async def _process_with_ai_search(self, query):
+        """Process query using AI Search on pre-indexed specs"""
+        try:
+            logger.info("Searching pre-indexed specifications...")
+            search_result = self.ai_search_client.search_and_answer(query, top_k=5)
+            
+            if search_result.get("success"):
+                return {
+                    "success": True,
+                    "data": search_result["answer"],
+                    "agent": "MTR agent",
+                    "source": "ai_search_specs",
+                    "sources": search_result.get("sources", []),
+                    "extraction_method": "AI Search + LLM"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "No relevant specifications found for your query",
+                    "agent": "MTR agent"
+                }
+                
+        except Exception as e:
+            logger.error(f"AI Search processing failed: {str(e)}")
+            return {
+                "success": False,
+                "error": f"Specification search failed: {str(e)}",
+                "agent": "MTR agent"
+            }
+    
     async def _process_with_ocr(self, query, heat_number, company_mtr_file_id, auth_token):
         """Process query using OCR extraction from specific MTR document"""
         try:
@@ -81,37 +133,19 @@ class MTRAgent:
             return {
                 "success": False,
                 "error": f"MTR document processing failed: {str(e)}",
-                "agent": "MTR agent",
-                "apis_called": []
+                "agent": "MTR agent"
             }
     
     def _extract_query_parameters(self, query):
         """Extract heat number and company MTR file ID from user query using AI"""
         extraction_prompt = f"""
-You are analyzing a conversational MTR (Material Test Report) query that may include previous conversation context. Your task is to extract material identifiers from the ENTIRE query text, including previous messages.
+Analyze this MTR query and extract the parameters:
 
-FULL QUERY TEXT (including previous conversation context):
-"{query}"
+Query: "{query}"
 
-EXTRACTION TASK:
-1. **Heat Number (required)**: Look throughout the entire query text for ANY material identifiers, including:
-   - Explicit heat numbers (e.g., "heat number 18704220")
-   - Material codes/IDs (e.g., "W4A789", "12345ABC")  
-   - Alphanumeric identifiers mentioned in previous messages
-   - Material references from earlier conversation context
-
-2. **Company MTR File ID (optional)**: Look for file IDs, document IDs, or reference numbers
-
-CONTEXT UNDERSTANDING:
-- If current question is about "compliance", "requirements", "API 5L", "standards" etc., look for material identifiers mentioned EARLIER in the conversation
-- Previous messages may contain the material identifier that the current question refers to
-- Example: Previous message mentions "W4A789 properties", current question "does it satisfy API 5L requirement?" → Heat number is "W4A789"
-
-IMPORTANT: 
-- Analyze the FULL query text including all previous messages
-- Current question may refer to materials discussed earlier
-- Look for ANY alphanumeric codes that could be material identifiers
-- If you find a material identifier ANYWHERE in the query text, extract it
+Extract:
+1. Heat Number (required) - Look for patterns like heat numbers, batch numbers, lot numbers
+2. Company MTR File ID (optional) - Look for file IDs, document IDs, or reference numbers
 
 Respond with JSON only:
 {{
@@ -141,7 +175,7 @@ Respond with JSON only:
             
         except Exception as e:
             logger.warning(f"Parameter extraction failed: {str(e)}")
-            # Simple fallback
+            # Fallback: simple string matching
             return {
                 "heat_number": None,
                 "company_mtr_file_id": None,
@@ -262,20 +296,16 @@ Answer:
     
     async def _get_mtr_file_and_extract_properties(self, api_client, heat_number, company_mtr_file_id, query):
         """Get MTR file data and extract properties using OCR"""
-        apis_called = []
-        
         try:
             # Step 1: Get PDF binary data using GetMTRFileDatabyHeatNumber API
             logger.info(f"Calling GetMTRFileDatabyHeatNumber API for heat number: {heat_number}")
-            apis_called.append("/api/AIMTRMetaData/GetMTRFileDatabyHeatNumber")
             pdf_result = api_client.get_mtr_file_data_by_heat_number(heat_number, company_mtr_file_id)
             
             if not pdf_result.get("success"):
                 return {
                     "success": False,
                     "error": "Unable to connect to database for MTR file retrieval",
-                    "agent": "MTR agent",
-                    "apis_called": apis_called
+                    "agent": "MTR agent"
                 }
             
             pdf_data = pdf_result.get("data")
@@ -283,8 +313,7 @@ Answer:
                 return {
                     "success": False,
                     "error": f"No MTR document found for heat number {heat_number}",
-                    "agent": "MTR agent",
-                    "apis_called": apis_called
+                    "agent": "MTR agent"
                 }
             
             # Process only the first document found
@@ -297,8 +326,7 @@ Answer:
                 return {
                     "success": False,
                     "error": f"No binary data found in MTR document for heat number {heat_number}",
-                    "agent": "MTR agent",
-                    "apis_called": apis_called
+                    "agent": "MTR agent"
                 }
             
             logger.info(f"Processing MTR document: {file_name} (CompanyMTRFileID: {file_company_mtr_id})")
@@ -308,28 +336,26 @@ Answer:
             pdf_path = None
             try:
                 pdf_path = self._convert_binary_to_pdf(binary_string, heat_number)
-                
-                # Add Document Intelligence API call
-                apis_called.append("/documentintelligence/analyze")
                 extracted_text = self._extract_text_from_pdf(pdf_path)
                 
                 if not extracted_text:
                     return {
                         "success": False,
                         "error": "Unable to extract text from MTR document",
-                        "agent": "MTR agent",
-                        "apis_called": apis_called
+                        "agent": "MTR agent"
                     }
                 
                 # Step 3: Use LLM to answer property question from extracted text
-                apis_called.append("/openai/chat/completions")
                 response = self._answer_property_question(query, extracted_text, first_obj)
                 
                 return {
                     "success": True,
                     "data": response,
                     "agent": "MTR agent",
-                    "apis_called": apis_called
+                    "source": "document_ocr_extraction",
+                    "processed_document": file_name,
+                    "heat_number": heat_number,
+                    "extraction_method": "OCR + LLM"
                 }
                 
             except Exception as e:
@@ -337,8 +363,7 @@ Answer:
                 return {
                     "success": False,
                     "error": f"Unable to extract data from document: {str(e)}",
-                    "agent": "MTR agent",
-                    "apis_called": apis_called
+                    "agent": "MTR agent"
                 }
             finally:
                 # Clean up temporary PDF file
@@ -354,6 +379,5 @@ Answer:
             return {
                 "success": False,
                 "error": f"MTR document processing failed: {str(e)}",
-                "agent": "MTR agent",
-                "apis_called": apis_called
+                "agent": "MTR agent"
             }
