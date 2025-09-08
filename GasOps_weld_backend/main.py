@@ -191,7 +191,6 @@ async def ask(
                 # Extract API info from weldInsight agent if available
                 apis_called = ["/openai/chat/completions"]  # At minimum it uses OpenAI for classification
             
-        # Comment out old return structure
         # return {
         #     "answer": response_text,
         #     "timestamp": timestamp_bot,
@@ -205,7 +204,7 @@ async def ask(
         #     "ai_classification": result.get("ai_classification")
         # }
         
-        # New 6-field return structure
+        #return structure
         return {
             "answer": response_text,
             "timestamp": timestamp_bot,
@@ -219,7 +218,6 @@ async def ask(
         logger.error(f"Query processing failed: {str(e)}")
         timestamp_bot = datetime.utcnow().isoformat()
         
-        # Comment out old error return structure
         # return {
         #     "answer": "Server is down, please try again in some time.",
         #     "timestamp": timestamp_bot,
@@ -235,7 +233,7 @@ async def ask(
         #     "agent": "unknown"
         # }
         
-        # New 6-field error return structure
+        # 6-field error return structure
         return {
             "answer": "Server is down, please try again in some time.",
             "timestamp": timestamp_bot,

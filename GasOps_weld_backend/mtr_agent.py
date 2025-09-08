@@ -217,50 +217,43 @@ Respond with JSON only:
             raise Exception(f"OCR extraction failed: {str(e)}")
     
     def _answer_property_question(self, query: str, extracted_text: str, document_info: dict) -> str:
-        """Use LLM to answer property questions from extracted text"""
+        """Use comprehensive OCR+LLM approach to answer any question about MTR document"""
         prompt = f"""
-You are an expert assistant for MTR (Material Test Report) analysis. The following is the extracted text from an MTR document:
+        You are an expert assistant for MTR (Material Test Report) analysis with comprehensive knowledge of materials standards.
 
-Document Information:
-- File: {document_info.get('FileName', 'Unknown')}
-- Material: {document_info.get('Material', 'Unknown')}
-- Size: {document_info.get('Size', 'Unknown')}
-- Manufacturer: {document_info.get('Manufacturer', 'Unknown')}
+        The following is the complete extracted text from an MTR document:
 
----
-Extracted Text from MTR Document:
-{extracted_text}
----
+        ---
+        FULL MTR DOCUMENT TEXT:
+        {extracted_text}
+        ---
 
-The user has the following question about this MTR document:
-"{query}"
+        The user has the following question about this MTR document:
+        "{query}"
 
-Rules:
-1. First understand the user's question about specific properties (chemical composition, mechanical properties, etc.)
-2. Search through the extracted text to find the relevant information
-3. If the user asks about specific values like carbon content, look for chemical composition tables or sections
-4. For property questions, provide exact values when found (e.g., "Carbon (C): 0.18%")
-5. If the information is not clearly found in the document, state that clearly
-6. If you find the information, explain where it was found (e.g., "From the chemical composition section...")
-7. Be precise and technical in your response
+        Rules:
+        1. First understand the user's question.
+        2. If the user question is general (like "what is the chemical composition as per API 5L"), answer directly from your knowledge of standards, not from the extracted text.
+        3. If the user question requires any comparison or analysis, use the extracted text AND your knowledge to provide a detailed answer.
+        For example: "For this heat number, are the chemical properties consistent with API 5L requirements?" - then get the values from extracted text, get the API 5L requirements from your knowledge, compare and analyze, then provide the response.
+        4. For specific property questions, search through the extracted text and provide exact values with units.
+        5. If doing compliance analysis, clearly state the standard requirements and compare with actual values from the document.
+        6. For mechanical properties, include all relevant values (tensile strength, yield strength, elongation, impact values, etc.)
+        7. For chemical composition, provide complete analysis with all elements when available.
+        8. If information is not found in the document, state that clearly.
+        9. Be precise, technical, and comprehensive in your response.
+        10. When comparing with standards, show the requirement vs actual value clearly.
 
-Important: Do not include "Source:" information at the end of your response.
-
-Answer:
-"""
+        Answer:
+        """
         
         try:
-            messages = [
-                SystemMessage(content="You are an expert MTR document analyst. Provide accurate, precise technical information."),
-                HumanMessage(content=prompt)
-            ]
-            
-            response = self.azure_client.invoke(messages)
-            return response.content.strip()
+            response = self.azure_client.invoke(prompt)
+            return response.content.strip() if hasattr(response, 'content') else str(response)
             
         except Exception as e:
-            logger.warning(f"LLM response generation failed: {str(e)}")
-            return f"I was able to extract text from the MTR document, but encountered an issue analyzing it. The document contains information about {document_info.get('Material', 'the material')} from {document_info.get('Manufacturer', 'the manufacturer')}."
+            logger.warning(f"Comprehensive MTR analysis failed: {str(e)}")
+            return f"I was able to extract the complete text from the MTR document, but encountered an issue during analysis: {str(e)}. Please try rephrasing your question or ask for specific properties."
     
     async def _get_mtr_file_and_extract_properties(self, api_client, heat_number, company_mtr_file_id, query):
         """Get MTR file data and extract properties using OCR"""
