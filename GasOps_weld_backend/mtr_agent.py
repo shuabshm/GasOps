@@ -86,38 +86,41 @@ class MTRAgent:
             }
     
     def _extract_query_parameters(self, query):
-        """Extract heat number and company MTR file ID from user query using AI"""
+        """Extract heat number and company MTR file ID from user query using smart AI analysis"""
         extraction_prompt = f"""
-You are analyzing a conversational MTR (Material Test Report) query that may include previous conversation context. Your task is to extract material identifiers from the ENTIRE query text, including previous messages.
+You are analyzing a conversational MTR (Material Test Report) query to extract the correct material identifier.
 
-FULL QUERY TEXT (including previous conversation context):
+FULL QUERY TEXT (including conversation context):
 "{query}"
 
-EXTRACTION TASK:
-1. **Heat Number (required)**: Look throughout the entire query text for ANY material identifiers, including:
-   - Explicit heat numbers (e.g., "heat number 18704220")
-   - Material codes/IDs (e.g., "W4A789", "12345ABC")  
-   - Alphanumeric identifiers mentioned in previous messages
-   - Material references from earlier conversation context
+TASK: Intelligently determine what material the user is asking about.
 
-2. **Company MTR File ID (optional)**: Look for file IDs, document IDs, or reference numbers
+ANALYSIS STEPS:
+1. First, identify the current question (usually after "Current question:")
+2. Determine if the current question:
+   - Explicitly mentions a specific heat number/material ID → Extract ONLY that one
+   - Refers to a previous material (using words like "it", "this", "that", "same", etc.) → Extract from previous context
+   - Asks for new analysis on a specific material → Extract ONLY the new material
 
-CONTEXT UNDERSTANDING:
-- If current question is about "compliance", "requirements", "API 5L", "standards" etc., look for material identifiers mentioned EARLIER in the conversation
-- Previous messages may contain the material identifier that the current question refers to
-- Example: Previous message mentions "W4A789 properties", current question "does it satisfy API 5L requirement?" → Heat number is "W4A789"
+EXAMPLES:
+- "Current question: properties of 34036" → Extract "34036" only (new material request)
+- "Current question: what is its carbon value?" → Extract from previous context (reference to previous material)
+- "Current question: compliance of it with API 5L" → Extract from previous context
+- "Current question: compare properties of 34035 and 34036" → Extract both if explicitly requested
+- "Current question: give me properties of 34036" → Extract "34036" only (new specific request)
 
-IMPORTANT: 
-- Analyze the FULL query text including all previous messages
-- Current question may refer to materials discussed earlier
-- Look for ANY alphanumeric codes that could be material identifiers
-- If you find a material identifier ANYWHERE in the query text, extract it
+IMPORTANT RULES:
+- If current question explicitly names a material, extract ONLY that material
+- If current question refers to previous material, extract from previous context
+- DO NOT extract multiple materials unless explicitly requested in current question
+- Focus on user intent, not just presence of identifiers
 
 Respond with JSON only:
 {{
-    "heat_number": "extracted_heat_number_or_null",
+    "heat_number": "single_extracted_heat_number_or_null",
     "company_mtr_file_id": "extracted_company_id_or_null",
-    "confidence": 0.95
+    "confidence": 0.95,
+    "reasoning": "brief explanation of extraction logic"
 }}
 """
         
@@ -231,19 +234,30 @@ Respond with JSON only:
         The user has the following question about this MTR document:
         "{query}"
 
-        Rules:
         1. First understand the user's question.
-        2. If the user question is general (like "what is the chemical composition as per API 5L"), answer directly from your knowledge of standards, not from the extracted text.
-        3. If the user question requires any comparison or analysis, use the extracted text AND your knowledge to provide a detailed answer.
-        For example: "For this heat number, are the chemical properties consistent with API 5L requirements?" - then get the values from extracted text, get the API 5L requirements from your knowledge, compare and analyze, then provide the response.
-        4. For specific property questions, search through the extracted text and provide exact values with units.
-        5. If doing compliance analysis, clearly state the standard requirements and compare with actual values from the document.
-        6. For mechanical properties, include all relevant values (tensile strength, yield strength, elongation, impact values, etc.)
-        7. For chemical composition, provide complete analysis with all elements when available.
-        8. If information is not found in the document, state that clearly.
-        9. Be precise, technical, and comprehensive in your response.
-        10. When comparing with standards, show the requirement vs actual value clearly.
 
+        2. If the question references a specific heat number, normalize the number by treating values with or without leading zeros as equivalent (e.g., "340437" = "0340437"). Search the provided documents for all matches of that normalized number. Return only the properties found. If none exist, state that no data is available.
+
+        3. If the user question is general (like "what is the chemical composition as per API 5L"), answer directly from your knowledge of standards, not from the extracted text.
+
+        4. If the user question asks for any comparison or analysis, use the extracted text AND your knowledge to provide a detailed answer.
+
+        Example: "For this heat number, are the chemical properties consistent with API 5L requirements?" → get the values from extracted text, get the API 5L requirements from your knowledge, compare and analyze, then provide the response.
+
+        5. For specific property questions, search through the extracted text and provide exact values with units.
+
+        6. If user question asks for compliance analysis, clearly state the standard requirements and compare with actual values from the document.
+
+        7. For mechanical properties, include all relevant values (tensile strength, yield strength, elongation, impact values, etc.).
+
+        8. For chemical composition, provide complete properties with all elements when available.
+
+        9. If information is not found in the document, state that clearly.
+
+        10. Be precise, technical, and comprehensive in your response.
+
+        11. If and only when comparing with standards, show the requirement vs actual value clearly.
+        
         Answer:
         """
         
@@ -352,3 +366,21 @@ Respond with JSON only:
                 "agent": "MTR agent",
                 "apis_called": apis_called
             }
+        
+
+
+# extraction ruleset:
+#         Rules:
+#         1. First understand the user's question.
+#         2. If the question references a specific heat number, search the provided documents for that number (including leading zeros). Return only the properties found.If none exist, state that no data is available.
+#         3. If the user question is general (like "what is the chemical composition as per API 5L"), answer directly from your knowledge of standards, not from the extracted text.
+#         4. If the user question asks for any comparison or analysis, use the extracted text AND your knowledge to provide a detailed answer.
+#         For example: "For this heat number, are the chemical properties consistent with API 5L requirements?" - then get the values from extracted text, get the API 5L requirements from your knowledge, compare and analyze, then provide the response.
+#         5. For specific property questions, search through the extracted text and provide exact values with units.
+#         6. If user question asks for compliance analysis, clearly state the standard requirements and compare with actual values from the document.
+#         7. For mechanical properties, include all relevant values (tensile strength, yield strength, elongation, impact values, etc.)
+#         8. For chemical composition, provide complete properties with all elements when available.
+#         9. If information is not found in the document, state that clearly.
+#         10. Be precise, technical, and comprehensive in your response.
+#         11. If and only when comparing with standards, show the requirement vs actual value clearly.
+        
