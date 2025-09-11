@@ -40,3 +40,5 @@ secrets/
 credentials/
 *.key
 *.pem
+certifiate/
+

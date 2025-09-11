@@ -1,14 +1,13 @@
-"""
-Token Utilities Module
-Centralized functions for token decoding and generation
-"""
+# Token Decryption and Authentication Module
+# Handles base64 token decoding, credential extraction, and authentication token generation
+# Provides secure token management for multi-tenant organization access
+
 import base64
 from datetime import datetime, timezone, timedelta
-from typing import Dict
 
-def decode_token(encoded_string: str) -> Dict[str, str]:
+def decode(encoded_string):
     """
-    Decode a base64 encoded string from frontend.
+    Decode a base64 encoded string.
 
     Args:
         encoded_string (str): The base64 encoded string to decode.
@@ -29,12 +28,12 @@ def decode_token(encoded_string: str) -> Dict[str, str]:
 
     return decoded_dict
 
-def generate_auth_token(login_master_id: str, database_name: str, org_id: str) -> str:
+def generate_auth_token(login_master_id, database_name, org_id):
     """
-    Generate authentication token for API calls.
+    Generate authentication token for API calls
     
     Args:
-        login_master_id (str): Login master ID
+        login_master_id (str): Login Master ID
         database_name (str): Database name
         org_id (str): Organization ID
         
@@ -46,19 +45,17 @@ def generate_auth_token(login_master_id: str, database_name: str, org_id: str) -
     date_now = now_utc.isoformat()
     
     token_str = f"{date_plus_one}&{login_master_id}&{database_name}&{date_now}&{org_id}"
-    return base64.b64encode(token_str.encode('utf-8')).decode('utf-8')
-
-def encode_base64(text: str) -> str:
-    """
-    Encode text to base64.
     
-    Args:
-        text (str): Text to encode
-        
-    Returns:
-        str: Base64 encoded string
+    def encode_base64(text: str) -> str:
+        if text is None:
+            return None
+        text_bytes = text.encode('utf-8')
+        return base64.b64encode(text_bytes).decode('utf-8')
+    
+    return encode_base64(token_str)
+
+def decode_token(encoded_string):
     """
-    if text is None:
-        return None
-    text_bytes = text.encode('utf-8')
-    return base64.b64encode(text_bytes).decode('utf-8')
+    Legacy function for backward compatibility
+    """
+    return decode(encoded_string)

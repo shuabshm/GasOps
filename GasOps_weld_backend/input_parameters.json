@@ -1,0 +1,11 @@
+{
+    "WordOrderNo": "String",
+    "JobNumber": "String",
+    "WorkOrderDescription": "String",
+    "City": "String",
+    "ProjectSupervisor": "String",
+    "Contractor": "String",
+    "Engineer": "String",
+    "IsRedig": "Boolean",
+    
+}
