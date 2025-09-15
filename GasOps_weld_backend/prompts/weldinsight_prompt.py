@@ -18,7 +18,7 @@ User Query: '{user_input}'
    - Use for: Work order searches, contractor queries, project lookups, regional searches
 
 2. **GetAllWeldDetailsByWorkOrder** - Get all welds for a work order with filtering
-   - Parameters: wr_number (required), weld_id, heat1, heat2, is_production, is_repaired, is_cut_out
+   - Parameters: wr_number (required), JointNumber(weld_id), heat1, heat2, is_production, is_repaired, is_cut_out
    - Use for: Bulk weld data, production/repair analysis, heat number tracking
 
 ### Secondary APIs (Detailed Information):
@@ -51,7 +51,7 @@ User Query: '{user_input}'
 
 ### Recognition Patterns:
 - **Work Order Numbers**: "WO", "work order", "job", "WR", "order", followed by numbers/alphanumeric
-- **Weld Serial Numbers**: "weld", "joint", "serial", "weld number", followed by numbers/alphanumeric
+- **Weld Serial Numbers**: "weld", "joint", JointNumber, "serial", "weld number", followed by numbers/alphanumeric
 - **Contractor Names**: "contractor", "company", names with "Inc", "Corp", "LLC"
 - **Project Numbers**: "project", "job number", "G-" prefix patterns
 - **Engineer Names**: "engineer", "assigned to", person names

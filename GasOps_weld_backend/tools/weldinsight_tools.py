@@ -27,7 +27,7 @@
 
 from tools.calling_api_weld import call_weld_api
 
-def GetAllWeldDetailsByWorkOrder(wr_number=None, weld_id=None, heat1=None, heat2=None, is_production=None, is_repaired=None, is_cut_out=None):
+def GetAllWeldDetailsByWorkOrder(wr_number=None, weld_id=None, heat1=None, heat2=None, is_production=None, is_repaired=None, is_cut_out=None, auth_token=None):
     """
     Get all weld details for a work order with optional filtering parameters.
     
@@ -53,9 +53,9 @@ def GetAllWeldDetailsByWorkOrder(wr_number=None, weld_id=None, heat1=None, heat2
         "IsCutOut": is_cut_out
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetAllWeldDetailsByWorkOrder", parameters)
+    return call_weld_api("GetAllWeldDetailsByWorkOrder", parameters, auth_token)
 
-def GetWorkOrderInformationAndAssignment(wr_number=None, project_number=None, region=None, contractor_type=None, contractor_name=None, engineer_name=None, is_redig=None):
+def GetWorkOrderInformationAndAssignment(wr_number=None, project_number=None, region=None, contractor_type=None, contractor_name=None, engineer_name=None, is_redig=None, auth_token=None):
     """
     Get work order information and assignment details based on various search criteria.
     
@@ -81,9 +81,9 @@ def GetWorkOrderInformationAndAssignment(wr_number=None, project_number=None, re
         "IsRedig": is_redig
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetWorkOrderInformationAndAssignment", parameters)
+    return call_weld_api("GetWorkOrderInformationAndAssignment", parameters, auth_token)
 
-def GetWeldDetailsByWeldSerialNumber(weld_serial_number=None):
+def GetWeldDetailsByWeldSerialNumber(weld_serial_number=None, auth_token=None):
     """
     Get comprehensive weld details for a specific weld serial number.
     
@@ -96,9 +96,9 @@ def GetWeldDetailsByWeldSerialNumber(weld_serial_number=None):
     """
     parameters = {"WeldSerialNumber": weld_serial_number}
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetWeldDetailsByWeldSerialNumber", parameters)
+    return call_weld_api("GetWeldDetailsByWeldSerialNumber", parameters, auth_token)
 
-def GetMaterialAssetsByWeldSerialNumber(weld_serial_number=None):
+def GetMaterialAssetsByWeldSerialNumber(weld_serial_number=None, auth_token=None):
     """
     Get material assets and heat information for a specific weld.
     
@@ -111,9 +111,9 @@ def GetMaterialAssetsByWeldSerialNumber(weld_serial_number=None):
     """
     parameters = {"WeldSerialNumber": weld_serial_number}
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetMaterialAssetsByWeldSerialNumber", parameters)
+    return call_weld_api("GetMaterialAssetsByWeldSerialNumber", parameters, auth_token)
 
-def GetJoinersByWeldSerialNumber(weld_serial_number=None):
+def GetJoinersByWeldSerialNumber(weld_serial_number=None, auth_token=None):
     """
     Get welder/joiner information for a specific weld.
     
@@ -126,9 +126,9 @@ def GetJoinersByWeldSerialNumber(weld_serial_number=None):
     """
     parameters = {"WeldSerialNumber": weld_serial_number}
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetJoinersByWeldSerialNumber", parameters)
+    return call_weld_api("GetJoinersByWeldSerialNumber", parameters, auth_token)
 
-def GetVisualInspectionResultsByWeldSerialNumber(weld_serial_number=None):
+def GetVisualInspectionResultsByWeldSerialNumber(weld_serial_number=None, auth_token=None):
     """
     Get visual inspection results and quality control data for a specific weld.
     
@@ -141,9 +141,9 @@ def GetVisualInspectionResultsByWeldSerialNumber(weld_serial_number=None):
     """
     parameters = {"WeldSerialNumber": weld_serial_number}
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetVisualInspectionResultsByWeldSerialNumber", parameters)
+    return call_weld_api("GetVisualInspectionResultsByWeldSerialNumber", parameters, auth_token)
 
-def GetNDEAndCRIInspectionDetails(wr_number=None, weld_id=None):
+def GetNDEAndCRIInspectionDetails(wr_number=None, weld_id=None, auth_token=None):
     """
     Get Non-Destructive Examination (NDE) and Contractor Radiographic Inspection (CRI) details.
     
@@ -160,9 +160,9 @@ def GetNDEAndCRIInspectionDetails(wr_number=None, weld_id=None):
         "WeldID": weld_id
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetNDEAndCRIInspectionDetailsByWeldSerialNumberAndWRNumber", parameters)
+    return call_weld_api("GetNDEAndCRIInspectionDetailsByWeldSerialNumberAndWRNumber", parameters, auth_token)
 
-def GetNDECRIAndTertiaryInspectionDetails(wr_number=None, weld_id=None):
+def GetNDECRIAndTertiaryInspectionDetails(wr_number=None, weld_id=None, auth_token=None):
     """
     Get complete inspection hierarchy including NDE, CRI, and tertiary (Level 3) inspection details.
     
@@ -179,7 +179,7 @@ def GetNDECRIAndTertiaryInspectionDetails(wr_number=None, weld_id=None):
         "WeldID": weld_id
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetNDECRIAndTertiaryInspectionDetailsByWeldSerialNumberAndWRNumber", parameters)
+    return call_weld_api("GetNDECRIAndTertiaryInspectionDetailsByWeldSerialNumberAndWRNumber", parameters, auth_token)
 
 def get_weldinsight_tools():
     """

@@ -88,8 +88,9 @@ def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oa
         with open(pfx_path, "rb") as f:
             pfx_data = f.read()
         
-        # Determine HTTP method based on API (keeping original logic)
-        if api_name in ["GetMTRFileDatabyHeatNumber", "GetWeldDetailsByWeldSerialNumber", 
+        # Determine HTTP method based on API specifications
+        # GET APIs: These APIs use GET requests with query parameters
+        if api_name in ["GetMTRFileDatabyHeatNumber", "GetWeldDetailsByWeldSerialNumber",
                        "GetMaterialAssetsByWeldSerialNumber", "GetJoinersByWeldSerialNumber",
                        "GetVisualInspectionResultsByWeldSerialNumber"]:
             # GET request with query parameters
@@ -101,6 +102,8 @@ def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oa
                 pkcs12_password="password1234"
             )
         else:
+            # POST APIs: GetWorkOrderInformationAndAssignment, GetAllWeldDetailsByWorkOrder,
+            # GetNDEAndCRIInspectionDetailsByWeldSerialNumberAndWRNumber, GetNDECRIAndTertiaryInspectionDetailsByWeldSerialNumberAndWRNumber
             # POST request with JSON body
             response = requests_pkcs12.post(
                 url,

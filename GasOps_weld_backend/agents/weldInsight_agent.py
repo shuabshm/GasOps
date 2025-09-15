@@ -17,25 +17,51 @@ azure_client, azureopenai = get_azure_chat_openai()
 def execute_tool_call(tool_call, auth_token=None):
     """
     Execute tool function calls for welding operations.
-    
-    Maps OpenAI function calls to appropriate welding API endpoints,
+
+    Maps OpenAI function calls to appropriate welding API tool functions,
     handling parameter transformation and authentication.
-    
+
     Args:
         tool_call: OpenAI tool call object with function name and arguments
         auth_token (str): Authentication token for external API calls
-        
+
     Returns:
         dict: API response with success status and welding data
     """
+    from tools.weldinsight_tools import (
+        GetAllWeldDetailsByWorkOrder,
+        GetWorkOrderInformationAndAssignment,
+        GetWeldDetailsByWeldSerialNumber,
+        GetMaterialAssetsByWeldSerialNumber,
+        GetJoinersByWeldSerialNumber,
+        GetVisualInspectionResultsByWeldSerialNumber,
+        GetNDEAndCRIInspectionDetails,
+        GetNDECRIAndTertiaryInspectionDetails
+    )
+
     function_name = tool_call.function.name
     arguments = json.loads(tool_call.function.arguments)
-    
-    # Clean parameters by removing None values for cleaner API calls
-    parameters = {k: v for k, v in arguments.items() if v is not None}
-    
-    # Direct mapping: function name corresponds to API endpoint name
-    return call_weld_api(function_name, parameters, auth_token)
+
+    # Add auth_token to arguments
+    arguments['auth_token'] = auth_token
+
+    # Map function names to actual tool functions
+    tool_functions = {
+        'GetAllWeldDetailsByWorkOrder': GetAllWeldDetailsByWorkOrder,
+        'GetWorkOrderInformationAndAssignment': GetWorkOrderInformationAndAssignment,
+        'GetWeldDetailsByWeldSerialNumber': GetWeldDetailsByWeldSerialNumber,
+        'GetMaterialAssetsByWeldSerialNumber': GetMaterialAssetsByWeldSerialNumber,
+        'GetJoinersByWeldSerialNumber': GetJoinersByWeldSerialNumber,
+        'GetVisualInspectionResultsByWeldSerialNumber': GetVisualInspectionResultsByWeldSerialNumber,
+        'GetNDEAndCRIInspectionDetails': GetNDEAndCRIInspectionDetails,
+        'GetNDECRIAndTertiaryInspectionDetails': GetNDECRIAndTertiaryInspectionDetails
+    }
+
+    # Execute the appropriate tool function
+    if function_name in tool_functions:
+        return tool_functions[function_name](**arguments)
+    else:
+        return {"error": f"Unknown function: {function_name}"}
 
 def handle_weldinsight_agent(user_input, auth_token=None):
     """
