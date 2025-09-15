@@ -35,8 +35,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize FastAPI application with metadata
-app = FastAPI(title="GasOps Weld Backend", version="1.0.0")
-
+# app = FastAPI(title="GasOps Weld Backend", version="1.0.0")
+app = FastAPI()
 # Configure CORS middleware to allow cross-origin requests from frontend applications
 app.add_middleware(
     CORSMiddleware,

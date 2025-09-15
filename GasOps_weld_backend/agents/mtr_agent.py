@@ -248,7 +248,7 @@ def handle_mtr_agent(user_input, auth_token=None):
                                         
                                         # Replace the tool result data with analyzed response
                                         tool_result["data"] = analyzed_response
-                                        logger.info("MTR document processed successfully with sophisticated OCR")
+                                        logger.info("MTR document processed successfully with OCR")
                                     
                                 except Exception as e:
                                     logger.error(f"MTR document processing failed: {str(e)}")
