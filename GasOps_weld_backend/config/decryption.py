@@ -54,8 +54,8 @@ def generate_auth_token(login_master_id, database_name, org_id):
     
     return encode_base64(token_str)
 
-def decode_token(encoded_string):
-    """
-    Legacy function for backward compatibility
-    """
-    return decode(encoded_string)
+# def decode_token(encoded_string):
+#     """
+#     Legacy function for backward compatibility
+#     """
+#     return decode(encoded_string)

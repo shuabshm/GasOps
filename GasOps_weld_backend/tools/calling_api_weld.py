@@ -7,6 +7,9 @@ import requests_pkcs12
 import tempfile
 import base64
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oamsapicert2023.pfx"):
     """
@@ -89,20 +92,21 @@ def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oa
             pfx_data = f.read()
         
         # Determine HTTP method based on API specifications
-        # GET APIs: These APIs use GET requests with query parameters
-        if api_name in ["GetMTRFileDatabyHeatNumber", "GetWeldDetailsByWeldSerialNumber",
-                       "GetMaterialAssetsByWeldSerialNumber", "GetJoinersByWeldSerialNumber",
-                       "GetVisualInspectionResultsByWeldSerialNumber"]:
+        # GET APIs: Only MTR-related APIs use GET requests with query parameters
+        if api_name in ["GetMTRFileDatabyHeatNumber"]:
             # GET request with query parameters
             response = requests_pkcs12.get(
                 url,
                 headers=headers,
                 params=payload,
                 pkcs12_data=pfx_data,
-                pkcs12_password="password1234"
+                pkcs12_password=os.getenv("PFX_PASSWORD")
             )
         else:
-            # POST APIs: GetWorkOrderInformationAndAssignment, GetAllWeldDetailsByWorkOrder,
+            # POST APIs: All WeldInsight APIs use POST requests with JSON body
+            # WeldInsight APIs: GetWorkOrderInformationAndAssignment, GetAllWeldDetailsByWorkOrder,
+            # GetWeldDetailsByWeldSerialNumber, GetMaterialAssetsByWeldSerialNumber,
+            # GetJoinersByWeldSerialNumber, GetVisualInspectionResultsByWeldSerialNumber,
             # GetNDEAndCRIInspectionDetailsByWeldSerialNumberAndWRNumber, GetNDECRIAndTertiaryInspectionDetailsByWeldSerialNumberAndWRNumber
             # POST request with JSON body
             response = requests_pkcs12.post(
@@ -110,7 +114,7 @@ def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oa
                 headers=headers,
                 json=payload,
                 pkcs12_data=pfx_data,
-                pkcs12_password="password1234"
+                pkcs12_password=os.getenv("PFX_PASSWORD")
             )
         
         try:
