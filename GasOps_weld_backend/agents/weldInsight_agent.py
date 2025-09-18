@@ -66,20 +66,20 @@ def execute_tool_call(tool_call, auth_token=None):
 def handle_weldinsight_agent(user_input, auth_token=None):
     """
     Main WeldInsight agent handler for processing welding and work order queries.
-    
+
     This function manages the complete welding operations workflow:
     1. Analyzes user queries to identify welding-related intent
     2. Selects appropriate API tools for work orders, weld details, or inspections
     3. Executes API calls with proper authentication and parameter handling
     4. Formats responses for comprehensive welding operation insights
-    
+
     Args:
         user_input (str): User's query about welding operations or work orders
         auth_token (str, optional): Authentication token for API calls
-        
+
     Returns:
         dict: Structured response with success status, data, and agent identification
-        
+
     Supported Operations:
     - Work order information and assignments
     - Weld details by serial number or work order
@@ -88,10 +88,16 @@ def handle_weldinsight_agent(user_input, auth_token=None):
     - Visual and NDE inspection results
     - CRI and tertiary inspection data
     """
-    
+
+    logger.info(f"=== WELDINSIGHT AGENT STARTED ===")
+    logger.info(f"User input: {user_input}")
+    logger.info(f"Auth token available: {bool(auth_token)}")
+
     # Get WeldInsight prompt
+    logger.info(f"=== GENERATING WELDINSIGHT PROMPT ===")
     weldinsight_prompt = get_weldinsight_prompt(user_input)
-    
+    logger.info(f"Prompt generated - length: {len(weldinsight_prompt)} characters")
+
     # Create messages list for conversation
     messages = [
         {
@@ -99,13 +105,18 @@ def handle_weldinsight_agent(user_input, auth_token=None):
             "content": weldinsight_prompt
         },
         {
-            "role": "user", 
+            "role": "user",
             "content": user_input
         }
     ]
+    logger.info(f"Created conversation messages - count: {len(messages)}")
 
     try:
         # Initial AI call with function calling for intelligent tool selection
+        logger.info(f"=== CALLING AZURE OPENAI FOR TOOL SELECTION ===")
+        logger.info(f"Model: {azureopenai}")
+        logger.info(f"Tools available: {len(get_weldinsight_tools())}")
+
         response = azure_client.chat.completions.create(
             model=azureopenai,
             messages=messages,
@@ -113,42 +124,76 @@ def handle_weldinsight_agent(user_input, auth_token=None):
             tool_choice="required"  # Forces the LLM to call at least one tool
         )
 
+        logger.info(f"=== AZURE OPENAI TOOL SELECTION RESPONSE ===")
+        logger.info(f"Response has tool calls: {bool(response.choices[0].message.tool_calls)}")
+
         # Check if the model wants to call a tool
         if response.choices[0].message.tool_calls:
+            tool_calls = response.choices[0].message.tool_calls
+            logger.info(f"Number of tool calls: {len(tool_calls)}")
+
             # Add the assistant's response to messages
             messages.append(response.choices[0].message)
-            
+
             # Execute each tool call
-            for tool_call in response.choices[0].message.tool_calls:
-                logger.info(f"Executing tool: {tool_call.function.name} with arguments: {tool_call.function.arguments}")
-                
+            for i, tool_call in enumerate(tool_calls):
+                logger.info(f"=== EXECUTING TOOL CALL {i+1}/{len(tool_calls)} ===")
+                logger.info(f"Tool: {tool_call.function.name}")
+                logger.info(f"Arguments: {tool_call.function.arguments}")
+
                 # Execute the tool function
                 tool_result = execute_tool_call(tool_call, auth_token)
-                logger.info(f"Tool result success: {tool_result.get('success', False)}")
-                
+                logger.info(f"=== TOOL EXECUTION RESULT ===")
+                logger.info(f"Tool result type: {type(tool_result)}")
+                logger.info(f"Tool result success: {tool_result.get('success', 'No success field') if isinstance(tool_result, dict) else 'Not a dict'}")
+                if isinstance(tool_result, dict):
+                    logger.info(f"Tool result keys: {list(tool_result.keys())}")
+                    if 'data' in tool_result:
+                        data = tool_result['data']
+                        logger.info(f"Data type: {type(data)}")
+                        if isinstance(data, dict) and 'Obj' in data:
+                            logger.info(f"API response has 'Obj' field with {len(data['Obj']) if data['Obj'] else 0} items")
+                        elif isinstance(data, list):
+                            logger.info(f"Data is list with {len(data)} items")
+                        else:
+                            logger.info(f"Data content preview: {str(data)[:200]}...")
+
                 # Add tool result to messages
+                tool_content = json.dumps(tool_result) if isinstance(tool_result, (dict, list)) else str(tool_result)
                 messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
-                    "content": json.dumps(tool_result) if isinstance(tool_result, (dict, list)) else str(tool_result)
+                    "content": tool_content
                 })
-            
+                logger.info(f"Added tool result to conversation - content length: {len(tool_content)}")
+
             # Get final response from the model - it will format the results naturally
+            logger.info(f"=== CALLING AZURE OPENAI FOR FINAL RESPONSE ===")
+            logger.info(f"Total messages in conversation: {len(messages)}")
+
             final_response = azure_client.chat.completions.create(
                 model=azureopenai,
                 messages=messages
             )
-            
+
+            final_content = final_response.choices[0].message.content
+            logger.info(f"=== FINAL AI RESPONSE ===")
+            logger.info(f"Final response length: {len(final_content)} characters")
+            logger.info(f"Final response preview: {final_content[:300]}...")
+
             return {
                 "success": True,
-                "data": final_response.choices[0].message.content,
+                "data": final_content,
                 "agent": "WeldInsight Agent"
             }
         else:
             # No tool calls needed, return direct response
+            logger.info(f"=== NO TOOL CALLS REQUIRED ===")
+            direct_response = response.choices[0].message.content
+            logger.info(f"Direct response: {direct_response}")
             return {
                 "success": True,
-                "data": response.choices[0].message.content,
+                "data": direct_response,
                 "agent": "WeldInsight Agent"
             }
 

@@ -25,17 +25,21 @@ from pydantic import BaseModel
 from typing import List, Optional
 from config.decryption import decode, generate_auth_token
 from supervisor.supervisor import supervisor
-from datetime import datetime, timezone, timedelta
-import json
+from datetime import datetime, timezone
 
 # Configure logging to suppress verbose Azure/HTTP logs while maintaining INFO level for app logs
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Ensure console output
+    ]
+)
 logger = logging.getLogger(__name__)
 
 # Initialize FastAPI application with metadata
-# app = FastAPI(title="GasOps Weld Backend", version="1.0.0")
 app = FastAPI()
 # Configure CORS middleware to allow cross-origin requests from frontend applications
 app.add_middleware(
@@ -137,8 +141,11 @@ async def ask(
         4. Route query through supervisor agent
         5. Format and return standardized response
     """
-    # Log request for debugging (remove in production for security)
-    logger.debug(f"Processing query request for session: {body.session_id}")
+    # Enhanced debugging logs for request processing
+    logger.info(f"=== PROCESSING NEW REQUEST ===")
+    logger.info(f"Session ID: {body.session_id}")
+    logger.info(f"Query: {body.query}")
+    logger.info(f"Previous messages count: {len(body.prev_msgs or [])}")
     query = body.query
     prev_msgs = body.prev_msgs or []
     session_id = body.session_id
@@ -148,18 +155,17 @@ async def ask(
     last_msgs = prev_msgs[-3:]
     context = "\\n".join([f"Previous message {i+1} ({msg.role}): {msg.content}" for i, msg in enumerate(last_msgs)])
     full_question = f"{context}\\nCurrent question: {query}" if context else query
-    logger.info(f"Processing query with context length: {len(context) if context else 0} characters")
+    logger.info(f"Context length: {len(context) if context else 0} characters")
+    logger.info(f"Full question to be processed: {full_question[:200]}..." if len(full_question) > 200 else f"Full question: {full_question}")
 
     # Initialize variables for credential extraction and token processing
-    database_name = None  # Extracted from decoded token
     decrypted_fields = {}  # Decoded organization credentials
     auth_token = None  # Generated token for external API calls
-    
+
     if encoded_string:
         try:
             decrypted_fields = decode(encoded_string)
             logger.info(f"Successfully decoded credentials for org: {decrypted_fields.get('OrgID', 'unknown')}")
-            database_name = decrypted_fields.get("Database_Name")
             
             # Generate authentication token for external API calls using decoded credentials
             # This token follows a specific format required by the weld management system APIs
@@ -189,30 +195,52 @@ async def ask(
     try:
         # Route query to supervisor agent for intelligent processing
         # Supervisor determines appropriate specialized agent (MTR or WeldInsight) based on query content
-        result = await supervisor(full_question, database_name, auth_token)
-        logger.info(f"Supervisor agent completed processing - success: {isinstance(result, dict) and not result.get('error')}")
-        
+        logger.info(f"=== ROUTING TO SUPERVISOR ===")
+        logger.info(f"Auth token available: {bool(auth_token)}")
+        result = await supervisor(full_question, None, auth_token)
+        logger.info(f"=== SUPERVISOR RESPONSE ===")
+        logger.info(f"Result type: {type(result)}")
+        logger.info(f"Result success: {isinstance(result, dict) and not result.get('error')}")
+        if isinstance(result, dict):
+            logger.info(f"Result keys: {list(result.keys())}")
+            if result.get('success') is not None:
+                logger.info(f"Success status: {result.get('success')}")
+            if result.get('agent'):
+                logger.info(f"Agent used: {result.get('agent')}")
+
         # Extract and normalize response content from supervisor agent result
         # Handle various response formats from different agents and processing paths
         response_text = None
         if isinstance(result, dict):
             if "data" in result:
                 response_text = result["data"]
+                logger.info(f"Using 'data' field from result")
             elif "answer" in result:
                 response_text = result["answer"]
+                logger.info(f"Using 'answer' field from result")
                 # Handle nested answer structure
                 while isinstance(response_text, dict) and "answer" in response_text:
                     response_text = response_text["answer"]
+                    logger.info(f"Found nested answer, extracting...")
             elif "error" in result:
                 response_text = result["error"]
+                logger.info(f"Using 'error' field from result")
             else:
                 response_text = str(result)
+                logger.info(f"Converting entire result to string")
         else:
             response_text = str(result)
+            logger.info(f"Converting non-dict result to string")
 
         # If response_text is not a string, serialize to JSON
         if not isinstance(response_text, str):
+            import json
             response_text = json.dumps(response_text, ensure_ascii=False)
+            logger.info(f"Serialized response to JSON")
+
+        logger.info(f"=== FINAL RESPONSE ===")
+        logger.info(f"Response length: {len(response_text) if response_text else 0} characters")
+        logger.info(f"Response preview: {response_text[:300]}..." if response_text and len(response_text) > 300 else f"Response: {response_text}")
 
         # Build response context
         timestamp_bot = datetime.utcnow().isoformat()
@@ -264,12 +292,12 @@ async def ask(
 async def health_check():
     """
     Health check endpoint for monitoring and load balancer probes.
-    
+
     Returns system status and basic metrics including active session count.
     Useful for deployment health monitoring and debugging.
     """
     return {
-        "status": "healthy", 
+        "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "active_sessions": len(active_sessions)
     }

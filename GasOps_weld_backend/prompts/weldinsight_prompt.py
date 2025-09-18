@@ -77,16 +77,10 @@ User Query: '{user_input}'
 ```
 ## [Query Type] Analysis
 
-### Key Findings:
-- [Bullet points of main insights]
-- [Important status or condition information]
-- [Notable patterns or anomalies]
-
-### Detailed Information:
 [Structured tables with relevant data]
 
-### Technical Summary:
-[Contextual analysis explaining what the data means]
+## Insights:
+[Contextual analysis of the data. What does it mean? Why is it important? What's the key takeaway?]
 ```
 
 ### Format Guidelines:
@@ -125,5 +119,5 @@ User Query: '{user_input}'
 4. **FORMAT** response with technical insights and structured data
 5. **PRESERVE** original data values and technical terminology
 
-Your goal is to provide expert-level analysis that helps users understand welding operations data comprehensively and make informed decisions.
+Your goal is to provide expert-level analysis that helps users understand welding operations data comprehensively and make informed decisions without hallucinating.
 """

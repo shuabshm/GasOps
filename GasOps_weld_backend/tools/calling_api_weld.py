@@ -62,10 +62,16 @@ def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oa
     
     url = f"https://oamsapi.gasopsiq.com{endpoint}"
     payload = parameters
-    # Log API call for debugging (remove auth token logging in production for security)
+    # Enhanced debugging for API calls
     import logging
     logger = logging.getLogger(__name__)
-    logger.debug(f"Calling Weld API '{api_name}' with {len(payload)} parameters")
+    logger.info(f"=== WELD API CALL ===")
+    logger.info(f"API Name: {api_name}")
+    logger.info(f"Endpoint: {endpoint}")
+    logger.info(f"URL: https://oamsapi.gasopsiq.com{endpoint}")
+    logger.info(f"Parameters: {payload}")
+    logger.info(f"Parameter count: {len(payload)}")
+    logger.info(f"Auth token provided: {bool(auth_token)}")
     
     headers = {
         "Accept": "application/json",
@@ -93,8 +99,11 @@ def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oa
         
         # Determine HTTP method based on API specifications
         # GET APIs: Only MTR-related APIs use GET requests with query parameters
+        logger.info(f"=== DETERMINING HTTP METHOD ===")
         if api_name in ["GetMTRFileDatabyHeatNumber"]:
             # GET request with query parameters
+            logger.info(f"Using GET method for MTR API")
+            logger.info(f"Query parameters: {payload}")
             response = requests_pkcs12.get(
                 url,
                 headers=headers,
@@ -109,6 +118,8 @@ def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oa
             # GetJoinersByWeldSerialNumber, GetVisualInspectionResultsByWeldSerialNumber,
             # GetNDEAndCRIInspectionDetailsByWeldSerialNumberAndWRNumber, GetNDECRIAndTertiaryInspectionDetailsByWeldSerialNumberAndWRNumber
             # POST request with JSON body
+            logger.info(f"Using POST method for WeldInsight API")
+            logger.info(f"JSON payload: {payload}")
             response = requests_pkcs12.post(
                 url,
                 headers=headers,
@@ -116,11 +127,40 @@ def call_weld_api(api_name, parameters, auth_token, pfx_source="./certificate/oa
                 pkcs12_data=pfx_data,
                 pkcs12_password=os.getenv("PFX_PASSWORD")
             )
+
+        logger.info(f"=== API RESPONSE ===")
+        logger.info(f"Status code: {response.status_code}")
+        logger.info(f"Response headers: {dict(response.headers)}")
+        logger.info(f"Response size: {len(response.content) if response.content else 0} bytes")
         
         try:
             result = response.json()
+            logger.info(f"=== PARSED JSON RESPONSE ===")
+            logger.info(f"Result type: {type(result)}")
+            if isinstance(result, dict):
+                logger.info(f"Result keys: {list(result.keys())}")
+                if 'Obj' in result:
+                    obj_data = result['Obj']
+                    logger.info(f"'Obj' field type: {type(obj_data)}")
+                    if isinstance(obj_data, list):
+                        logger.info(f"'Obj' contains {len(obj_data)} items")
+                        if obj_data:
+                            logger.info(f"First item keys: {list(obj_data[0].keys()) if isinstance(obj_data[0], dict) else 'Not a dict'}")
+                    elif obj_data is None:
+                        logger.info(f"'Obj' field is None - no data found")
+                    else:
+                        logger.info(f"'Obj' field content: {obj_data}")
+                else:
+                    logger.info(f"No 'Obj' field in response")
+            elif isinstance(result, list):
+                logger.info(f"Result is list with {len(result)} items")
+            else:
+                logger.info(f"Result content: {str(result)[:200]}...")
+
             return {"success": True, "data": result, "status_code": response.status_code}
-        except Exception:
+        except Exception as json_error:
+            logger.warning(f"Failed to parse JSON response: {str(json_error)}")
+            logger.warning(f"Raw response text: {response.text[:500]}...")
             return {"success": True, "data": response.text, "status_code": response.status_code}
             
     except Exception as e:
