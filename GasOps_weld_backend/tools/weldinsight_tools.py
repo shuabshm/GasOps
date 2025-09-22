@@ -27,13 +27,13 @@
 
 from tools.calling_api_weld import call_weld_api
 
-def GetAllWeldDetailsByWorkOrder(wr_number=None, weld_id=None, heat1=None, heat2=None, is_production=None, is_repaired=None, is_cut_out=None, auth_token=None):
+def GetAllWeldDetailsByWorkOrder(wr_number=None, weldSerialNumber=None, heat1=None, heat2=None, is_production=None, is_repaired=None, is_cut_out=None, auth_token=None):
     """
     Get all weld details for a work order with optional filtering parameters.
     
     Args:
         wr_number (str): Work order number (required)
-        weld_id (str, optional): Specific weld ID to filter results
+        weldSerialNumber (str, optional): Specific weld ID to filter results
         heat1 (str, optional): Heat number for first material
         heat2 (str, optional): Heat number for second material  
         is_production (bool, optional): Filter for production welds
@@ -45,7 +45,7 @@ def GetAllWeldDetailsByWorkOrder(wr_number=None, weld_id=None, heat1=None, heat2
     """
     parameters = {
         "WRNumber": wr_number,
-        "WeldID": weld_id,
+        "WeldSerialNumber": weldSerialNumber,
         "Heat1": heat1,
         "Heat2": heat2,
         "IsProduction": is_production,
