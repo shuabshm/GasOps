@@ -1,18 +1,10 @@
-
-
-
-
-
-
-
-
 import os, json
 import logging
 from config.azure_client import get_azure_chat_openai
 from tools.execute_api import execute_api
 from tools.weldinsights_tools import get_weldinsights_tools
 from prompts.weld_api_router_prompt import get_api_router_prompt
-from prompts.data_analysis_prompt import get_data_analysis_prompt
+from prompts.weld_analysis_prompt import get_data_analysis_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -116,21 +108,72 @@ def api_router_step(user_input, auth_token=None):
             model=azureopenai,
             messages=messages,
             tools=get_weldinsights_tools(),
-            tool_choice="required",
+            tool_choice="auto",  # Allow LLM to ask clarifying questions when needed
             temperature=0.0  # Low temperature for precise API selection
         )
 
+        # Log the LLM's API routing decision
+        logger.info("=== API ROUTER LLM DECISION ===")
+
+        # Log raw LLM response content if available
+        response_content = response.choices[0].message.content
+        if response_content:
+            logger.info(f"LLM Response Content: {response_content}")
+
+        # Log tool calls and parameters
+        if response.choices[0].message.tool_calls:
+            logger.info(f"LLM selected {len(response.choices[0].message.tool_calls)} tool(s) to call:")
+            for i, tool_call in enumerate(response.choices[0].message.tool_calls, 1):
+                logger.info(f"Tool {i}: {tool_call.function.name}")
+                logger.info(f"Tool {i} Parameters: {tool_call.function.arguments}")
+        else:
+            logger.info("LLM made no tool calls")
+        logger.info("=== END API ROUTER DECISION ===")
+
+        # Check if LLM responded with clarifying questions instead of tool calls
+        if not response.choices[0].message.tool_calls:
+            clarification_response = response.choices[0].message.content
+            if clarification_response:
+                # Check if LLM provided JSON parameters instead of calling tool
+                try:
+                    # Handle multiple JSON objects in response - try to extract the first one
+                    lines = clarification_response.strip().split('\n')
+                    for line in lines:
+                        line = line.strip()
+                        if line.startswith('{') and line.endswith('}'):
+                            try:
+                                parsed_params = json.loads(line)
+                                if isinstance(parsed_params, dict) and any(key in parsed_params for key in ['ContractorName', 'ContractorCWIName', 'ContractorNDEName', 'ContractorCRIName']):
+                                    logger.info(f"LLM provided parameters in JSON format: {parsed_params}")
+                                    # Manually create a tool call result
+                                    tool_result = execute_api("AITransmissionWorkOrder", "GetWorkOrderInformation", parsed_params, auth_token, method="POST")
+                                    return [{
+                                        "api_name": "GetWorkOrderInformation",
+                                        "parameters": parsed_params,
+                                        "data": tool_result
+                                    }]
+                            except json.JSONDecodeError:
+                                continue
+                except Exception as e:
+                    logger.info(f"Error processing response format: {e}")
+
+                # If not JSON parameters, treat as clarification question
+                logger.info("LLM is asking for clarification - returning response to user")
+                return [{"clarification": clarification_response}]
+            else:
+                logger.warning("LLM made no tool calls and provided no content")
+                return [{"error": "No tools selected and no clarification provided"}]
+
         # Execute tool calls and collect data
         api_results = []
-        if response.choices[0].message.tool_calls:
-            for tool_call in response.choices[0].message.tool_calls:
-                logger.info(f"Step 1 - Executing tool: {tool_call.function.name}")
-                tool_result = execute_weldinsights_tool_call(tool_call, auth_token)
-                api_results.append({
-                    "api_name": tool_call.function.name,
-                    "parameters": json.loads(tool_call.function.arguments),
-                    "data": tool_result
-                })
+        for tool_call in response.choices[0].message.tool_calls:
+            logger.info(f"Step 1 - Executing tool: {tool_call.function.name}")
+            tool_result = execute_weldinsights_tool_call(tool_call, auth_token)
+            api_results.append({
+                "api_name": tool_call.function.name,
+                "parameters": json.loads(tool_call.function.arguments),
+                "data": tool_result
+            })
 
         return api_results
 
@@ -240,6 +283,10 @@ def handle_weldinsights(user_input, auth_token=None):
         logger.info("Step 1: API Router - Fetching data...")
         # Step 1: Get raw data from APIs
         api_results = api_router_step(user_input, auth_token)
+
+        # Handle clarification requests from API router
+        if api_results and len(api_results) == 1 and "clarification" in api_results[0]:
+            return api_results[0]["clarification"]
 
         if not api_results or (len(api_results) == 1 and "error" in api_results[0]):
             return api_results[0].get("error", "No data retrieved from APIs")

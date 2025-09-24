@@ -9,12 +9,15 @@ def GetWorkOrderInformation(WorkOrderNumber=None,
                            Region=None,
                            Crew=None,
                            ContractorName=None,
-                           SupervisorName=None,
-                           EngineerName=None,
-                           IsRedig=None,
                            ContractorCWIName=None,
                            ContractorNDEName=None,
                            ContractorCRIName=None,
+                           EmployeeName=None,
+                           ManagerName=None,
+                           SupervisorName=None,
+                           EngineerName=None,
+                           RecordsSupportName=None,
+                           IsRedig=None,
                            CreatedOnDate=None,
                            auth_token=None,
                            api_path="AITransmissionWorkOrder"):
@@ -27,12 +30,15 @@ def GetWorkOrderInformation(WorkOrderNumber=None,
         "Region": Region,
         "Crew": Crew,
         "ContractorName": ContractorName,
-        "SupervisorName": SupervisorName,
-        "EngineerName": EngineerName,
-        "IsRedig": IsRedig,
         "ContractorCWIName": ContractorCWIName,
         "ContractorNDEName": ContractorNDEName,
         "ContractorCRIName": ContractorCRIName,
+        "EmployeeName": EmployeeName,
+        "ManagerName": ManagerName,
+        "SupervisorName": SupervisorName,
+        "EngineerName": EngineerName,
+        "RecordsSupportName": RecordsSupportName,
+        "IsRedig": IsRedig,
         "CreatedOnDate": CreatedOnDate
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
@@ -75,15 +81,27 @@ def get_weldinsights_tools():
                         },
                         "ContractorName": {
                             "type": "string",
-                            "description": "Name of contractor"
+                            "description": "Name of the contractor('Bond', 'CAC', 'MFM', 'Network', 'Danella',etc.)"
                         },
                         "SupervisorName": {
                             "type": "string",
-                            "description": "Name of supervisor"
+                            "description": "supervisor name assigned to the work order"
                         },
                         "EngineerName": {
                             "type": "string",
-                            "description": "Assigned engineer name"
+                            "description": "Engineer name assigned to the work order"
+                        },
+                        "EmployeeName": {
+                            "type": "string",
+                            "description": "Name of any employee associated with the work order (Engineer, Supervisor, Records Support, etc.)"
+                        },
+                        "ManagerName": {
+                            "type": "string",
+                            "description": "Manager name Assigned to Manager"
+                        },
+                        "RecordsSupportName": {
+                            "type": "string",
+                            "description": "Name of records support assigned to the work order"
                         },
                         "IsRedig": {
                             "type": "boolean",
@@ -99,7 +117,7 @@ def get_weldinsights_tools():
                         },
                         "ContractorCRIName": {
                             "type": "string",
-                            "description": "Assigned contractor CRI"
+                            "description": "Assigned contractor CRI/L2/L3 Peer review or reviewer name"
                         },
                         "CreatedOnDate": {
                             "type": "string",
