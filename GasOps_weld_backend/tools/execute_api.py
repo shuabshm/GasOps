@@ -38,6 +38,8 @@ def execute_api(api_path, api_name, parameters, auth_token, method="POST", pfx_s
     # Log API call details with sensitive data masked
     auth_token_masked = f"***{auth_token[-4:]}" if auth_token and len(auth_token) > 4 else "***"
     logger.info(f"Sending {method} request to {api_path} API '{api_name}' with {len(payload)} parameters")
+    logger.info(f"Full API URL: {url}")
+    logger.info(f"Request payload: {payload}")
     logger.info(f"Using auth token: {auth_token_masked}")
 
     headers = {
@@ -45,6 +47,12 @@ def execute_api(api_path, api_name, parameters, auth_token, method="POST", pfx_s
         "Content-Type": "application/json",
         "auth-token": auth_token
     }
+
+    # Log headers (with auth-token masked for security)
+    headers_for_logging = headers.copy()
+    if "auth-token" in headers_for_logging:
+        headers_for_logging["auth-token"] = auth_token_masked
+    logger.info(f"Request headers: {headers_for_logging}")
 
     temp_file = None
     try:
@@ -95,9 +103,11 @@ def execute_api(api_path, api_name, parameters, auth_token, method="POST", pfx_s
         try:
             result = response.json()
             logger.info("Successfully parsed JSON response")
+            logger.info(f"Response payload: {result}")
             return {"success": True, "data": result, "status_code": response.status_code}
         except Exception as json_err:
             logger.warning(f"Failed to parse JSON response: {str(json_err)}, returning raw text")
+            logger.info(f"Raw response text: {response.text}")
             return {"success": True, "data": response.text, "status_code": response.status_code}
 
     except Exception as e:
