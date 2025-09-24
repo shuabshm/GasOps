@@ -1,10 +1,28 @@
-# MTR Agent Prompt Templates
-# AI prompt engineering templates for Material Test Report processing
-# Provides structured prompts for parameter extraction, OCR analysis, and property evaluation
+"""
+MTR Agent Prompt Templates
+
+AI prompt engineering templates for Material Test Report processing.
+Provides structured prompts for parameter extraction, OCR analysis, and property evaluation.
+
+This module contains sophisticated prompt templates designed for:
+- Intelligent heat number parameter extraction from conversational queries
+- OCR-based text analysis and property evaluation
+- Standards compliance checking (API 5L, ASME, etc.)
+- Material property analysis and reporting
+"""
 
 def get_parameter_extraction_prompt(query):
     """
-    Generate the sophisticated parameter extraction prompt from original MTR agent
+    Generate sophisticated parameter extraction prompt for MTR queries.
+
+    Creates an AI prompt that intelligently analyzes conversational queries
+    to extract material identifiers (heat numbers) with context awareness.
+
+    Args:
+        query (str): The full conversational query including context
+
+    Returns:
+        str: Formatted prompt for parameter extraction
     """
     return f"""
 You are analyzing a conversational MTR (Material Test Report) query to extract the correct material identifier.
@@ -45,7 +63,18 @@ Respond with JSON only:
 
 def get_property_analysis_prompt(query, extracted_text, document_info):
     """
-    Generate the comprehensive OCR+LLM analysis prompt from original MTR agent
+    Generate comprehensive OCR+LLM analysis prompt for MTR document analysis.
+
+    Creates a detailed prompt that combines OCR-extracted text with document
+    metadata to perform sophisticated material property analysis.
+
+    Args:
+        query (str): The user's specific query about material properties
+        extracted_text (str): OCR-extracted text from the MTR document
+        document_info (dict): Document metadata and information
+
+    Returns:
+        str: Formatted prompt for comprehensive MTR analysis
     """
     return f"""
 You are an expert assistant for MTR (Material Test Report) analysis with comprehensive knowledge of materials standards.
@@ -89,8 +118,17 @@ Answer:
 
 def get_mtr_prompt(user_input, conversation_context=""):
     """
-    Generate the MTR agent prompt with dynamic content - simplified for tool-based approach
-    but maintains the sophisticated logic through separate prompt functions above
+    Generate the main MTR agent prompt for function calling and tool selection.
+
+    Creates the primary prompt that enables the MTR agent to understand
+    user queries and select appropriate tools for MTR processing.
+
+    Args:
+        user_input (str): The user's input query about MTR data
+        conversation_context (str, optional): Previous conversation context
+
+    Returns:
+        str: Formatted MTR agent prompt for tool selection and processing
     """
     
     return f"""

@@ -3,9 +3,12 @@
 # Handles authentication, endpoint management, and client initialization
 
 import openai
+import logging
 from dotenv import load_dotenv
-load_dotenv()  # Load environment variables from .env file if present
 import os
+
+load_dotenv()  # Load environment variables from .env file if present
+logger = logging.getLogger(__name__)
 
 # Azure OpenAI service configuration from environment variables
 # These values should be set in .env file or environment for security
@@ -17,22 +20,30 @@ AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")  # API version 
 
 # Initialize Azure OpenAI client using OpenAI SDK v1+ format
 # This client is used across all agents for AI-powered query processing
-azure_client = openai.AzureOpenAI(
-    api_key=AZURE_OPENAI_API_KEY,
-    api_version=AZURE_OPENAI_API_VERSION,
-    azure_endpoint=AZURE_OPENAI_ENDPOINT,
-)
+try:
+    azure_client = openai.AzureOpenAI(
+        api_key=AZURE_OPENAI_API_KEY,
+        api_version=AZURE_OPENAI_API_VERSION,
+        azure_endpoint=AZURE_OPENAI_ENDPOINT,
+    )
+    logger.info("Azure OpenAI client initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize Azure OpenAI client: {str(e)}")
+    azure_client = None
 
 def get_azure_chat_openai():
     """
     Provide Azure OpenAI client and deployment configuration for agents.
-    
+
     This function serves as the main entry point for agents to access
     Azure OpenAI services with consistent configuration.
-    
+
     Returns:
         tuple: (azure_client, deployment_name) for use in chat completions
-        
+
+    Raises:
+        Exception: If Azure OpenAI client is not properly initialized
+
     Usage:
         azure_client, deployment = get_azure_chat_openai()
         response = azure_client.chat.completions.create(
@@ -40,4 +51,13 @@ def get_azure_chat_openai():
             messages=[{"role": "user", "content": prompt}]
         )
     """
+    if azure_client is None:
+        logger.error("Azure OpenAI client is not initialized")
+        raise Exception("Azure OpenAI client initialization failed")
+
+    if not AZURE_OPENAI_DEPLOYMENT:
+        logger.error("Azure OpenAI deployment name is not configured")
+        raise Exception("Azure OpenAI deployment configuration missing")
+
+    logger.info("Providing Azure OpenAI client and deployment configuration")
     return azure_client, AZURE_OPENAI_DEPLOYMENT

@@ -8,7 +8,7 @@ import tempfile
 import base64
 import logging
 from config.azure_client import get_azure_chat_openai
-from tools.calling_api_weld import call_weld_api
+from tools.execute_api import execute_api
 from tools.mtr_tools import get_mtr_tools
 from prompts.mtr_prompt import get_property_analysis_prompt, get_mtr_prompt
 
@@ -19,10 +19,16 @@ from azure.ai.documentintelligence.models import AnalyzeResult
 from dotenv import load_dotenv
 
 load_dotenv()
+
 logger = logging.getLogger(__name__)
 
 # Initialize Azure OpenAI client for AI-powered analysis
-azure_client, azureopenai = get_azure_chat_openai()
+try:
+    azure_client, azureopenai = get_azure_chat_openai()
+    logger.info("Azure OpenAI client initialized for MTR agent")
+except Exception as e:
+    logger.error(f"Failed to initialize Azure OpenAI client in MTR agent: {str(e)}")
+    azure_client, azureopenai = None, None
 
 def execute_tool_call(tool_call, auth_token=None):
     """
@@ -53,7 +59,7 @@ def execute_tool_call(tool_call, auth_token=None):
     else:
         # Fallback for additional functions - direct API call
         parameters = {k: v for k, v in arguments.items() if v is not None}
-        return call_weld_api(function_name, parameters, auth_token)
+        return execute_api("AIMTRMetaData", function_name, parameters, auth_token, method="GET")
 
 class MTRProcessor:
     """
@@ -154,7 +160,7 @@ class MTRProcessor:
             return response.choices[0].message.content.strip()
             
         except Exception as e:
-            logger.warning(f"Comprehensive MTR analysis failed: {str(e)}")
+            logger.error(f"Comprehensive MTR analysis failed: {str(e)}")
             return f"I was able to extract the complete text from the MTR document, but encountered an issue during analysis: {str(e)}. Please try rephrasing your question or ask for specific properties."
 
 def handle_mtr_agent(user_input, auth_token=None):
@@ -182,8 +188,15 @@ def handle_mtr_agent(user_input, auth_token=None):
     - Intelligent conversation context handling
     """
     
+    logger.info("MTR agent handling user query")
+
     # Get MTR prompt
-    mtr_prompt = get_mtr_prompt(user_input)
+    try:
+        mtr_prompt = get_mtr_prompt(user_input)
+        logger.info("MTR prompt generated successfully")
+    except Exception as e:
+        logger.error(f"Failed to generate MTR prompt: {str(e)}")
+        return f"Error in MTR prompt generation: {str(e)}"
     
     # Create messages list for conversation
     messages = [
@@ -213,7 +226,7 @@ def handle_mtr_agent(user_input, auth_token=None):
             
             # Execute each tool call
             for tool_call in response.choices[0].message.tool_calls:
-                logger.info(f"Executing tool: {tool_call.function.name} with arguments: {tool_call.function.arguments}")
+                logger.info(f"Executing tool: {tool_call.function.name}")
                 
                 # Execute the tool function
                 tool_result = execute_tool_call(tool_call, auth_token)

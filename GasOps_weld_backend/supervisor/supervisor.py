@@ -1,119 +1,112 @@
-# Supervisor Agent for GasOps Weld Management System
-# Intelligent query routing system that determines appropriate specialized agent based on query content
-
-import logging
 from agents.mtr_agent import handle_mtr_agent
-from agents.weldInsight_agent import handle_weldinsight_agent
+from agents.weldinsights import handle_weldinsights
 from config.azure_client import get_azure_chat_openai
-from prompts.supervisor_prompt import get_supervisor_prompt
+from datetime import datetime
+import json
+import logging
 
-# Date/time context is now handled within supervisor_prompt.py
 logger = logging.getLogger(__name__)
+
+time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+now = datetime.now()
+current_date = now.strftime('%B %d, %Y')
+current_year = now.year
 
 async def supervisor(query, database_name=None, auth_token=None):
     """
-    Main supervisor agent for intelligent query routing in the GasOps Weld System.
-
-    This function acts as a smart dispatcher that analyzes user queries and routes them
-    to the most appropriate specialized agent (MTR or WeldInsight) based on content analysis.
-    Also handles general queries directly without agent routing.
-
-    Architecture:
-    - Uses Azure OpenAI for intelligent query classification
-    - Supports general queries (greetings, engineering calculations, standards)
-    - Routes domain-specific queries to specialized agents
-    - Maintains conversation context and handles follow-up questions
+    Supervisor agent that routes queries to specialized agents based on intent analysis.
 
     Args:
-        query (str): User's question or request (may include conversation context)
-        database_name (str, optional): Database identifier for multi-tenant support
-        auth_token (str, optional): Authentication token for external API calls
+        query (str): User's query to be processed
+        database_name (str, optional): Database identifier for context
+        auth_token (str, optional): Authentication token for API calls
 
     Returns:
-        dict or str: Response from appropriate agent or direct answer for general queries
-
-    Agent Routing Logic:
-    - MTR Agent: Material properties, heat numbers, test reports, compliance analysis
-    - WeldInsight Agent: Work orders, weld details, inspections, industrial operations
-    - Direct Response: Greetings, general engineering questions, standards, calculations
+        dict or str: Response from the appropriate agent or direct answer
     """
+    logger.info(f"Supervisor received query for routing - database: {database_name[:10] if database_name else 'None'}...")
 
-    logger.info(f"=== SUPERVISOR QUERY ANALYSIS ===")
-    logger.info(f"Query length: {len(query)} characters")
-    logger.info(f"Query content: {query}")
-    logger.info(f"Auth token provided: {bool(auth_token)}")
-    logger.info(f"Database name: {database_name}")
+    try:
+        azure_client, azureopenai = get_azure_chat_openai()
+        logger.info("Azure OpenAI client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize Azure OpenAI client: {str(e)}")
+        return {"error": "Service initialization failed"}
 
-    # Initialize Azure OpenAI client for query classification
-    logger.info("=== AZURE OPENAI INITIALIZATION ===")
-    azure_client, azureopenai = get_azure_chat_openai()
-    logger.info(f"Azure OpenAI model: {azureopenai}")
+    # Use LLM prompt for all intent detection and response
+    prompt = (
+        f"""
+        You are a supervisor managing a team of specialized agents. Your job is to understand the user's intent from their question and respond appropriately.
 
-    # Get comprehensive classification prompt from supervisor_prompt.py
-    # This consolidates all routing logic in a single, maintainable location
-    logger.info("=== GENERATING CLASSIFICATION PROMPT ===")
-    prompt = get_supervisor_prompt(query)
-    logger.info(f"Prompt generated - length: {len(prompt)} characters")
+        User question: {query}
 
-    # Send classification prompt to Azure OpenAI for intelligent routing decision
-    logger.info(f"=== CALLING AZURE OPENAI FOR CLASSIFICATION ===")
-    response = azure_client.chat.completions.create(
-        model=azureopenai,
-        messages=[{"role": "user", "content": prompt}]
+        Context:
+        - Today's date is {current_date}, current year is {current_year}, and the time is {time}.
+        - Always greet the user if they greet you. Do not give previous context in responses to greetings.
+        - If the user asks a general question (e.g., about today's date, time, year, weather, day, month), answer directly and do not invoke any agent.
+        - For weather questions, if you do not have real-time data, provide an approximate.
+        - If the user's question is a follow-up (short or ambiguous) to a previous domain-specific question, route it to the same agent as before unless the intent clearly changes.
+
+        Available agents and their domains:
+        1. WeldInsightsAgent: Handles queries related to work orders
+        2. MTRAgent: Handles queries related to material test reports, heat numbers, material properties
+
+        Rules :
+        - You do NOT answer domain-specific queries yourself. Instead, you:
+        - Interpret the user's query.
+        - Decide which subagent(s) should handle it.
+        - Route the query to the correct subagent(s) based on scope, domain, and context.
+        - Maintain strict boundaries: only return general answers if the query is outside agent scope (e.g., greetings, date, time, weather).
+        - If the query is ambiguous, ask for clarification before routing.
+        - If the question is a follow-up to a previous agent interaction, and the intent is unclear, prefer routing to the previous agent.
+
+        Examples:
+        User: "Show me work orders in the area of Bronx"
+        Response: {{"agent": "WeldInsightsAgent"}}
+
+        User: "Get me MTR data for heat number 12345"
+        Response: {{"agent": "MTRAgent"}}
+
+        Respond in the following format:
+        - If general question: {{"answer": "<direct answer>"}}
+        - If agent required: {{"agent": "<agent name>"}}
+        - If user question is ambiguous: {{"answer": "<ask for clarification clearly>"}}
+        """
     )
-    result = response.choices[0].message.content.strip()
-    logger.info(f"=== AZURE OPENAI CLASSIFICATION RESPONSE ===")
-    logger.info(f"Response length: {len(result)} characters")
-    logger.info(f"Raw response: {result}")
+    try:
+        response = azure_client.chat.completions.create(
+            model=azureopenai,
+            messages=[{"role": "user", "content": prompt}],
+            temperature = 0.2
+        )
+        result = response.choices[0].message.content.strip()
+        logger.info("LLM routing decision completed successfully")
+    except Exception as e:
+        logger.error(f"LLM routing failed: {str(e)}")
+        return {"error": "Query routing failed"}
 
-    # Parse the AI classification response into actionable routing decision
-    import json
-    logger.info(f"=== PARSING CLASSIFICATION RESPONSE ===")
+    # Try to parse the LLM response
     try:
         parsed = json.loads(result)
-        logger.info(f"Successfully parsed JSON response")
-        logger.info(f"Parsed response: {parsed}")
-        logger.info(f"Agent specified: {parsed.get('agent', 'no agent specified')}")
-        if 'answer' in parsed:
-            logger.info(f"Direct answer provided: {parsed['answer'][:100]}...")
+        logger.info(f"Successfully parsed LLM response with keys: {list(parsed.keys())}")
     except Exception as e:
-        # Fallback: treat unparseable response as direct answer
-        logger.warning(f"Failed to parse JSON response, treating as direct answer: {str(e)}")
-        logger.warning(f"Raw response that failed to parse: {result}")
+        logger.warning(f"Failed to parse LLM response as JSON: {str(e)}")
         parsed = {"answer": result}
 
-    # Execute routing decision - delegate to specialized agent or return direct answer
-    logger.info(f"=== ROUTING DECISION ===")
-    agent_choice = parsed.get("agent")
-    logger.info(f"Agent choice: {agent_choice}")
+    if parsed.get("agent") == "WeldInsightsAgent":
+        logger.info("Routing query to WeldInsights agent")
+        try:
+            return handle_weldinsights(query, auth_token)
+        except Exception as e:
+            logger.error(f"WeldInsights agent failed: {str(e)}")
+            return {"error": "WeldInsights processing failed"}
+    elif parsed.get("agent") == "MTRAgent":
+        logger.info("Routing query to MTR agent")
+        try:
+            return handle_mtr_agent(query, auth_token)
+        except Exception as e:
+            logger.error(f"MTR agent failed: {str(e)}")
+            return {"error": "MTR processing failed"}
 
-    if agent_choice == "MTRAgent":
-        # Route to MTR Agent for material analysis and document processing
-        logger.info("=== ROUTING TO MTR AGENT ===")
-        try:
-            result = handle_mtr_agent(query, auth_token)
-            logger.info("MTR Agent processing completed successfully")
-            logger.info(f"MTR Agent result type: {type(result)}")
-            return result
-        except Exception as e:
-            logger.error(f"MTR Agent processing failed: {str(e)}")
-            raise
-    elif agent_choice == "WeldInsightAgent":
-        # Route to WeldInsight Agent for welding operations and work orders
-        logger.info("=== ROUTING TO WELDINSIGHT AGENT ===")
-        try:
-            result = handle_weldinsight_agent(query, auth_token)
-            logger.info("WeldInsight Agent processing completed successfully")
-            logger.info(f"WeldInsight Agent result type: {type(result)}")
-            if isinstance(result, dict):
-                logger.info(f"WeldInsight Agent result keys: {list(result.keys())}")
-            return result
-        except Exception as e:
-            logger.error(f"WeldInsight Agent processing failed: {str(e)}")
-            raise
-    else:
-        # Handle general questions directly without agent routing
-        logger.info("=== HANDLING DIRECTLY (NO AGENT ROUTING) ===")
-        logger.info(f"Direct response type: {type(parsed)}")
-        logger.info(f"Direct response: {parsed}")
-        return parsed
+    logger.info("Returning direct response (no agent routing required)")
+    return parsed

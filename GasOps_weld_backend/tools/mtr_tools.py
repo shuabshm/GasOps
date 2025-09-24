@@ -2,7 +2,7 @@
 # Individual tool functions for OpenAI function calling integration
 # Handles parameter mapping and API communication for MTR-related operations
 
-from tools.calling_api_weld import call_weld_api
+from tools.execute_api import execute_api
 
 def GetMTRFileDatabyHeatNumber(heat_number=None, company_mtr_file_id=None, auth_token=None):
     """
@@ -30,7 +30,7 @@ def GetMTRFileDatabyHeatNumber(heat_number=None, company_mtr_file_id=None, auth_
     }
     # Clean parameters by removing None values for efficient API calls
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return call_weld_api("GetMTRFileDatabyHeatNumber", parameters, auth_token)
+    return execute_api("AIMTRMetaData", "GetMTRFileDatabyHeatNumber", parameters, auth_token, method="GET")
 
 def get_mtr_tools():
     """
