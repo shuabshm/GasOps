@@ -134,31 +134,90 @@ def api_router_step(user_input, auth_token=None):
         if not response.choices[0].message.tool_calls:
             clarification_response = response.choices[0].message.content
             if clarification_response:
-                # Check if LLM provided JSON parameters instead of calling tool
+                # Parse the consistent JSON response format
                 try:
-                    # Handle multiple JSON objects in response - try to extract the first one
-                    lines = clarification_response.strip().split('\n')
-                    for line in lines:
-                        line = line.strip()
-                        if line.startswith('{') and line.endswith('}'):
-                            try:
-                                parsed_params = json.loads(line)
-                                if isinstance(parsed_params, dict) and any(key in parsed_params for key in ['ContractorName', 'ContractorCWIName', 'ContractorNDEName', 'ContractorCRIName']):
-                                    logger.info(f"LLM provided parameters in JSON format: {parsed_params}")
-                                    # Manually create a tool call result
-                                    tool_result = execute_api("AITransmissionWorkOrder", "GetWorkOrderInformation", parsed_params, auth_token, method="POST")
-                                    return [{
-                                        "api_name": "GetWorkOrderInformation",
-                                        "parameters": parsed_params,
-                                        "data": tool_result
-                                    }]
-                            except json.JSONDecodeError:
-                                continue
-                except Exception as e:
-                    logger.info(f"Error processing response format: {e}")
+                    # Clean up the response and extract JSON
+                    content = clarification_response.strip()
 
-                # If not JSON parameters, treat as clarification question
-                logger.info("LLM is asking for clarification - returning response to user")
+                    # Handle code blocks or plain JSON
+                    if "```json" in content:
+                        start = content.find("```json") + 7
+                        end = content.find("```", start)
+                        if end > start:
+                            content = content[start:end].strip()
+                    elif content.startswith('{') and content.endswith('}'):
+                        # Already clean JSON
+                        pass
+                    else:
+                        # Try to find JSON within the response
+                        lines = content.split('\n')
+                        for line in lines:
+                            line = line.strip()
+                            if line.startswith('{') and line.endswith('}'):
+                                content = line
+                                break
+
+                    parsed_response = json.loads(content)
+
+                    if isinstance(parsed_response, dict) and "type" in parsed_response:
+                        response_type = parsed_response["type"]
+
+                        if response_type == "api_call":
+                            # Handle consistent API call format
+                            function_name = parsed_response.get("function_name")
+                            parameters = parsed_response.get("parameters", {})
+
+                            logger.info(f"LLM provided consistent API call format: {function_name} with params {parameters}")
+
+                            # Execute the API call
+                            tool_result = execute_api("AITransmissionWorkOrder", function_name, parameters, auth_token, method="POST")
+                            return [{
+                                "api_name": function_name,
+                                "parameters": parameters,
+                                "data": tool_result
+                            }]
+
+                        elif response_type == "clarification":
+                            # Handle consistent clarification format
+                            clarification_message = parsed_response.get("message", "")
+                            logger.info("LLM provided consistent clarification format")
+                            return [{"clarification": clarification_message}]
+
+                    # Legacy fallback for old formats
+                    elif isinstance(parsed_response, dict):
+                        # Check for old tool call format like {"name":"functions.GetWorkOrderInformation","arguments":{}}
+                        if "name" in parsed_response and "arguments" in parsed_response:
+                            function_name = parsed_response["name"]
+                            if function_name.startswith("functions."):
+                                function_name = function_name[10:]
+
+                            arguments = parsed_response["arguments"]
+                            logger.info(f"LLM provided legacy tool call format: {function_name} with args {arguments}")
+
+                            tool_result = execute_api("AITransmissionWorkOrder", function_name, arguments, auth_token, method="POST")
+                            return [{
+                                "api_name": function_name,
+                                "parameters": arguments,
+                                "data": tool_result
+                            }]
+
+                        # Legacy check for contractor parameters
+                        elif any(key in parsed_response for key in ['ContractorName', 'ContractorCWIName', 'ContractorNDEName', 'ContractorCRIName']):
+                            logger.info(f"LLM provided legacy parameters format: {parsed_response}")
+                            tool_result = execute_api("AITransmissionWorkOrder", "GetWorkOrderInformation", parsed_response, auth_token, method="POST")
+                            return [{
+                                "api_name": "GetWorkOrderInformation",
+                                "parameters": parsed_response,
+                                "data": tool_result
+                            }]
+
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse JSON response: {e}")
+                except Exception as e:
+                    logger.warning(f"Error processing response format: {e}")
+
+                # If no structured format found, treat as plain clarification
+                logger.info("LLM provided plain text clarification")
                 return [{"clarification": clarification_response}]
             else:
                 logger.warning("LLM made no tool calls and provided no content")

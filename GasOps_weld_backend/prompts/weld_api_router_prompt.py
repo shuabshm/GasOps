@@ -215,16 +215,41 @@ Once clarified, generate the filter JSON as per the confirmed field(s).
 
 ---
 
+**CRITICAL: RESPONSE FORMAT**
+You MUST respond with EXACTLY ONE of these two JSON formats:
+
+**FORMAT 1 - API CALL** (when you can make a direct API call):
+```json
+{{
+  "type": "api_call",
+  "function_name": "<ANY_AVAILABLE_API_NAME>",
+  "parameters": {{
+    "param1": "value1",
+    "param2": "value2"
+  }}
+}}
+```
+
+**Examples:**
+- "Show all work orders" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{}}}}
+- "Show completed work orders in East region" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"WorkOrderStatusDescription": "Completed", "Region": "East"}}}}
+- "Show work orders by supervisor John Smith" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"SupervisorName": "John Smith"}}}}
+
+**FORMAT 2 - CLARIFICATION** (when you need more information):
+```json
+{{
+  "type": "clarification",
+  "message": "Your clarification question here"
+}}
+```
+
+**Examples:**
+- "Show John's work orders" → {{"type": "clarification", "message": "I need to clarify John's role. Are you looking for work orders where John is the engineer, supervisor, or in another role?"}}
+- "Show CAC work orders" → {{"type": "clarification", "message": "I need to clarify which CAC role you're looking for. Are you asking about work orders where CAC is the main contractor, or where they're doing CWI inspections, NDE inspections, or CRI inspections?"}}
+
 Instructions:
 # Call the appropriate API(s) based on the user's query. Use no parameters to get all data, or specific parameters to filter.
 # Reference the tool schemas in weldinsights_tools for exact parameter names, types, enums, and descriptions.
 # Check contractor names against the contractors_name.txt dictionary for clarification needs.
-
-**CLARIFICATION EXAMPLES**:
-- Personal Names: "Show John's work orders" → Ask: "I need to clarify John's role. Are you looking for work orders where John is the engineer, supervisor, or in another role?"
-- Contractor Names: "Show CAC work orders" → Ask: "I need to clarify which CAC role you're looking for. Are you asking about work orders where CAC is the main contractor, or where they're doing CWI inspections, NDE inspections, or CRI inspections?"
-- Region/Location: "East region data" → Proceed with Region filter (clear context)
-- Ambiguous queries: "Show Smith projects" → If Smith is in contractors_name.txt, ask about contractor role with natural language; otherwise ask about employee role
-
-**RESPONSE STYLE**: Use conversational, helpful language like a knowledgeable supervisor would. Avoid technical field names like "ContractorCWIName" in responses to users.
+# ALWAYS respond with valid JSON in one of the two formats above - NEVER add extra text outside the JSON
 """
