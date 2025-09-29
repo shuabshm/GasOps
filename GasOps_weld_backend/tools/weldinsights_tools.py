@@ -122,7 +122,7 @@ def get_weldinsights_tools():
                         "CreatedOnDate": {
                             "type": "string",
                             "format": "date-time",
-                            "description": "Timestamp when the work order was created, in ISO 8601 format (e.g., 2025-09-22T18:50:35.105Z)."
+                            "description": "Timestamp when the work order was created in YYYY-MM-DDTHH:MM:SS.SSSZ format (e.g., 2025-09-22T18:50:35.105Z)."
                         },
                     },
                     "required": []

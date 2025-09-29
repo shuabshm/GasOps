@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/Users/ShubashMuniyappa(Qua/OneDrive - Quadrant Resource LLC/Desktop/GasOps-Weld/Weld_Kaushik/**)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

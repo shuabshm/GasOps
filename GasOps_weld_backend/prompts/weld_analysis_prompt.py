@@ -211,7 +211,7 @@ RESPONSE FORMAT:
 1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
    - Use {actual_count} as the total count when reporting the volume of the dataset. Dont mention the term dataset. For eg: The one sentence can be 59 tickets are assigned in Bronx region
 2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
-   - *Critical Priority*: ALWAYS start with core fields: Work Order No.,Project No., Location, Region, Status
+   - *Critical Priority*: ALWAYS start with core fields: Project No., Work Order No., Location, Region, Status
    - *Critical Priority*: AUTOMATICALLY scan user query for keywords and add only the corresponding fields which matches the query(If there are multiple engineers, supervisors or contractors like engineer1, engineer2, etc., add just one column as Egineer consolidating all engineer1, engineer2, etc fields and display only the filtered engineer).
    - Example: "show engineer Hsu Kelly work orders" → Add just one column as Engineer consolidating all engineer1, engineer2, etc fields.
    - Example: "CAC contractor analysis" → Add ContractorName column

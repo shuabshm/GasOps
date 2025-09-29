@@ -203,9 +203,9 @@ Example: *"Show completed work orders in East by Hsu, Kelly"* →
 4. CONTRACTOR NAME CLARIFICATION:
 - If the user mentions a name that appears in contractors_name.txt (contractor dictionary), ask for clarification in natural, conversational language:
   Examples:
-  - Query: "Show ETI work orders" → Ask: "I need to clarify which ETI role you're looking for. Are you asking about work orders where ETI is the main contractor, or where they're doing CWI inspections, NDE inspections, or CRI inspections?"
-  - Query: "Show CAC work orders" → Ask: "I need to clarify which CAC role you're looking for. Are you asking about work orders where CAC is the main contractor, or where they're doing CWI inspections, NDE inspections, or CRI inspections?"
-  - Query: "Bond projects" → Ask: "I need to clarify which Bond role you're looking for. Are you asking about work orders where Bond is the main contractor, or where they're doing CWI inspections, NDE inspections, or CRI inspections?"
+  - Query: "Show ETI work orders" → Ask: "Are you asking about work orders where ETI is the main contractor, or where they're doing CWI inspections, NDE inspections, or CRI inspections?"
+  - Query: "Show CAC work orders" → Ask: "Are you asking about work orders where CAC is the main contractor, or where they're doing CWI inspections, NDE inspections, or CRI inspections?"
+  - Query: "Bond projects" → Ask: "Are you asking about work orders where Bond is the main contractor, or where they're doing CWI inspections, NDE inspections, or CRI inspections?"
 
 5. If the user query is ambiguous (e.g., only mentions a name, location, or field that could map to multiple parameters), ask a clarifying question before proceeding.
 Never assume a mapping when ambiguity exists. Always confirm with the user first if the mapping is not clear.
@@ -234,7 +234,7 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show all work orders" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{}}}}
 - "Show completed work orders in East region" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"WorkOrderStatusDescription": "Completed", "Region": "East"}}}}
 - "Show work orders by supervisor John Smith" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"SupervisorName": "John Smith"}}}}
-
+- "Show me ETi for CWI" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"ContractorCWIName": "ETI"}}}}
 **FORMAT 2 - CLARIFICATION** (when you need more information):
 ```json
 {{

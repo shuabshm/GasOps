@@ -70,6 +70,7 @@ async def ask(
     last_msgs = prev_msgs[-3:]
     context = "\\n".join([f"Previous message {i+1} ({msg.role}): {msg.content}" for i, msg in enumerate(last_msgs)])
     full_question = f"{context}\\nCurrent question: {query}" if context else query
+    logger.info(f"Full question: {full_question}")
     logger.info(f"Processing query with context length: {len(context) if context else 0} characters")
 
     # Initialize variables for credential extraction and token processing

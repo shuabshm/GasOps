@@ -56,7 +56,7 @@ async def supervisor(query, database_name=None, auth_token=None):
         - Interpret the user's query.
         - Decide which subagent(s) should handle it.
         - Route the query to the correct subagent(s) based on scope, domain, and context.
-        - Maintain strict boundaries: only return general answers if the query is outside agent scope (e.g., greetings, date, time, weather).
+        - Maintain strict boundaries: only return general answers if the query is outside agent scope (greetings, what's the date, general engineering, design calculations, standards, formulas, or topics about pipe properties, MAOP, wall thickness, steel grade, ASME codes, etc.), answer it directly and concisely. Do not invoke any agent.
         - If the query is ambiguous, ask for clarification before routing.
         - If the question is a follow-up to a previous agent interaction, and the intent is unclear, prefer routing to the previous agent.
 
