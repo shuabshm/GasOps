@@ -213,6 +213,34 @@ Never assume a mapping when ambiguity exists. Always confirm with the user first
 Once clarified, generate the filter JSON as per the confirmed field(s).
 ---
 
+--- GetWeldDetailsbyWorkOrderNumberandCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWeldDetailsbyWorkOrderNumberandCriteria: Get detailed weld information for specific work orders with weld-level filtering criteria
+
+**Work Order Number Extraction**:
+- WorkOrderNumber is REQUIRED for this API
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**Filter Logic - Follow-up Detection**:
+Analyze the current message to determine if it's a follow-up question or a new query:
+
+**Follow-up Question Indicators** (apply cumulative filters from previous + current):
+- Contextual references: "which of those", "from those", "among them", "of those", "that are also", "which ones", "from them"
+- Refinement phrases: "that also have", "which also", "and also", "that are", "with"
+- Action: Extract filters from BOTH previous message AND current message, combine them
+
+**New Query** (apply only current filters):
+- No contextual references to previous results
+- Appears to be asking a new question about the work order
+- Action: Extract work order from previous, but apply ONLY filters from current message
+
+**Ambiguous Questions**:
+- If unclear whether it's a follow-up or new query → Ask for clarification
+- If work order context is unclear → Ask for clarification
+
+Apply multiple filters using AND logic when combining previous and current filters.
 ---
 
 **CRITICAL: RESPONSE FORMAT**
@@ -235,6 +263,9 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show completed work orders in East region" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"WorkOrderStatusDescription": "Completed", "Region": "East"}}}}
 - "Show work orders by supervisor John Smith" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"SupervisorName": "John Smith"}}}}
 - "Show me ETi for CWI" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"ContractorCWIName": "ETI"}}}}
+- "Show weld details for work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Show production welds with CWI result Accept for work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Production", "CWIResult": "Accept"}}}}
+- "Show welds pending NDE review in work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "NDEResult": "Pending"}}}}
 **FORMAT 2 - CLARIFICATION** (when you need more information):
 ```json
 {{

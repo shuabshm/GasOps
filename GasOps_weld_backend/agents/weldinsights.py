@@ -125,7 +125,14 @@ def api_router_step(user_input, auth_token=None):
             logger.info(f"LLM selected {len(response.choices[0].message.tool_calls)} tool(s) to call:")
             for i, tool_call in enumerate(response.choices[0].message.tool_calls, 1):
                 logger.info(f"Tool {i}: {tool_call.function.name}")
-                logger.info(f"Tool {i} Parameters: {tool_call.function.arguments}")
+                # Parse parameters to avoid logging large datasets
+                try:
+                    params = json.loads(tool_call.function.arguments)
+                    param_summary = {k: f"<{type(v).__name__}>" if isinstance(v, (list, dict)) and len(str(v)) > 100 else v
+                                   for k, v in params.items()}
+                    logger.info(f"Tool {i} Parameters: {param_summary}")
+                except:
+                    logger.info(f"Tool {i} Parameters: <unparseable>")
         else:
             logger.info("LLM made no tool calls")
         logger.info("=== END API ROUTER DECISION ===")
@@ -240,13 +247,14 @@ def api_router_step(user_input, auth_token=None):
         logger.error(f"API Router error: {str(e)}")
         return [{"error": f"API Router error: {str(e)}"}]
 
-def data_analysis_step(user_input, clean_data_array):
+def data_analysis_step(user_input, clean_data_array, api_name=None):
     """
     Enhanced data analysis with truncation detection.
 
     Args:
         user_input (str): User's query
         clean_data_array (list): Clean array of work order data
+        api_name (str): Name of the API that was called (e.g., "GetWorkOrderInformation", "GetWeldDetailsbyWorkOrderNumberandCriteria")
 
     Returns:
         str: AI analysis response
@@ -286,7 +294,7 @@ def data_analysis_step(user_input, clean_data_array):
         sample_ids = [wo.get('TransmissionWorkOrderID', 'N/A') for wo in clean_data_array[:5] if isinstance(wo, dict)]
         logger.info(f"Data range - First ID: {first_id}, Last ID: {last_id}, Sample IDs: {sample_ids}")
     
-    analysis_prompt = get_data_analysis_prompt(user_input, clean_data_array)
+    analysis_prompt = get_data_analysis_prompt(user_input, clean_data_array, api_name)
     
     # Check prompt size
     prompt_size = len(analysis_prompt)
@@ -367,15 +375,19 @@ def handle_weldinsights(user_input, auth_token=None):
         # NEW STEP: Extract only the actual work order objects
         clean_data_array = extract_clean_data(api_results)
 
+        # Extract API name from first result
+        api_name = api_results[0].get("api_name", "Unknown") if api_results else "Unknown"
+        logger.info(f"Processing data for API: {api_name}")
+
         if not clean_data_array:
             logger.warning("No clean data extracted. No work orders found matching the criteria.")
             # Pass empty array to data analysis to handle "no data found" case properly
-            final_response = data_analysis_step(user_input, [])
+            final_response = data_analysis_step(user_input, [], api_name)
             return final_response
 
         logger.info("Step 2: Data Analysis - Analyzing clean data...")
         # Step 2: Analyze the clean data array
-        final_response = data_analysis_step(user_input, clean_data_array)
+        final_response = data_analysis_step(user_input, clean_data_array, api_name)
 
         return final_response
 
