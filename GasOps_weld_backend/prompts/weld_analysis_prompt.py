@@ -435,6 +435,73 @@ CRITICAL: The table output MUST follow the field detection rules unless it satis
 For any counting questions, the total is {actual_count} welds. Focus on providing comprehensive business analysis.
 === END GetWeldDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
 """
+
+    elif api_name == "GetWelderNameDetailsbyWorkOrderNumberandCriteria":
+        api_specific_prompt = f"""
+=== GetWelderNameDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API provides welder name details and assignments for specific work orders with filtering by weld category.
+
+AVAILABLE FIELDS:
+- WorkOrderNumber: Work order identifier
+- WeldCategory: Category of weld (Production, Repaired, CutOut)
+- WeldSerialNumber: Unique weld identifier
+- Welder1: Primary welder name and ID
+- Welder2: Secondary welder name and ID
+- Welder3: Tertiary welder name and ID
+- Welder4: Quaternary welder name and ID
+
+DYNAMIC FIELD DETECTION RULES:
+Automatically detect and include relevant fields based on user query keywords:
+
+Core Fields (Always Include):
+- WorkOrderNumber
+- WeldSerialNumber
+- WeldCategory
+- Welders (consolidated from Welder1, Welder2, Welder3, Welder4)
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Consolidate Welder1, Welder2, Welder3, Welder4 into a single "Welders" column
+- Show all detected fields even if some are empty
+- Maintain consistent column ordering: Core fields first, then detected fields
+- Use clear column headers
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} weld records)
+- Welder workload distribution
+- Category-wise welder assignments (Production, Repaired, CutOut)
+- Welder productivity patterns
+- Multi-welder collaboration analysis
+- Welder assignment frequency
+- Category-specific insights
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 45 weld records for work order 100500514 with 12 unique welders assigned."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS start with core fields: Work Order No., Weld Serial Number, Category, Welders
+   - *Critical Priority*: AUTOMATICALLY scan user query for keywords and add only the corresponding fields which match the query
+   - Example: "show production welds" → Already covered by Category column
+   - Example: "welder workload" → Show consolidated Welders column with all assigned welders
+   - Example: "repaired welds" → Filter by WeldCategory = "Repaired"
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   - When consolidating welders, show all non-empty welder names in the Welders column
+   *Mandatory*: Never include all the columns. Always apply the field detection rules and add only the relevant columns.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on welder workload, category distribution, and productivity patterns
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. Scan the user query for keywords and automatically include the corresponding fields as additional columns beyond the core fields.
+
+For any counting questions, the total is {actual_count} weld records. Focus on providing comprehensive business analysis with emphasis on welder assignments and workload distribution.
+=== END GetWelderNameDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
+"""
     else:
         # Default fallback for unknown APIs
         api_specific_prompt = f"""
