@@ -502,6 +502,84 @@ CRITICAL: The table output MUST follow the field detection rules unless it satis
 For any counting questions, the total is {actual_count} weld records. Focus on providing comprehensive business analysis with emphasis on welder assignments and workload distribution.
 === END GetWelderNameDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
 """
+
+    elif api_name == "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria":
+        api_specific_prompt = f"""
+=== GetUnlockWeldDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API provides unlocked weld details for requested work order number with filtering by unlock user, update user, and update completion status.
+
+AVAILABLE FIELDS:
+- WorkOrderNumber: Work order identifier
+- ProjectNumber: Project identifier
+- WeldCategory: Category of weld (Production, Repaired, CutOut)
+- WeldSerialNumber: Unique weld identifier
+- ContractorName: Name of the contractor
+- Welder1-4: Welder names and IDs
+- ContractorCWIName: Contractor CWI name
+- CWIName: CWI inspector name
+- UnlockedBy: Name of user who unlocked the weld
+- UnlockedDate: Date when weld was unlocked
+- UpdateCompleted: Whether update is completed (Yes/No)
+- UpdatedBy: Name of user who updated the weld
+- UpdatedDate: Date when weld was updated
+
+DYNAMIC FIELD DETECTION RULES:
+Automatically detect and include relevant fields based on user query keywords:
+
+Core Fields (Always Include):
+- ProjectNumber (as "Project No.")
+- WorkOrderNumber (as "Work Order No.")
+- WeldSerialNumber (as "Weld Serial No.")
+- UnlockedDate (as "Unlocked Date")
+- UpdateCompleted (as "Update Completed")
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Consolidate Welder1, Welder2, Welder3, Welder4 into a single "Welders" column when displaying
+- Show all detected fields even if some are empty
+- Maintain consistent column ordering: Core fields first, then detected fields
+- Use clear column headers
+- **CRITICAL**: Welds pending to be edited have null or blank UpdatedDate
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} unlock records)
+- Unlock/edit workflow tracking
+- Pending updates identification (where UpdatedDate is null or blank)
+- User activity analysis (who unlocked/updated welds)
+- Update completion status breakdown
+- Timeline analysis (unlock to update duration)
+- Category-wise unlock patterns
+- Contractor and welder assignment tracking
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 25 unlocked welds in work order 100500514, with 5 pending updates."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS start with core fields: Project No., Work Order No., Weld Serial No., Unlocked Date, Update Completed
+   - *Critical Priority*: AUTOMATICALLY scan user query for keywords and add only the corresponding fields which match the query
+   - Example: "show pending updates" → Add UpdatedBy, UpdatedDate columns (highlight records with null UpdatedDate)
+   - Example: "unlocked by Nikita" → Add UnlockedBy column
+   - Example: "update completion status" → Already covered by Update Completed column
+   - Example: "welder assignments" → Add consolidated Welders column
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   - When consolidating welders, show all non-empty welder names in the Welders column
+   *Mandatory*: Never include all the columns. Always apply the field detection rules and add only the relevant columns.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on unlock/edit workflow, pending updates, user activity, and timeline patterns
+        - **IMPORTANT**: Identify and highlight welds pending to be edited (null/blank UpdatedDate)
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. Scan the user query for keywords and automatically include the corresponding fields as additional columns beyond the core fields.
+
+For any counting questions, the total is {actual_count} unlock records. Focus on providing comprehensive business analysis with emphasis on unlock/edit workflow tracking and pending update identification.
+=== END GetUnlockWeldDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
+"""
     else:
         # Default fallback for unknown APIs
         api_specific_prompt = f"""

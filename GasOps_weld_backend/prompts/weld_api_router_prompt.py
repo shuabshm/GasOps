@@ -267,6 +267,31 @@ For complete API details, parameters, and constraints, refer to the available to
 Apply multiple filters using AND logic when combining previous and current filters.
 ---
 
+--- GetUnlockWeldDetailsbyWorkOrderNumberandCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetUnlockWeldDetailsbyWorkOrderNumberandCriteria: Get unlocked weld details for requested work order number and other criteria
+
+**Work Order Number Extraction**:
+- WorkOrderNumber is REQUIRED for this API
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**Filter Logic**:
+- UnlockedBy is OPTIONAL - Name of user who unlocked the weld
+- UpdatedBy is OPTIONAL - Name of user who updated the weld after unlocking
+- UpdateCompleted is OPTIONAL - Possible values: "Yes", "No"
+- **IMPORTANT**: Welds pending to be edited have null or blank UpdatedDate
+- If user asks for "pending updates" or "not yet updated", filter for records where UpdatedDate is null/blank
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+Apply multiple filters using AND logic when combining previous and current filters.
+---
+
 **CRITICAL: RESPONSE FORMAT**
 You MUST respond with EXACTLY ONE of these two JSON formats:
 
@@ -293,6 +318,10 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show welder assignments for work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "Show production welder details for work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Production"}}}}
 - "Who are the welders for repaired welds in work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Repaired"}}}}
+- "Show unlocked welds for work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Show welds unlocked by Nikita Parkhomchyk in work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UnlockedBy": "Nikita Parkhomchyk"}}}}
+- "Show pending updates for work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UpdateCompleted": "No"}}}}
+- "Show completed weld updates by Gasops IQ Support in work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UpdatedBy": "Gasops IQ Support", "UpdateCompleted": "Yes"}}}}
 
 **FORMAT 2 - CLARIFICATION** (when you need more information):
 ```json

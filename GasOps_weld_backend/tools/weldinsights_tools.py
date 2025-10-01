@@ -122,6 +122,24 @@ def GetWelderNameDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetWelderNameDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
 
+
+def GetUnlockWeldDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
+                                                       UnlockedBy=None,
+                                                       UpdatedBy=None,
+                                                       UpdateCompleted=None,
+                                                       auth_token=None,
+                                                       api_path="AITransmissionWorkOrder"):
+    """Tool function to get unlocked weld details for requested work order number and other criteria"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "UnlockedBy": UnlockedBy,
+        "UpdatedBy": UpdatedBy,
+        "UpdateCompleted": UpdateCompleted
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
+
 # Define all tools for OpenAI
 def get_weldinsights_tools():
     """Define all available tools for weld insights"""
@@ -357,6 +375,36 @@ def get_weldinsights_tools():
                             "type": "string",
                             "enum": ["Production", "Repaired", "CutOut"],
                             "description": "Category of weld work. Allowed values: Production, Repaired, CutOut"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria",
+                "description": "Get unlocked weld details for requested work order number and other criteria",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        },
+                        "UnlockedBy": {
+                            "type": "string",
+                            "description": "Name of the user who unlocked the weld"
+                        },
+                        "UpdatedBy": {
+                            "type": "string",
+                            "description": "Name of the user who updated the weld after unlocking"
+                        },
+                        "UpdateCompleted": {
+                            "type": "string",
+                            "enum": ["Yes", "No"],
+                            "description": "Whether the update has been completed. Allowed values: Yes, No."
                         }
                     },
                     "required": ["WorkOrderNumber"]
