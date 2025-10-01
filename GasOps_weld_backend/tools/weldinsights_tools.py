@@ -170,6 +170,26 @@ def GetNDEReportNumbersbyWorkOrderNumber(WorkOrderNumber,
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetNDEReportNumbersbyWorkOrderNumber", parameters, auth_token, method="POST")
 
+
+def GetWorkOrderNDEIndicationsbyCriteria(WorkOrderNumber=None,
+                                          WeldSerialNumber=None,
+                                          WelderName=None,
+                                          NDEName=None,
+                                          GroupBy=None,
+                                          auth_token=None,
+                                          api_path="AITransmissionWorkOrder"):
+    """Tool function to get NDE indication details for requested work order number/weld serial number with grouping by specified fields"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "WeldSerialNumber": WeldSerialNumber,
+        "WelderName": WelderName,
+        "NDEName": NDEName,
+        "GroupBy": GroupBy
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWorkOrderNDEIndicationsbyCriteria", parameters, auth_token, method="POST")
+
 # Define all tools for OpenAI
 def get_weldinsights_tools():
     """Define all available tools for weld insights"""
@@ -484,6 +504,42 @@ def get_weldinsights_tools():
                         }
                     },
                     "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWorkOrderNDEIndicationsbyCriteria",
+                "description": "Get NDE indication details for requested work order number/weld serial number with grouping by specified fields. At least one of WorkOrderNumber or WeldSerialNumber must be provided, and GroupBy is required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number"
+                        },
+                        "WeldSerialNumber": {
+                            "type": "string",
+                            "description": "Weld serial number"
+                        },
+                        "WelderName": {
+                            "type": "string",
+                            "description": "Welder name for filtering"
+                        },
+                        "NDEName": {
+                            "type": "string",
+                            "description": "NDE inspector name for filtering"
+                        },
+                        "GroupBy": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Fields to group results by (e.g., WorkOrderNumber, WeldSerialNumber, NDEName, WelderName). This parameter is required."
+                        }
+                    },
+                    "required": []
                 }
             }
         }
