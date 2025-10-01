@@ -44,6 +44,132 @@ def GetWorkOrderInformation(WorkOrderNumber=None,
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetWorkOrderInformation", parameters, auth_token, method="POST")
 
+
+def GetWeldDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
+                                               WeldCategory=None,
+                                               TieinWeld=None,
+                                               Prefab=None,
+                                               Gap=None,
+                                               HeatSerialNumber=None,
+                                               Asset=None,
+                                               AssetSubcategory=None,
+                                               Material=None,
+                                               Size=None,
+                                               Manufacturer=None,
+                                               RootRodClass=None,
+                                               FillerRodClass=None,
+                                               HotRodClass=None,
+                                               CapRodClass=None,
+                                               WeldUnlocked=None,
+                                               AddedtoWeldMap=None,
+                                               WelderName=None,
+                                               CWIName=None,
+                                               CWIResult=None,
+                                               NDEName=None,
+                                               NDEResult=None,
+                                               CRIName=None,
+                                               CRIResult=None,
+                                               TRName=None,
+                                               TRResult=None,
+                                               GroupBy=None,
+                                               auth_token=None,
+                                               api_path="AITransmissionWorkOrder"):
+    """Tool function to get detailed weld information by work order number and various weld criteria"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "WeldCategory": WeldCategory,
+        "TieinWeld": TieinWeld,
+        "Prefab": Prefab,
+        "Gap": Gap,
+        "HeatSerialNumber": HeatSerialNumber,
+        "Asset": Asset,
+        "AssetSubcategory": AssetSubcategory,
+        "Material": Material,
+        "Size": Size,
+        "Manufacturer": Manufacturer,
+        "RootRodClass": RootRodClass,
+        "FillerRodClass": FillerRodClass,
+        "HotRodClass": HotRodClass,
+        "CapRodClass": CapRodClass,
+        "WeldUnlocked": WeldUnlocked,
+        "AddedtoWeldMap": AddedtoWeldMap,
+        "WelderName": WelderName,
+        "CWIName": CWIName,
+        "CWIResult": CWIResult,
+        "NDEName": NDEName,
+        "NDEResult": NDEResult,
+        "CRIName": CRIName,
+        "CRIResult": CRIResult,
+        "TRName": TRName,
+        "TRResult": TRResult,
+        "GroupBy": GroupBy
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWeldDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
+
+
+def GetWelderNameDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
+                                                      WeldCategory=None,
+                                                      auth_token=None,
+                                                      api_path="AITransmissionWorkOrder"):
+    """Tool function to get welder name details and assignments for specific work orders by category"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "WeldCategory": WeldCategory
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWelderNameDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
+
+
+def GetUnlockWeldDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
+                                                       UnlockedBy=None,
+                                                       UpdatedBy=None,
+                                                       UpdateCompleted=None,
+                                                       auth_token=None,
+                                                       api_path="AITransmissionWorkOrder"):
+    """Tool function to get unlocked weld details for requested work order number and other criteria"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "UnlockedBy": UnlockedBy,
+        "UpdatedBy": UpdatedBy,
+        "UpdateCompleted": UpdateCompleted
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
+
+
+def GetWorkOrderDetailsbyCriteria(ProjectNumber=None,
+                                    HeatSerialNumber=None,
+                                    WeldSerialNumber=None,
+                                    NDEReportNumber=None,
+                                    auth_token=None,
+                                    api_path="AITransmissionWorkOrder"):
+    """Tool function to get work order details by Heat Number/NDE Report Number/Weld Serial Number"""
+
+    parameters = {
+        "ProjectNumber": ProjectNumber,
+        "HeatSerialNumber": HeatSerialNumber,
+        "WeldSerialNumber": WeldSerialNumber,
+        "NDEReportNumber": NDEReportNumber
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWorkOrderDetailsbyCriteria", parameters, auth_token, method="POST")
+
+
+def GetNDEReportNumbersbyWorkOrderNumber(WorkOrderNumber,
+                                          auth_token=None,
+                                          api_path="AITransmissionWorkOrder"):
+    """Tool function to get list of all NDE report numbers and their type by requested work order number"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetNDEReportNumbersbyWorkOrderNumber", parameters, auth_token, method="POST")
+
 # Define all tools for OpenAI
 def get_weldinsights_tools():
     """Define all available tools for weld insights"""
@@ -126,6 +252,238 @@ def get_weldinsights_tools():
                         },
                     },
                     "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWeldDetailsbyWorkOrderNumberandCriteria",
+                "description": "Get detailed weld information for a specific work order with various filtering criteria including weld category, inspection results, welders, and material details",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        },
+                        "WeldCategory": {
+                            "type": "string",
+                            "enum": ["Production", "Repaired", "CutOut"],
+                            "description": "Category of weld work. Allowed values: Production, Repaired, CutOut"
+                        },
+                        "TieinWeld": {
+                            "type": "string",
+                            "enum": ["Yes", "No"],
+                            "description": "Whether this is a tie-in weld. Allowed values: Yes, No"
+                        },
+                        "Prefab": {
+                            "type": "string",
+                            "enum": ["Yes", "No"],
+                            "description": "Whether this weld involves prefabricated components. Allowed values: Yes, No"
+                        },
+                        "Gap": {
+                            "type": "string",
+                            "enum": ["Yes", "No"],
+                            "description": "Whether a gap was noted during welding. Allowed values: Yes, No"
+                        },
+                        "HeatSerialNumber": {
+                            "type": "string",
+                            "description": "Heat serial number for material traceability"
+                        },
+                        "Asset": {
+                            "type": "string",
+                            "description": "Asset identifier"
+                        },
+                        "AssetSubcategory": {
+                            "type": "string",
+                            "description": "Asset subcategory classification"
+                        },
+                        "Material": {
+                            "type": "string",
+                            "description": "Material type or specification"
+                        },
+                        "Size": {
+                            "type": "string",
+                            "description": "Size specification of the weld component"
+                        },
+                        "Manufacturer": {
+                            "type": "string",
+                            "description": "Manufacturer of the weld components"
+                        },
+                        "RootRodClass": {
+                            "type": "string",
+                            "description": "Classification of root welding rod used"
+                        },
+                        "FillerRodClass": {
+                            "type": "string",
+                            "description": "Classification of filler welding rod used"
+                        },
+                        "HotRodClass": {
+                            "type": "string",
+                            "description": "Classification of hot pass welding rod used"
+                        },
+                        "CapRodClass": {
+                            "type": "string",
+                            "description": "Classification of cap pass welding rod used"
+                        },
+                        "WeldUnlocked": {
+                            "type": "string",
+                            "enum": ["Yes", "No"],
+                            "description": "Whether the weld is unlocked for editing. Allowed values: Yes, No"
+                        },
+                        "AddedtoWeldMap": {
+                            "type": "string",
+                            "enum": ["Yes", "No"],
+                            "description": "Whether weld has been added to the weld map. Allowed values: Yes, No"
+                        },
+                        "WelderName": {
+                            "type": "string",
+                            "description": "Name of the welder who performed the weld"
+                        },
+                        "CWIName": {
+                            "type": "string",
+                            "description": "Name of the Certified Welding Inspector (CWI)"
+                        },
+                        "CWIResult": {
+                            "type": "string",
+                            "enum": ["Accept", "Reject", "Pending"],
+                            "description": "Result of CWI inspection. Allowed values: Accept, Reject, Pending"
+                        },
+                        "NDEName": {
+                            "type": "string",
+                            "description": "Name of the Non-Destructive Examination (NDE) inspector"
+                        },
+                        "NDEResult": {
+                            "type": "string",
+                            "enum": ["Accept", "Reject", "In Process", "Pending"],
+                            "description": "Result of NDE inspection. Allowed values: Accept, Reject, In Process, Pending"
+                        },
+                        "CRIName": {
+                            "type": "string",
+                            "description": "Name of the Construction Records Inspector (CRI)"
+                        },
+                        "CRIResult": {
+                            "type": "string",
+                            "enum": ["Accept", "Reject", "In Process", "Pending"],
+                            "description": "Result of CRI inspection. Allowed values: Accept, Reject, In Process, Pending"
+                        },
+                        "TRName": {
+                            "type": "string",
+                            "description": "Name of the Technical Reviewer (TR)"
+                        },
+                        "TRResult": {
+                            "type": "string",
+                            "enum": ["Approved", "Rejected", "Pending"],
+                            "description": "Result of TR review. Allowed values: Approved, Rejected, Pending"
+                        },
+                        "GroupBy": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Fields to group results by (e.g., WelderName, WeldSerialNumber, CWIResult, etc.)"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria",
+                "description": "Get welder name details and assignments for specific work orders by category",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        },
+                        "WeldCategory": {
+                            "type": "string",
+                            "enum": ["Production", "Repaired", "CutOut"],
+                            "description": "Category of weld work. Allowed values: Production, Repaired, CutOut"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria",
+                "description": "Get unlocked weld details for requested work order number and other criteria",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        },
+                        "UnlockedBy": {
+                            "type": "string",
+                            "description": "Name of the user who unlocked the weld"
+                        },
+                        "UpdatedBy": {
+                            "type": "string",
+                            "description": "Name of the user who updated the weld after unlocking"
+                        },
+                        "UpdateCompleted": {
+                            "type": "string",
+                            "enum": ["Yes", "No"],
+                            "description": "Whether the update has been completed. Allowed values: Yes, No."
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWorkOrderDetailsbyCriteria",
+                "description": "Get work order details by searching with project number, heat serial number, weld serial number, or NDE report number. At least one search parameter must be provided.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "ProjectNumber": {
+                            "type": "string",
+                            "description": "Project number to search for"
+                        },
+                        "HeatSerialNumber": {
+                            "type": "string",
+                            "description": "Heat serial number to search for"
+                        },
+                        "WeldSerialNumber": {
+                            "type": "string",
+                            "description": "Weld serial number to search for"
+                        },
+                        "NDEReportNumber": {
+                            "type": "string",
+                            "description": "NDE report number to search for"
+                        }
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetNDEReportNumbersbyWorkOrderNumber",
+                "description": "Get list of all NDE report numbers and their type by requested work order number",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
                 }
             }
         }

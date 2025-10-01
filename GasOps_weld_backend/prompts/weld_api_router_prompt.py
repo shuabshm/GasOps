@@ -213,6 +213,140 @@ Never assume a mapping when ambiguity exists. Always confirm with the user first
 Once clarified, generate the filter JSON as per the confirmed field(s).
 ---
 
+--- GetWeldDetailsbyWorkOrderNumberandCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWeldDetailsbyWorkOrderNumberandCriteria: Get detailed weld information for specific work orders with weld-level filtering criteria
+
+**Work Order Number Extraction**:
+- WorkOrderNumber is REQUIRED for this API
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**Filter Logic - Follow-up Detection**:
+Analyze the current message to determine if it's a follow-up question or a new query:
+
+**Follow-up Question Indicators** (apply cumulative filters from previous + current):
+- Contextual references: "which of those", "from those", "among them", "of those", "that are also", "which ones", "from them"
+- Refinement phrases: "that also have", "which also", "and also", "that are", "with"
+- Action: Extract filters from BOTH previous message AND current message, combine them
+
+**New Query** (apply only current filters):
+- No contextual references to previous results
+- Appears to be asking a new question about the work order
+- Action: Extract work order from previous, but apply ONLY filters from current message
+
+**Ambiguous Questions**:
+- If unclear whether it's a follow-up or new query → Ask for clarification
+- If work order context is unclear → Ask for clarification
+
+Apply multiple filters using AND logic when combining previous and current filters.
+---
+
+--- GetWelderNameDetailsbyWorkOrderNumberandCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWelderNameDetailsbyWorkOrderNumberandCriteria: Get welder name details and assignments for specific work orders by category
+
+**Work Order Number Extraction**:
+- WorkOrderNumber is REQUIRED for this API
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**Filter Logic**:
+- WeldCategory is OPTIONAL
+- Possible values: "Production", "Repaired", "CutOut"
+- If user mentions category keywords, map them to the appropriate enum value
+- If no category specified, fetch all welder assignments for the work order
+
+**Follow-up Detection** (same as GetWeldDetailsbyWorkOrderNumberandCriteria):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+Apply multiple filters using AND logic when combining previous and current filters.
+---
+
+--- GetUnlockWeldDetailsbyWorkOrderNumberandCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetUnlockWeldDetailsbyWorkOrderNumberandCriteria: Get unlocked weld details for requested work order number and other criteria
+
+**Work Order Number Extraction**:
+- WorkOrderNumber is REQUIRED for this API
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**Filter Logic**:
+- UnlockedBy is OPTIONAL - Name of user who unlocked the weld
+- UpdatedBy is OPTIONAL - Name of user who updated the weld after unlocking
+- UpdateCompleted is OPTIONAL - Possible values: "Yes", "No"
+- **IMPORTANT**: Welds pending to be edited have null or blank UpdatedDate
+- If user asks for "pending updates" or "not yet updated", filter for records where UpdatedDate is null/blank
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+Apply multiple filters using AND logic when combining previous and current filters.
+---
+
+--- GetWorkOrderDetailsbyCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWorkOrderDetailsbyCriteria: Get work order details by searching with project number, heat serial number, weld serial number, or NDE report number
+
+**Parameter Requirements**:
+- **CRITICAL**: At least ONE of the following parameters MUST be provided:
+  - ProjectNumber
+  - HeatSerialNumber
+  - WeldSerialNumber
+  - NDEReportNumber
+- If none are provided → Ask for clarification
+- Multiple parameters can be combined for more specific searches
+
+**Use Cases**:
+- Looking up which work order(s) contain a specific heat/weld/NDE report
+- Finding work orders by project number
+- Cross-referencing between different identifiers
+- Getting basic work order info before diving into detailed APIs
+
+**Filter Logic**:
+- ProjectNumber is OPTIONAL - Project identifier
+- HeatSerialNumber is OPTIONAL - Heat serial number
+- WeldSerialNumber is OPTIONAL - Weld serial number
+- NDEReportNumber is OPTIONAL - NDE report number
+- Extract the search criteria from user query and map to appropriate parameter
+
+**Query Detection Examples**:
+- "Find work order for heat number ABC123" → Use HeatSerialNumber parameter
+- "Which work order has weld serial 250911" → Use WeldSerialNumber parameter
+- "Show work orders for NDE report XYZ789" → Use NDEReportNumber parameter
+- "Get work orders for project G-23-901" → Use ProjectNumber parameter
+
+---
+
+--- GetNDEReportNumbersbyWorkOrderNumber ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetNDEReportNumbersbyWorkOrderNumber: Get list of all NDE report numbers and their type by requested work order number
+
+**Work Order Number Extraction**:
+- WorkOrderNumber is REQUIRED for this API
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**Use Cases**:
+- Listing all NDE reports for a specific work order
+- Getting NDE report type breakdown
+- Finding NDE report numbers for cross-referencing
+- Understanding NDE inspection coverage for a work order
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
 ---
 
 **CRITICAL: RESPONSE FORMAT**
@@ -235,6 +369,24 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show completed work orders in East region" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"WorkOrderStatusDescription": "Completed", "Region": "East"}}}}
 - "Show work orders by supervisor John Smith" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"SupervisorName": "John Smith"}}}}
 - "Show me ETi for CWI" → {{"type": "api_call", "function_name": "GetWorkOrderInformation", "parameters": {{"ContractorCWIName": "ETI"}}}}
+- "Show weld details for work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Show production welds with CWI result Accept for work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Production", "CWIResult": "Accept"}}}}
+- "Show welds pending NDE review in work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "NDEResult": "Pending"}}}}
+- "Show welder assignments for work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Show production welder details for work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Production"}}}}
+- "Who are the welders for repaired welds in work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Repaired"}}}}
+- "Show unlocked welds for work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Show welds unlocked by Nikita Parkhomchyk in work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UnlockedBy": "Nikita Parkhomchyk"}}}}
+- "Show pending updates for work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UpdateCompleted": "No"}}}}
+- "Show completed weld updates by Gasops IQ Support in work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UpdatedBy": "Gasops IQ Support", "UpdateCompleted": "Yes"}}}}
+- "Find work order for heat number ABC123" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"HeatSerialNumber": "ABC123"}}}}
+- "Which work order has weld serial 250911" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"WeldSerialNumber": "250911"}}}}
+- "Show work orders for NDE report XYZ789" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"NDEReportNumber": "XYZ789"}}}}
+- "Get work orders for project G-23-901" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"ProjectNumber": "G-23-901"}}}}
+- "Show NDE reports for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "List all NDE report numbers for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Get NDE report types for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+
 **FORMAT 2 - CLARIFICATION** (when you need more information):
 ```json
 {{
