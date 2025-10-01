@@ -292,6 +292,40 @@ For complete API details, parameters, and constraints, refer to the available to
 Apply multiple filters using AND logic when combining previous and current filters.
 ---
 
+--- GetWorkOrderDetailsbyCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWorkOrderDetailsbyCriteria: Get work order details by searching with project number, heat serial number, weld serial number, or NDE report number
+
+**Parameter Requirements**:
+- **CRITICAL**: At least ONE of the following parameters MUST be provided:
+  - ProjectNumber
+  - HeatSerialNumber
+  - WeldSerialNumber
+  - NDEReportNumber
+- If none are provided → Ask for clarification
+- Multiple parameters can be combined for more specific searches
+
+**Use Cases**:
+- Looking up which work order(s) contain a specific heat/weld/NDE report
+- Finding work orders by project number
+- Cross-referencing between different identifiers
+- Getting basic work order info before diving into detailed APIs
+
+**Filter Logic**:
+- ProjectNumber is OPTIONAL - Project identifier
+- HeatSerialNumber is OPTIONAL - Heat serial number
+- WeldSerialNumber is OPTIONAL - Weld serial number
+- NDEReportNumber is OPTIONAL - NDE report number
+- Extract the search criteria from user query and map to appropriate parameter
+
+**Query Detection Examples**:
+- "Find work order for heat number ABC123" → Use HeatSerialNumber parameter
+- "Which work order has weld serial 250911" → Use WeldSerialNumber parameter
+- "Show work orders for NDE report XYZ789" → Use NDEReportNumber parameter
+- "Get work orders for project G-23-901" → Use ProjectNumber parameter
+
+---
+
 **CRITICAL: RESPONSE FORMAT**
 You MUST respond with EXACTLY ONE of these two JSON formats:
 
@@ -322,6 +356,10 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show welds unlocked by Nikita Parkhomchyk in work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UnlockedBy": "Nikita Parkhomchyk"}}}}
 - "Show pending updates for work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UpdateCompleted": "No"}}}}
 - "Show completed weld updates by Gasops IQ Support in work order 100500514" → {{"type": "api_call", "function_name": "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UpdatedBy": "Gasops IQ Support", "UpdateCompleted": "Yes"}}}}
+- "Find work order for heat number ABC123" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"HeatSerialNumber": "ABC123"}}}}
+- "Which work order has weld serial 250911" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"WeldSerialNumber": "250911"}}}}
+- "Show work orders for NDE report XYZ789" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"NDEReportNumber": "XYZ789"}}}}
+- "Get work orders for project G-23-901" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"ProjectNumber": "G-23-901"}}}}
 
 **FORMAT 2 - CLARIFICATION** (when you need more information):
 ```json

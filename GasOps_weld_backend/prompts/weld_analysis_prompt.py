@@ -580,6 +580,68 @@ CRITICAL: The table output MUST follow the field detection rules unless it satis
 For any counting questions, the total is {actual_count} unlock records. Focus on providing comprehensive business analysis with emphasis on unlock/edit workflow tracking and pending update identification.
 === END GetUnlockWeldDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
 """
+
+    elif api_name == "GetWorkOrderDetailsbyCriteria":
+        api_specific_prompt = f"""
+=== GetWorkOrderDetailsbyCriteria API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns work order details by searching with Heat Serial Number, NDE Report Number, Weld Serial Number, or Project Number.
+
+AVAILABLE FIELDS:
+- WorkOrderNumber: Work order identifier
+- ProjectNumber: Project identifier
+- Location: Work order location details
+
+DYNAMIC FIELD DETECTION RULES:
+Automatically detect and include relevant fields based on user query keywords:
+
+Core Fields (Always Include):
+- WorkOrderNumber (as "Work Order No.")
+- ProjectNumber (as "Project No.")
+- Location
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Show all detected fields even if some are empty
+- Maintain consistent column ordering: Core fields first, then detected fields
+- Use clear column headers
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} work order records)
+- Work order lookup and identification
+- Project-based grouping and analysis
+- Location tracking and geographic distribution
+- Heat serial number traceability
+- Weld serial number cross-reference
+- NDE report number mapping
+- Cross-referencing between different identifiers
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 12 work orders found for project G-23-901."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS start with core fields: Work Order No., Project No., Location
+   - *Critical Priority*: The response typically contains only these 3 fields, so display all of them
+   - Example: "work orders for heat number X" → Display all core fields
+   - Example: "find work order by NDE report Y" → Display all core fields
+   - Example: "which work orders have weld serial Z" → Display all core fields
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   *Mandatory*: This API returns basic work order summary information (WorkOrderNumber, ProjectNumber, Location). Display all available fields.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on work order identification, project grouping, location patterns, and cross-reference insights
+        - Highlight the search criteria used (heat number, NDE report, weld serial, or project number)
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. This API provides basic work order lookup functionality, so always display all core fields.
+
+For any counting questions, the total is {actual_count} work order records. Focus on providing comprehensive business analysis with emphasis on work order identification and cross-referencing.
+=== END GetWorkOrderDetailsbyCriteria GUIDELINES ===
+"""
     else:
         # Default fallback for unknown APIs
         api_specific_prompt = f"""

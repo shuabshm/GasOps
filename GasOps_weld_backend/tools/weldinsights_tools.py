@@ -140,6 +140,24 @@ def GetUnlockWeldDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
 
+
+def GetWorkOrderDetailsbyCriteria(ProjectNumber=None,
+                                    HeatSerialNumber=None,
+                                    WeldSerialNumber=None,
+                                    NDEReportNumber=None,
+                                    auth_token=None,
+                                    api_path="AITransmissionWorkOrder"):
+    """Tool function to get work order details by Heat Number/NDE Report Number/Weld Serial Number"""
+
+    parameters = {
+        "ProjectNumber": ProjectNumber,
+        "HeatSerialNumber": HeatSerialNumber,
+        "WeldSerialNumber": WeldSerialNumber,
+        "NDEReportNumber": NDEReportNumber
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWorkOrderDetailsbyCriteria", parameters, auth_token, method="POST")
+
 # Define all tools for OpenAI
 def get_weldinsights_tools():
     """Define all available tools for weld insights"""
@@ -408,6 +426,35 @@ def get_weldinsights_tools():
                         }
                     },
                     "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWorkOrderDetailsbyCriteria",
+                "description": "Get work order details by searching with project number, heat serial number, weld serial number, or NDE report number. At least one search parameter must be provided.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "ProjectNumber": {
+                            "type": "string",
+                            "description": "Project number to search for"
+                        },
+                        "HeatSerialNumber": {
+                            "type": "string",
+                            "description": "Heat serial number to search for"
+                        },
+                        "WeldSerialNumber": {
+                            "type": "string",
+                            "description": "Weld serial number to search for"
+                        },
+                        "NDEReportNumber": {
+                            "type": "string",
+                            "description": "NDE report number to search for"
+                        }
+                    },
+                    "required": []
                 }
             }
         }
