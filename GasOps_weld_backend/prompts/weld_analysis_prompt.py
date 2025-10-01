@@ -700,6 +700,78 @@ CRITICAL: The table output MUST follow the field detection rules unless it satis
 For any counting questions, the total is {actual_count} NDE report records. Focus on providing comprehensive business analysis with emphasis on report type breakdown and distribution.
 === END GetNDEReportNumbersbyWorkOrderNumber GUIDELINES ===
 """
+
+    elif api_name == "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria":
+        api_specific_prompt = f"""
+=== GetNDEIndicationDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns NDE indication details for requested work order number/weld serial number, grouped by specified fields.
+
+AVAILABLE FIELDS (Dynamic based on GroupBy):
+- WorkOrderNumber: Work order identifier
+- WeldSerialNumber: Weld serial identifier
+- Indication: Type of NDE indication (e.g., Burn Through, Concavity, etc.)
+- NDEName: NDE inspector name
+- WelderName: Welder name
+- Count: Number of occurrences for the grouped combination
+
+DYNAMIC FIELD DETECTION RULES:
+**CRITICAL**: The response structure varies based on the GroupBy parameter used in the request.
+
+Core Fields (ALWAYS Include):
+- All fields specified in the GroupBy parameter
+- Count (always present in response)
+
+Example Response Structures:
+- GroupBy = ["WorkOrderNumber", "Indication"] → Show: WorkOrderNumber, Indication, Count
+- GroupBy = ["WeldSerialNumber", "Indication"] → Show: WeldSerialNumber, Indication, Count
+- GroupBy = ["Indication", "NDEName"] → Show: Indication, NDEName, Count
+- GroupBy = ["WelderName", "Indication"] → Show: WelderName, Indication, Count
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Show all GroupBy fields plus Count column
+- Maintain column ordering: GroupBy fields first (in order specified), then Count
+- Use clear column headers
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} grouped records)
+- NDE indication count and distribution
+- Indication type breakdown (Burn Through, Concavity, etc.)
+- Grouped analysis based on GroupBy parameters
+- Indication patterns and frequencies
+- Work order or weld-level indication insights
+- Inspector or welder performance patterns (if grouped by NDEName/WelderName)
+- Top indications by count
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 5 indication types in work order 100500514, with Concavity being the most frequent at 79 occurrences."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS show all fields from GroupBy parameter PLUS Count column
+   - *Critical Priority*: The response structure is DYNAMIC based on GroupBy, so adapt accordingly
+   - Example: If GroupBy = ["WorkOrderNumber", "Indication"] → Show columns: WorkOrderNumber, Indication, Count
+   - Example: If GroupBy = ["Indication"] → Show columns: Indication, Count
+   - Example: If GroupBy = ["WelderName", "Indication"] → Show columns: WelderName, Indication, Count
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   - Sort by Count descending to show most frequent indications first
+   *Mandatory*: Display exactly the fields from GroupBy plus Count. DO NOT add extra fields not in the response.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on indication count distribution, top indications, patterns based on grouping
+        - Highlight the most frequent indications and their counts
+        - Provide insights based on the grouping used (e.g., per work order, per welder, per NDE inspector)
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. This API has dynamic response structure based on GroupBy, so always display exactly what's in the data (GroupBy fields + Count).
+
+For any counting questions, the total is {actual_count} grouped records. Focus on providing comprehensive business analysis with emphasis on indication distribution and patterns based on the grouping.
+=== END GetNDEIndicationDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
+"""
     else:
         # Default fallback for unknown APIs
         api_specific_prompt = f"""

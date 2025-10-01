@@ -349,6 +349,51 @@ For complete API details, parameters, and constraints, refer to the available to
 
 ---
 
+--- GetNDEIndicationDetailsbyWorkOrderNumberandCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetNDEIndicationDetailsbyWorkOrderNumberandCriteria: Get NDE indication details with grouping by specified fields
+
+**Parameter Requirements**:
+- **CRITICAL**: At least ONE of the following MUST be provided:
+  - WorkOrderNumber
+  - WeldSerialNumber
+- **CRITICAL**: GroupBy parameter is REQUIRED
+- If WorkOrderNumber/WeldSerialNumber not provided → Ask for clarification
+- If GroupBy not provided → Ask for clarification with suggested grouping options
+
+**GroupBy Parameter**:
+- REQUIRED field for this API
+- Common grouping fields: WorkOrderNumber, WeldSerialNumber, Indication, NDEName, WelderName
+- User may not explicitly say "group by" - infer from context:
+  - "Show indication breakdown" → GroupBy = ["Indication"]
+  - "NDE indications by work order" → GroupBy = ["WorkOrderNumber", "Indication"]
+  - "Indications per welder" → GroupBy = ["WelderName", "Indication"]
+  - "Which welds have what indications" → GroupBy = ["WeldSerialNumber", "Indication"]
+- If unclear what to group by → Ask clarifying question with options
+
+**Optional Filter Parameters**:
+- WelderName: Filter by specific welder
+- NDEName: Filter by specific NDE inspector
+
+**Use Cases**:
+- Analyzing NDE indication distribution by type
+- Understanding which indications are most frequent
+- Grouping indications by work order, weld, welder, or inspector
+- Identifying indication patterns and trends
+
+**Work Order/Weld Serial Number Extraction**:
+- If current message contains work order/weld serial → Use it
+- If not in current message → Extract from previous messages in conversation history
+- If not found anywhere → Ask for clarification
+
+**GroupBy Clarification Examples**:
+- Query: "Show NDE indications for work order 100500514"
+  → Ask: "How would you like to see the indications? By indication type, by weld, by welder, or another grouping?"
+- Query: "What are the most common indications"
+  → Ask: "For which work order or weld serial number? And how would you like them grouped (by indication type, by work order, etc.)?"
+
+---
+
 **CRITICAL: RESPONSE FORMAT**
 You MUST respond with EXACTLY ONE of these two JSON formats:
 
@@ -386,6 +431,10 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show NDE reports for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "List all NDE report numbers for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "Get NDE report types for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Show indication breakdown for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["Indication"]}}}}
+- "NDE indications by work order and type" → {{"type": "api_call", "function_name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WorkOrderNumber", "Indication"]}}}}
+- "Show indications per welder for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WelderName", "Indication"]}}}}
+- "Which welds have burn through indications in work order 100500514" → {{"type": "api_call", "function_name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WeldSerialNumber", "Indication"]}}}}
 
 **FORMAT 2 - CLARIFICATION** (when you need more information):
 ```json
