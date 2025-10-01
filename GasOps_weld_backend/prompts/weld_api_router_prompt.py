@@ -326,6 +326,29 @@ For complete API details, parameters, and constraints, refer to the available to
 
 ---
 
+--- GetNDEReportNumbersbyWorkOrderNumber ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetNDEReportNumbersbyWorkOrderNumber: Get list of all NDE report numbers and their type by requested work order number
+
+**Work Order Number Extraction**:
+- WorkOrderNumber is REQUIRED for this API
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**Use Cases**:
+- Listing all NDE reports for a specific work order
+- Getting NDE report type breakdown
+- Finding NDE report numbers for cross-referencing
+- Understanding NDE inspection coverage for a work order
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+---
+
 **CRITICAL: RESPONSE FORMAT**
 You MUST respond with EXACTLY ONE of these two JSON formats:
 
@@ -360,6 +383,9 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Which work order has weld serial 250911" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"WeldSerialNumber": "250911"}}}}
 - "Show work orders for NDE report XYZ789" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"NDEReportNumber": "XYZ789"}}}}
 - "Get work orders for project G-23-901" → {{"type": "api_call", "function_name": "GetWorkOrderDetailsbyCriteria", "parameters": {{"ProjectNumber": "G-23-901"}}}}
+- "Show NDE reports for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "List all NDE report numbers for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Get NDE report types for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 
 **FORMAT 2 - CLARIFICATION** (when you need more information):
 ```json

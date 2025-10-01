@@ -158,6 +158,18 @@ def GetWorkOrderDetailsbyCriteria(ProjectNumber=None,
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetWorkOrderDetailsbyCriteria", parameters, auth_token, method="POST")
 
+
+def GetNDEReportNumbersbyWorkOrderNumber(WorkOrderNumber,
+                                          auth_token=None,
+                                          api_path="AITransmissionWorkOrder"):
+    """Tool function to get list of all NDE report numbers and their type by requested work order number"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetNDEReportNumbersbyWorkOrderNumber", parameters, auth_token, method="POST")
+
 # Define all tools for OpenAI
 def get_weldinsights_tools():
     """Define all available tools for weld insights"""
@@ -455,6 +467,23 @@ def get_weldinsights_tools():
                         }
                     },
                     "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetNDEReportNumbersbyWorkOrderNumber",
+                "description": "Get list of all NDE report numbers and their type by requested work order number",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
                 }
             }
         }

@@ -642,6 +642,64 @@ CRITICAL: The table output MUST follow the field detection rules unless it satis
 For any counting questions, the total is {actual_count} work order records. Focus on providing comprehensive business analysis with emphasis on work order identification and cross-referencing.
 === END GetWorkOrderDetailsbyCriteria GUIDELINES ===
 """
+
+    elif api_name == "GetNDEReportNumbersbyWorkOrderNumber":
+        api_specific_prompt = f"""
+=== GetNDEReportNumbersbyWorkOrderNumber API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns list of all NDE report numbers and their type by requested work order number.
+
+AVAILABLE FIELDS:
+- ReportType: Type of NDE report (e.g., Conventional, etc.)
+- NDEReportNumber: NDE report identifier
+
+DYNAMIC FIELD DETECTION RULES:
+Automatically detect and include relevant fields based on user query keywords:
+
+Core Fields (Always Include):
+- ReportType
+- NDEReportNumber (as "NDE Report Number")
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Show all detected fields even if some are empty
+- Maintain consistent column ordering: Core fields first, then detected fields
+- Use clear column headers
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} NDE report records)
+- NDE report count and distribution
+- Report type breakdown (Conventional vs other types)
+- NDE report number listing
+- Report type patterns and frequencies
+- Report type categorization insights
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 45 NDE reports for work order 100500514, with 40 Conventional and 5 other types."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS start with core fields: Report Type, NDE Report Number
+   - *Critical Priority*: The response typically contains only these 2 fields, so display all of them
+   - Example: "NDE reports for work order X" → Display all core fields
+   - Example: "Conventional NDE reports" → Display all core fields
+   - Example: "List NDE report numbers" → Display all core fields
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   *Mandatory*: This API returns NDE report information (ReportType, NDEReportNumber). Display all available fields.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on NDE report count, report type breakdown, and distribution patterns
+        - Highlight any dominant report types or unusual patterns
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. This API provides NDE report listing functionality, so always display all core fields.
+
+For any counting questions, the total is {actual_count} NDE report records. Focus on providing comprehensive business analysis with emphasis on report type breakdown and distribution.
+=== END GetNDEReportNumbersbyWorkOrderNumber GUIDELINES ===
+"""
     else:
         # Default fallback for unknown APIs
         api_specific_prompt = f"""
