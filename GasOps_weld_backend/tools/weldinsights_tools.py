@@ -171,13 +171,13 @@ def GetNDEReportNumbersbyWorkOrderNumber(WorkOrderNumber,
     return execute_api(api_path, "GetNDEReportNumbersbyWorkOrderNumber", parameters, auth_token, method="POST")
 
 
-def GetNDEIndicationDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber=None,
-                                                         WeldSerialNumber=None,
-                                                         WelderName=None,
-                                                         NDEName=None,
-                                                         GroupBy=None,
-                                                         auth_token=None,
-                                                         api_path="AITransmissionWorkOrder"):
+def GetWorkOrderNDEIndicationsbyCriteria(WorkOrderNumber=None,
+                                          WeldSerialNumber=None,
+                                          WelderName=None,
+                                          NDEName=None,
+                                          GroupBy=None,
+                                          auth_token=None,
+                                          api_path="AITransmissionWorkOrder"):
     """Tool function to get NDE indication details for requested work order number/weld serial number with grouping by specified fields"""
 
     parameters = {
@@ -188,7 +188,7 @@ def GetNDEIndicationDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber=None,
         "GroupBy": GroupBy
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
-    return execute_api(api_path, "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
+    return execute_api(api_path, "GetWorkOrderNDEIndicationsbyCriteria", parameters, auth_token, method="POST")
 
 # Define all tools for OpenAI
 def get_weldinsights_tools():
@@ -510,7 +510,7 @@ def get_weldinsights_tools():
         {
             "type": "function",
             "function": {
-                "name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria",
+                "name": "GetWorkOrderNDEIndicationsbyCriteria",
                 "description": "Get NDE indication details for requested work order number/weld serial number with grouping by specified fields. At least one of WorkOrderNumber or WeldSerialNumber must be provided, and GroupBy is required.",
                 "parameters": {
                     "type": "object",
@@ -536,7 +536,7 @@ def get_weldinsights_tools():
                             "items": {
                                 "type": "string"
                             },
-                            "description": "Fields to group results by (e.g., WorkOrderNumber, WeldSerialNumber, Indication, NDEName, WelderName). This parameter is required."
+                            "description": "Fields to group results by (e.g., WorkOrderNumber, WeldSerialNumber, NDEName, WelderName). This parameter is required."
                         }
                     },
                     "required": []

@@ -1,79 +1,3 @@
-# def get_api_router_prompt(user_input):
-#     """
-#     API Router prompt - unchanged but focused on getting complete data
-#     """
-#     return f"""
-# You are an API Router. Analyze the user query and call the appropriate API(s) to fetch data.
-
-# User Query: {user_input}
-
-# Available APIs:
-
-# ## GetWorkOrderInformation
-# **Purpose**: Get transmission work order data
-# **Parameters** (all optional):
-# - WorkOrderNumber: string
-# - WorkOrderStatusDescription: string ("In Progress", "Completed", "Open")
-# - ProjectNumber: string
-# - Region: string
-# - Crew: string ("Company", "Contractor")
-# - ContractorName: string
-# - SupervisorName: string
-# - EngineerName: string
-# - IsRedig: boolean
-# - ContractorCWIName: string
-# - ContractorNDEName: string
-# - ContractorCRIName: string
-# - CreatedOnDate: string (MM/dd/yyyy)
-
-# **Response**: Returns array of work order objects with fields like TransmissionWorkOrderID, WorkOrderNumber, WorkOrderStatusDescription, ProjectNumber, RegionName, etc.
-
-# Call the appropriate API(s) based on the user's query. Use no parameters to get all data, or specific parameters to filter.
-# """
-
-
-
-
-
-
-
-# def get_api_router_prompt(user_input):
-#     """
-#     API Router prompt - unchanged but focused on getting complete data
-#     """
-#     return f"""
-# You are an API Router. Analyze the user query and call the appropriate API(s) to fetch data with the filters as parameters accordingly.
-
-# User Query: {user_input}
-
-# Available APIs:
-
-# ## GetWorkOrderInformation
-# **Purpose**: Get transmission work order data
-# **Parameters** (all optional):
-# - WorkOrderNumber: string
-# - WorkOrderStatusDescription: string ("In Progress", "Completed", "Open")
-# - ProjectNumber: string
-# - Region: string
-# - Crew: string ("Company", "Contractor")
-# - ContractorName: string
-# - SupervisorName: string
-# - EngineerName: string
-# - IsRedig: boolean
-# - ContractorCWIName: string
-# - ContractorNDEName: string
-# - ContractorCRIName: string
-# - CreatedOnDate: string (MM/dd/yyyy)
-
-# **Response**: Returns array of work order objects with fields like TransmissionWorkOrderID, WorkOrderNumber, WorkOrderStatusDescription, ProjectNumber, RegionName, etc.
-
-# Call the appropriate API(s) based on the user's query. Use no parameters to get all data, or specific parameters to filter.
-# """
-
-
-
-
-
 
 # def get_api_router_prompt(user_input: str) -> str:
 #     """
@@ -349,9 +273,9 @@ For complete API details, parameters, and constraints, refer to the available to
 
 ---
 
---- GetNDEIndicationDetailsbyWorkOrderNumberandCriteria ---
+--- GetWorkOrderNDEIndicationsbyCriteria ---
 For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
-- GetNDEIndicationDetailsbyWorkOrderNumberandCriteria: Get NDE indication details with grouping by specified fields
+- GetWorkOrderNDEIndicationsbyCriteria: Get NDE indication details with grouping by specified fields
 
 **Parameter Requirements**:
 - **CRITICAL**: At least ONE of the following MUST be provided:
@@ -363,12 +287,9 @@ For complete API details, parameters, and constraints, refer to the available to
 
 **GroupBy Parameter**:
 - REQUIRED field for this API
-- Common grouping fields: WorkOrderNumber, WeldSerialNumber, Indication, NDEName, WelderName
+- Common grouping fields: WorkOrderNumber, WeldSerialNumber, NDEName, WelderName
 - User may not explicitly say "group by" - infer from context:
-  - "Show indication breakdown" → GroupBy = ["Indication"]
-  - "NDE indications by work order" → GroupBy = ["WorkOrderNumber", "Indication"]
-  - "Indications per welder" → GroupBy = ["WelderName", "Indication"]
-  - "Which welds have what indications" → GroupBy = ["WeldSerialNumber", "Indication"]
+  - "Show indications per welder for work order 100500514"" → GroupBy = ["Workorder", "weldername"]
 - If unclear what to group by → Ask clarifying question with options
 
 **Optional Filter Parameters**:
@@ -388,9 +309,9 @@ For complete API details, parameters, and constraints, refer to the available to
 
 **GroupBy Clarification Examples**:
 - Query: "Show NDE indications for work order 100500514"
-  → Ask: "How would you like to see the indications? By indication type, by weld, by welder, or another grouping?"
+  → Ask: "How would you like to see the indications? By weld, by welder, or another grouping?"
 - Query: "What are the most common indications"
-  → Ask: "For which work order or weld serial number? And how would you like them grouped (by indication type, by work order, etc.)?"
+  → Ask: "For which work order or weld serial number? And how would you like them grouped (by welder, by work order, etc.)?"
 
 ---
 
@@ -431,10 +352,8 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show NDE reports for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "List all NDE report numbers for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "Get NDE report types for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEReportNumbersbyWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514"}}}}
-- "Show indication breakdown for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["Indication"]}}}}
-- "NDE indications by work order and type" → {{"type": "api_call", "function_name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WorkOrderNumber", "Indication"]}}}}
-- "Show indications per welder for work order 100500514" → {{"type": "api_call", "function_name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WelderName", "Indication"]}}}}
-- "Which welds have burn through indications in work order 100500514" → {{"type": "api_call", "function_name": "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WeldSerialNumber", "Indication"]}}}}
+- "Show indications per welder for work order 100500514" → {{"type": "api_call", "function_name": "GetWorkOrderNDEIndicationsbyCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WelderName"]}}}}
+
 
 **FORMAT 2 - CLARIFICATION** (when you need more information):
 ```json

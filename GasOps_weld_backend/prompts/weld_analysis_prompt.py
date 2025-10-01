@@ -701,9 +701,9 @@ For any counting questions, the total is {actual_count} NDE report records. Focu
 === END GetNDEReportNumbersbyWorkOrderNumber GUIDELINES ===
 """
 
-    elif api_name == "GetNDEIndicationDetailsbyWorkOrderNumberandCriteria":
+    elif api_name == "GetWorkOrderNDEIndicationsbyCriteria":
         api_specific_prompt = f"""
-=== GetNDEIndicationDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
+=== GetWorkOrderNDEIndicationsbyCriteria API - SPECIFIC GUIDELINES ===
 **IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
 
 This API returns NDE indication details for requested work order number/weld serial number, grouped by specified fields.
@@ -723,11 +723,6 @@ Core Fields (ALWAYS Include):
 - All fields specified in the GroupBy parameter
 - Count (always present in response)
 
-Example Response Structures:
-- GroupBy = ["WorkOrderNumber", "Indication"] → Show: WorkOrderNumber, Indication, Count
-- GroupBy = ["WeldSerialNumber", "Indication"] → Show: WeldSerialNumber, Indication, Count
-- GroupBy = ["Indication", "NDEName"] → Show: Indication, NDEName, Count
-- GroupBy = ["WelderName", "Indication"] → Show: WelderName, Indication, Count
 
 Field Display Rules:
 - Use "-" for null/empty values
@@ -770,7 +765,7 @@ RESPONSE FORMAT:
 CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. This API has dynamic response structure based on GroupBy, so always display exactly what's in the data (GroupBy fields + Count).
 
 For any counting questions, the total is {actual_count} grouped records. Focus on providing comprehensive business analysis with emphasis on indication distribution and patterns based on the grouping.
-=== END GetNDEIndicationDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
+=== END GetWorkOrderNDEIndicationsbyCriteria GUIDELINES ===
 """
     else:
         # Default fallback for unknown APIs
