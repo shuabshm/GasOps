@@ -767,6 +767,198 @@ CRITICAL: The table output MUST follow the field detection rules unless it satis
 For any counting questions, the total is {actual_count} grouped records. Focus on providing comprehensive business analysis with emphasis on indication distribution and patterns based on the grouping.
 === END GetWorkOrderNDEIndicationsbyCriteria GUIDELINES ===
 """
+
+    elif api_name == "GetWorkOrderRejactableNDEIndicationsbyCriteria":
+        api_specific_prompt = f"""
+=== GetWorkOrderRejactableNDEIndicationsbyCriteria API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns rejectable NDE indication details for requested work order number/weld serial number, grouped by specified fields.
+
+AVAILABLE FIELDS (Dynamic based on GroupBy):
+- WorkOrderNumber: Work order identifier
+- WeldSerialNumber: Weld serial identifier
+- Indication: Type of rejectable NDE indication (e.g., Porosity, Lack of Fusion, etc.)
+- NDEName: NDE inspector name
+- WelderName: Welder name
+- Count: Number of occurrences for the grouped combination
+
+DYNAMIC FIELD DETECTION RULES:
+**CRITICAL**: The response structure varies based on the GroupBy parameter used in the request.
+
+Core Fields (ALWAYS Include):
+- All fields specified in the GroupBy parameter
+- Count (always present in response)
+
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Show all GroupBy fields plus Count column
+- Maintain column ordering: GroupBy fields first (in order specified), then Count
+- Use clear column headers
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} grouped records)
+- Rejectable NDE indication count and distribution
+- Rejectable indication type breakdown (Porosity, Lack of Fusion, etc.)
+- Grouped analysis based on GroupBy parameters
+- Rejectable indication patterns and frequencies
+- Work order or weld-level rejectable indication insights
+- Inspector or welder performance patterns (if grouped by NDEName/WelderName)
+- Top rejectable indications by count
+- Quality concerns and rejection trends
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 3 rejectable indication types in work order 101351590, with Porosity being the most frequent at 4 occurrences."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS show all fields from GroupBy parameter PLUS Count column
+   - *Critical Priority*: The response structure is DYNAMIC based on GroupBy, so adapt accordingly
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   - Sort by Count descending to show most frequent rejectable indications first
+   *Mandatory*: Display exactly the fields from GroupBy plus Count. DO NOT add extra fields not in the response.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on rejectable indication count distribution, top rejectable indications, patterns based on grouping
+        - Highlight the most frequent rejectable indications and their counts
+        - Provide insights based on the grouping used (e.g., per work order, per welder, per NDE inspector)
+        - Emphasize quality concerns and areas needing attention
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. This API has dynamic response structure based on GroupBy, so always display exactly what's in the data (GroupBy fields + Count).
+
+For any counting questions, the total is {actual_count} grouped records. Focus on providing comprehensive business analysis with emphasis on rejectable indication distribution, patterns, and quality concerns based on the grouping.
+=== END GetWorkOrderRejactableNDEIndicationsbyCriteria GUIDELINES ===
+"""
+
+    elif api_name == "GetReshootDetailsbyWorkOrderNumberandCriteria":
+        api_specific_prompt = f"""
+=== GetReshootDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns reshoot weld details for requested work order number with filtering by update completion status.
+
+AVAILABLE FIELDS:
+- NDEReportNumber: NDE report number with type (e.g., "NDE2025-00205 (Conv)")
+- WeldSerialNumbers: Weld serial number(s) requiring reshoot
+- RequiredReshoot: Whether reshoot is required (Yes/No)
+- UpdateCompleted: Whether update is completed (Yes/No)
+
+DYNAMIC FIELD DETECTION RULES:
+Automatically detect and include relevant fields based on user query keywords:
+
+Core Fields (Always Include):
+- NDEReportNumber (as "NDE Report Number")
+- WeldSerialNumbers (as "Weld Serial Numbers")
+- RequiredReshoot (as "Required Reshoot")
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Show all detected fields even if some are empty
+- Maintain consistent column ordering: Core fields first, then detected fields
+- Use clear column headers
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} reshoot records)
+- Reshoot weld identification and tracking
+- Update completion status breakdown
+- NDE report mapping and cross-reference
+- Pending vs completed reshoot updates
+- Weld serial number tracking
+- Required reshoot status distribution
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 15 reshoot welds in work order 100500514, with 10 pending updates."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS start with core fields: NDE Report Number, Weld Serial Numbers, Required Reshoot
+   - *Critical Priority*: AUTOMATICALLY scan user query for keywords and add only the corresponding fields which match the query
+   - Example: "show pending reshoot updates" → Add Update Completed column (highlight records with "No")
+   - Example: "reshoot welds for work order X" → Display all core fields
+   - Example: "completed reshoot updates" → Add Update Completed column (filter for "Yes")
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   *Mandatory*: Never include all the columns. Always apply the field detection rules and add only the relevant columns.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on reshoot weld tracking, update completion status, NDE report mapping, pending vs completed updates
+        - Highlight welds requiring reshoot and their update status
+        - Identify any patterns in reshoot requirements or update delays
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. Scan the user query for keywords and automatically include the corresponding fields as additional columns beyond the core fields.
+
+For any counting questions, the total is {actual_count} reshoot records. Focus on providing comprehensive business analysis with emphasis on reshoot weld identification, update completion tracking, and NDE report mapping.
+=== END GetReshootDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
+"""
+
+    elif api_name == "GetWeldsbyNDEIndicationandWorkOrderNumber":
+        api_specific_prompt = f"""
+=== GetWeldsbyNDEIndicationandWorkOrderNumber API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns welds for requested work order number filtered by specific NDE indication type.
+
+AVAILABLE FIELDS:
+- WeldSerialNumber: Weld serial number identifier
+- Indication: Type of NDE indication (e.g., Porosity, Concavity, Burn Through, etc.)
+- IndicationCount: Number of times the indication appears on this weld
+
+DYNAMIC FIELD DETECTION RULES:
+Automatically detect and include relevant fields based on user query keywords:
+
+Core Fields (Always Include):
+- WeldSerialNumber (as "Weld Serial Number")
+- Indication
+- IndicationCount (as "Indication Count")
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Show all core fields
+- Maintain consistent column ordering: Weld Serial Number, Indication, Indication Count
+- Use clear column headers
+- Sort by IndicationCount descending to show welds with highest indication counts first
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} weld records)
+- Welds with specific indication types
+- Indication count distribution per weld
+- Identifying welds with high indication counts
+- NDE indication patterns across welds
+- Welds requiring attention based on indication frequency
+- Quality concerns based on indication distribution
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 12 welds with Porosity indication in work order 100500514, with weld 250908 having the highest count at 3 occurrences."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS show all core fields: Weld Serial Number, Indication, Indication Count
+   - *Critical Priority*: Sort by Indication Count descending to highlight welds with most indications
+   - Example: "show welds with Porosity" → Display all core fields sorted by count
+   - Example: "welds that had Concavity" → Display all core fields sorted by count
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   *Mandatory*: Display all core fields. This API returns focused data on welds with specific indications.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on weld-level indication analysis, indication count distribution, high-count welds
+        - Highlight welds with highest indication counts that may need priority attention
+        - Identify patterns in indication distribution across welds
+        - Emphasize quality concerns based on indication frequency
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. This API provides weld-level indication data, so always display all core fields sorted by indication count.
+
+For any counting questions, the total is {actual_count} weld records. Focus on providing comprehensive business analysis with emphasis on weld-level indication patterns, indication count distribution, and identifying welds requiring attention.
+=== END GetWeldsbyNDEIndicationandWorkOrderNumber GUIDELINES ===
+"""
     else:
         # Default fallback for unknown APIs
         api_specific_prompt = f"""

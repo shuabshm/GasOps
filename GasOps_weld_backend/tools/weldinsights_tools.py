@@ -190,6 +190,54 @@ def GetWorkOrderNDEIndicationsbyCriteria(WorkOrderNumber=None,
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetWorkOrderNDEIndicationsbyCriteria", parameters, auth_token, method="POST")
 
+
+def GetWorkOrderRejactableNDEIndicationsbyCriteria(WorkOrderNumber=None,
+                                                     WeldSerialNumber=None,
+                                                     WelderName=None,
+                                                     NDEName=None,
+                                                     GroupBy=None,
+                                                     auth_token=None,
+                                                     api_path="AITransmissionWorkOrder"):
+    """Tool function to get rejectable NDE indication details for requested work order number/weld serial number with grouping by specified fields"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "WeldSerialNumber": WeldSerialNumber,
+        "WelderName": WelderName,
+        "NDEName": NDEName,
+        "GroupBy": GroupBy
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWorkOrderRejactableNDEIndicationsbyCriteria", parameters, auth_token, method="POST")
+
+
+def GetReshootDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
+                                                    UpdateCompleted=None,
+                                                    auth_token=None,
+                                                    api_path="AITransmissionWorkOrder"):
+    """Tool function to get reshoot weld details for requested work order number with filtering by update completion status"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "UpdateCompleted": UpdateCompleted
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetReshootDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
+
+
+def GetWeldsbyNDEIndicationandWorkOrderNumber(WorkOrderNumber,
+                                                NDEIndication,
+                                                auth_token=None,
+                                                api_path="AITransmissionWorkOrder"):
+    """Tool function to get welds for requested work order number filtered by specific NDE indication type"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "NDEIndication": NDEIndication
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWeldsbyNDEIndicationandWorkOrderNumber", parameters, auth_token, method="POST")
+
 # Define all tools for OpenAI
 def get_weldinsights_tools():
     """Define all available tools for weld insights"""
@@ -540,6 +588,84 @@ def get_weldinsights_tools():
                         }
                     },
                     "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWorkOrderRejactableNDEIndicationsbyCriteria",
+                "description": "Get rejectable NDE indication details for requested work order number/weld serial number with grouping by specified fields. At least one of WorkOrderNumber or WeldSerialNumber must be provided, and GroupBy is required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number"
+                        },
+                        "WeldSerialNumber": {
+                            "type": "string",
+                            "description": "Weld serial number"
+                        },
+                        "WelderName": {
+                            "type": "string",
+                            "description": "Welder name for filtering"
+                        },
+                        "NDEName": {
+                            "type": "string",
+                            "description": "NDE inspector name for filtering"
+                        },
+                        "GroupBy": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Fields to group results by (e.g., WorkOrderNumber, WeldSerialNumber, Indication, NDEName, WelderName). This parameter is required."
+                        }
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetReshootDetailsbyWorkOrderNumberandCriteria",
+                "description": "Get reshoot weld details for requested work order number with filtering by update completion status. WorkOrderNumber is required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        },
+                        "UpdateCompleted": {
+                            "type": "string",
+                            "description": "Update completion status - possible values: 'Yes', 'No'"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWeldsbyNDEIndicationandWorkOrderNumber",
+                "description": "Get welds for requested work order number filtered by specific NDE indication type. Both WorkOrderNumber and NDEIndication are required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        },
+                        "NDEIndication": {
+                            "type": "string",
+                            "description": "NDE indication type to filter by (e.g., Porosity, Concavity, Burn Through, etc.) - required"
+                        }
+                    },
+                    "required": ["WorkOrderNumber", "NDEIndication"]
                 }
             }
         }
