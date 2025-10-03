@@ -329,60 +329,97 @@ COMPREHENSIVE ANALYSIS METHODOLOGY:
 
     # API-specific sections
     if api_name == "GetWorkOrderInformation":
+        # Build filter context for intelligent field hiding
+        filter_info = api_parameters if api_parameters else {{}}
+
         api_specific_prompt = f"""
 === GetWorkOrderInformation API - SPECIFIC GUIDELINES ===
-**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other APi instructions section.**
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+INTELLIGENT FIELD HIDING BASED ON FILTERS:
+The following filters were applied: {filter_info}
+- **Hide fields that were used as filters** because all values will be identical
+- Example: If RegionName filter was used → Don't display Region column
+- Example: If ContractorName filter was used → Don't display Contractor column
+- **Show identifier fields that vary** (like WorkOrderNumber when filtering by region)
 
 DYNAMIC FIELD DETECTION RULES:
 Automatically detect and include relevant fields based on user query keywords:
 
-Core Fields (Always Include):
-- WorkOrderNumber
+Base Identifier Fields (Include unless filtered):
+- ProjectNumber (as "Project No.")
+- WorkOrderNumber (as "Work Order No.")
 - Location
 - RegionName (as "Region")
-- ProjectNumber (as "Project No.")
 - WorkOrderStatusDescription (as "Status")
+
+Additional Fields (Only if mentioned in query):
+- Engineer-related keywords → Add Engineer column (consolidate Engineer1, Engineer2, etc.)
+- Contractor-related keywords → Add ContractorName column
+- Supervisor-related keywords → Add Supervisor column (consolidate Supervisor1, Supervisor2, etc.)
+- Date-related keywords → Add relevant date columns
+- CWI/NDE-related keywords → Add inspection-related columns
 
 Field Display Rules:
 - Use "-" for null/empty values
-- Show all detected fields even if some are empty
-- Maintain consistent column ordering: Core fields first, then detected fields
+- Maintain consistent column ordering: Identifiers first, then query-specific fields
 - Use clear column headers (e.g., "Work Order No." instead of "WorkOrderNumber")
+- If there are multiple engineers/supervisors/contractors (engineer1, engineer2, etc.), consolidate into single column
 
-ANALYSIS AREAS TO COVER:
-- Volume and distribution patterns (total: {actual_count} records)
-- Status and workflow analysis
-- Regional and geographic insights
-- Temporal trends and seasonality
-- Resource allocation and utilization
-- Project categorization and phases
-- Data quality and completeness issues
-- Comparative analysis and benchmarks
-- Outliers and anomalies identification
-- Business recommendations and insights
-- If there are multiple engineers, supervisors or contractors like engineer1, engineer2, etc., they are not primary/secondary/tertiary engineers. Treat them as separate engineers who worked on the work orders.
+ROW COUNT DISPLAY LOGIC:
+**If {actual_count} <= 5 rows:**
+- Display full table with all rows
+- Provide key takeaways
+
+**If {actual_count} > 5 rows:**
+- Display ONLY key takeaways/summary (NO table)
+- Add this message at the end: "The dataset contains {actual_count} records. Would you like to see the full data table?"
+- If user responds "yes" or requests full data in follow-up → Display full table with all rows
 
 RESPONSE FORMAT:
-1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
-   - Use {actual_count} as the total count when reporting the volume of the dataset. Dont mention the term dataset. For eg: The one sentence can be 59 tickets are assigned in Bronx region
-2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
-   - *Critical Priority*: ALWAYS start with core fields: Project No., Work Order No., Location, Region, Status
-   - *Critical Priority*: AUTOMATICALLY scan user query for keywords and add only the corresponding fields which matches the query(If there are multiple engineers, supervisors or contractors like engineer1, engineer2, etc., add just one column as Engineer consolidating all engineer1, engineer2, etc fields and display only the filtered engineer).
-   - Example: "show engineer Hsu Kelly work orders" → Add just one column as Engineer consolidating all engineer1, engineer2, etc fields.
-   - Example: "CAC contractor analysis" → Add ContractorName column
-   - Example: "supervisor Torres projects" → Add just one column as supervisor consolidating all supervisors1, supervisors2, etc fields.
-   - Show representative records (full data if reasonable size, sample if large dataset)
-   - Use clear formatting and handle null values consistently
-   *Mandatory*: Never include all the columns from the dataset. Always apply the field detection rules and add only the relevant columns.
-3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
-    Additional enforcement instructions:
-        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
-        - Maintain numbering or - consistently.
-        - Keep each bullet concise and self-contained.
+1. **One-sentence answer** to user's question from business perspective (no headings, no extra commentary)
+   - Use {actual_count} as the total count. Example: "59 work orders are assigned in Bronx region"
 
-CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. Scan the user query for keywords and automatically include the corresponding fields as additional columns beyond the core fields.
+2. **Table Contents** (CONDITIONAL based on row count):
+   - **If {actual_count} <= 5**: Display full table with these rules:
+     - Start with base identifier fields (excluding filtered fields)
+     - Add only query-specific columns based on keywords
+     - Show all {actual_count} rows
+     - Use clear formatting and handle null values with "-"
 
-For any counting questions, the total is {actual_count} records. Focus on providing comprehensive business analysis.
+   - **If {actual_count} > 5**: Skip table, go directly to Key Takeaways
+
+3. **Key Takeaways** - PERCENTILE-BASED DISTRIBUTION ANALYSIS:
+   Provide insights as separate bullet points with percentage breakdowns for displayed/relevant fields only.
+
+   **Required Analysis:**
+   - Calculate percentile distribution for each relevant field
+   - Show breakdown like: "Region distribution: 60% Bronx, 30% Queens, 10% Manhattan"
+   - Include status distribution if Status field is displayed
+   - Include any query-specific field distributions
+
+   **Format Requirements:**
+   - Each bullet on its own line (never merge into paragraph)
+   - Use consistent numbering or bullets (-)
+   - Keep each bullet concise and self-contained
+   - Focus on percentile breakdowns for displayed fields
+
+   **Examples:**
+   - "Region distribution: 60% Bronx (30 records), 30% Queens (15 records), 10% Manhattan (5 records)"
+   - "Status breakdown: 75% Complete, 20% In Progress, 5% Pending"
+   - "Engineer distribution: John Doe 40%, Jane Smith 35%, Mike Johnson 25%"
+
+4. **Data Request Prompt** (only if {actual_count} > 5):
+   - Add: "The dataset contains {actual_count} records. Would you like to see the full data table?"
+
+CRITICAL RULES:
+- Hide fields used in API filters (all values are identical)
+- Show only query-relevant columns + varying identifiers
+- If {actual_count} > 5, show ONLY summary/takeaways initially (no table)
+- Key takeaways must include percentile distributions for displayed fields
+- Never include all columns - always apply intelligent field detection
+
+For any counting questions, the total is {actual_count} records after filteration. Focus on percentile-based distribution analysis.
 === END GetWorkOrderInformation GUIDELINES ===
 """
 
