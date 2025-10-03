@@ -257,9 +257,20 @@
 
 
 
-def get_data_analysis_prompt(user_input, clean_data_array, api_name=None):
+def get_data_analysis_prompt(user_input, clean_data_array, api_name=None, api_parameters=None):
     # Pre-calculate the count to inject into analysis
     actual_count = len(clean_data_array)
+
+    # Build filter context intelligently
+    if api_parameters is None:
+        api_parameters = {}
+
+    filter_context = ""
+    if api_parameters:
+        filter_parts = []
+        for param, value in api_parameters.items():
+            filter_parts.append(f"{param}={value}")
+        filter_context = f"\nAPI Filters Applied: {', '.join(filter_parts)}\n"
 
     # Common sections for all APIs
     common_prompt = f"""
@@ -269,7 +280,9 @@ User Question: {user_input}
 
 Data: {clean_data_array}
 
-API Being Used: {api_name}
+Dataset Size: {actual_count} records
+
+API Being Used: {api_name}{filter_context}
 
 === COMMON GUIDELINES (Apply to All APIs) ===
 
@@ -299,7 +312,7 @@ ERROR HANDLING RULES:
 - CRITICAL: Only apply the "no records" error handling when {actual_count} == 0. If {actual_count} > 0, proceed with normal analysis and table display.
 
 DATA INFORMATION:
-The input contains {actual_count} records. This number reflects only the records provided for this analysis and should not be assumed to represent the complete set.
+The dataset contains {actual_count} records that were returned by the API after applying the filters shown above. These records represent the results matching the search criteria extracted from the user's question.
 
 COMPREHENSIVE ANALYSIS METHODOLOGY:
 1. **Data Profiling** - Examine structure, fields, and data types
