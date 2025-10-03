@@ -48,8 +48,14 @@ async def supervisor(query, database_name=None, auth_token=None):
         - If the user's question is a follow-up (short or ambiguous) to a previous domain-specific question, route it to the same agent as before unless the intent clearly changes.
 
         Available agents and their domains:
-        1. WeldInsightsAgent: Handles queries related to work orders
-        2. MTRAgent: Handles queries related to material test reports, heat numbers, material properties
+        1. WeldInsightsAgent: Handles queries related to work orders, welds, weld details, heat number traceability, NDE reports, inspection results, welders, contractors, projects, regions, and material information in the context of work orders and welds. Use this when user asks about work orders, finding work orders by heat number, weld serial numbers, or getting heat numbers for a work order.
+        2. MTRAgent: Handles queries related to material test report (MTR) documents, detailed material properties from MTR files, chemical composition, mechanical properties, standards compliance (API 5L, ASME), and MTR-specific heat number data. Use this when user asks for MTR data, material properties, chemical composition, or test report details for a heat number.
+
+        Key Distinction for Heat Number Queries:
+        - If asking "which work order has heat number X" or "heat numbers in work order Y" → WeldInsightsAgent (work order context)
+        - If asking "show me MTR for heat number X" or "material properties of heat number X" → MTRAgent (material properties context)
+        - If asking "heat number details for work order X" → WeldInsightsAgent (work order context)
+        - If asking "MTR data for heat number X" → MTRAgent (MTR document context)
 
         Rules :
         - You do NOT answer domain-specific queries yourself. Instead, you:
@@ -65,6 +71,15 @@ async def supervisor(query, database_name=None, auth_token=None):
         Response: {{"agent": "WeldInsightsAgent"}}
 
         User: "Get me MTR data for heat number 12345"
+        Response: {{"agent": "MTRAgent"}}
+
+        User: "What's the work order associated with heat number 648801026"
+        Response: {{"agent": "WeldInsightsAgent"}}
+
+        User: "Show heat numbers for work order 100500514"
+        Response: {{"agent": "WeldInsightsAgent"}}
+
+        User: "Show me material properties for heat number 648801026"
         Response: {{"agent": "MTRAgent"}}
 
         Respond in the following format:

@@ -275,16 +275,18 @@ API Being Used: {api_name}
 
 ERROR HANDLING RULES:
 
-- If no records match the user's query (including when the dataset is empty):
+**IMPORTANT**: Only apply error handling when {actual_count} == 0 (zero records). If {actual_count} > 0, you have data to analyze and display.
+
+- If the dataset is completely empty ({actual_count} == 0):
   → Respond in natural, human-friendly language by interpreting the user's query intent:
     - Extract the key criteria from the query (e.g., tie-in welds, work order number, specific field values)
     - Craft a response that directly addresses what they were looking for
     Examples:
-      User: "Show work orders for John"
+      User: "Show work orders for John" (when {actual_count} == 0)
       → "There are no work orders where John is assigned."
-      User: "Show me welds that were tieinweld in work order 100500514"
+      User: "Show me welds that were tieinweld in work order 100500514" (when {actual_count} == 0)
       → "There are no tie-in welds in work order 100500514."
-      User: "Show production welds with CWI Accept"
+      User: "Show production welds with CWI Accept" (when {actual_count} == 0)
       → "There are no production welds with CWI result 'Accept'."
 
 - If the query is unclear or ambiguous:
@@ -294,7 +296,7 @@ ERROR HANDLING RULES:
 - If the query refers to unknown fields/terms:
   → Respond in natural language by identifying what was being searched for.
 - Always phrase responses naturally, business-friendly, and conversational.
-- CRITICAL: When an error condition applies, DO NOT produce tables, bullet points, or additional commentary. Provide ONLY the human-friendly message.
+- CRITICAL: Only apply the "no records" error handling when {actual_count} == 0. If {actual_count} > 0, proceed with normal analysis and table display.
 
 DATA INFORMATION:
 The input contains {actual_count} records. This number reflects only the records provided for this analysis and should not be assumed to represent the complete set.
@@ -621,7 +623,7 @@ RESPONSE FORMAT:
 1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
    - Use {actual_count} as the total count when reporting the volume. For eg: "There are 12 work orders found for project G-23-901."
 2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
-   - *Critical Priority*: ALWAYS start with core fields: Work Order No., Project No., Location
+   - *Critical Priority*: ALWAYS start with core fields: Project No., Work Order No., Location
    - *Critical Priority*: The response typically contains only these 3 fields, so display all of them
    - Example: "work orders for heat number X" → Display all core fields
    - Example: "find work order by NDE report Y" → Display all core fields
@@ -958,6 +960,311 @@ CRITICAL: The table output MUST follow the field detection rules unless it satis
 
 For any counting questions, the total is {actual_count} weld records. Focus on providing comprehensive business analysis with emphasis on weld-level indication patterns, indication count distribution, and identifying welds requiring attention.
 === END GetWeldsbyNDEIndicationandWorkOrderNumber GUIDELINES ===
+"""
+
+    elif api_name == "GetNDEReportProcessingDetailsbyWeldSerialNumber":
+        api_specific_prompt = f"""
+=== GetNDEReportProcessingDetailsbyWeldSerialNumber API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns list of all NDE report numbers and their type by requested weld serial number. The response includes detailed NDE report processing information.
+
+AVAILABLE FIELDS (Dynamic based on report type):
+- NDEReportNumber: NDE report identifier (e.g., "NDE2025-00571 (Conv)")
+- NDEName: NDE inspector name (e.g., "Sam Maldonado")
+- Technique: NDE technique used (e.g., "DWE/SWV")
+- Source: Source material/radiation type (e.g., "Ir")
+- CurieStrength: Radiation strength
+- FilmType: Type of film used (e.g., "AFGA D7")
+- FilmSize: Size of film (e.g., "4.5\" x 17\"")
+- FilmLoad: Film loading type (Single/Double)
+- IQILocation: Image Quality Indicator location (Film Side/Source Side)
+- ASTMPackID: ASTM pack identifier
+- ThicknessofWeld: Weld thickness measurement
+- LeadScreensFront: Front lead screen thickness
+- LeadScreensBack: Back lead screen thickness
+- ExposureTime: Exposure time in seconds
+- Additional fields based on report type (Conventional vs other types)
+
+DYNAMIC FIELD DETECTION RULES:
+The response structure varies based on report type (Conventional NDE, etc.). Common fields include:
+
+Core Fields (Always Include when available):
+- NDEReportNumber (as "NDE Report Number")
+- NDEName (as "NDE Inspector")
+- Technique
+- Source
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Show core fields plus relevant technical fields based on report type
+- Maintain column ordering: NDE Report Number, NDE Inspector, Technique, Source, then additional technical fields
+- Use clear column headers
+- Handle nested data structures (Conventional NDE vs other types)
+
+ANALYSIS AREAS TO COVER:
+- Volume and distribution patterns (total: {actual_count} NDE report records)
+- NDE report count and breakdown by type
+- Report type distribution (Conventional vs other)
+- NDE inspection techniques used
+- Technical parameters analysis (exposure time, film type, etc.)
+- Inspector assignments and patterns
+- Weld thickness and lead screen specifications
+- Quality control parameters
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "There are 3 NDE reports for weld serial number 250129, including 2 Conventional NDE reports."
+2. **Table Contents** - MANDATORY: Apply field detection rules above to determine columns:
+   - *Critical Priority*: ALWAYS start with core fields: NDE Report Number, NDE Inspector, Technique, Source
+   - *Critical Priority*: AUTOMATICALLY add relevant technical fields based on report type (e.g., FilmType, ExposureTime for Conventional NDE)
+   - Example: "NDE reports for weld 250129" → Display core fields plus technical parameters
+   - Example: "Conventional NDE reports for weld 250129" → Display core fields plus full Conventional NDE details
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   - Handle nested structures by flattening into table columns
+   *Mandatory*: Adapt columns based on report type. Display core fields plus relevant technical parameters.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on NDE report count, report type breakdown, inspection techniques
+        - Highlight technical parameters (film type, exposure time, thickness)
+        - Identify any unusual patterns or quality concerns in NDE processing
+        - Provide insights on inspector assignments and coverage
+
+CRITICAL: The table output MUST follow the field detection rules unless it satisfies the error handling rules. This API provides detailed NDE report processing data, so adapt columns based on report type and always display relevant technical parameters.
+
+For any counting questions, the total is {actual_count} NDE report records. Focus on providing comprehensive business analysis with emphasis on report type breakdown, inspection techniques, and technical parameters analysis.
+=== END GetNDEReportProcessingDetailsbyWeldSerialNumber GUIDELINES ===
+"""
+
+    elif api_name == "GetDetailsbyWeldSerialNumber":
+        api_specific_prompt = f"""
+=== GetDetailsbyWeldSerialNumber API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns comprehensive weld details by weld serial number with structured data in multiple sections.
+
+RESPONSE STRUCTURE:
+The API returns a nested object with 4 main sections:
+1. **Overall Details**: Comprehensive weld information (work order, contractor, category, dates, welders, inspection results)
+2. **Asset Details**: Material traceability (heat numbers, descriptions, asset types, materials, sizes, manufacturers)
+3. **CWI and NDE Result Details**: Inspection results summary
+4. **NDE Report Film Details**: Detailed film inspection data (clock positions, indications, weld checks, remarks)
+
+INTELLIGENT SECTION SELECTION:
+Analyze the user query to determine which section(s) to display:
+- Keywords "overall", "general", "summary", "weld details" → Overall Details section
+- Keywords "asset", "material", "heat", "pipe", "manufacturer" → Asset Details section
+- Keywords "inspection", "CWI", "NDE result", "CRI", "TR result" → CWI and NDE Result Details section
+- Keywords "film", "clock", "indication", "defect", "reject", "accept" → NDE Report Film Details section
+- If query is general or ambiguous → Display Overall Details (most comprehensive single view)
+- If user explicitly asks for "all details" or "everything" → Consider displaying multiple relevant sections
+
+AVAILABLE FIELDS BY SECTION:
+
+**Overall Details Fields**:
+- WorkOrderNumber, ProjectNumber, ContractorName, ContractorCWIName
+- WeldCategory, WeldSerialNumber, WeldCompletionDate, AddedtoWeldMap
+- TieInWeld, Prefab, Gap
+- HeatSerialNumber1, Heat1Description, HeatSerialNumber2, Heat2Description
+- RootRodClass, HotRodClass, FillerRodClass, CapRodClass, WeldUnlocked
+- Welder1, Welder2, Welder3, Welder4
+- CWIName, CWIResult, NDEReportNumber, NDEName, NDEResult
+- CRIName, CRIResult, TRName, TRResult
+
+**Asset Details Fields**:
+- WeldSerialNumber
+- HeatSerialNumber1, Heat1Description, Heat1Asset, Heat1AssetSubcategory, Heat1Material, Heat1Size, Heat1Manufacturer
+- HeatSerialNumber2, Heat2Description, Heat2Asset, Heat2AssetSubcategory, Heat2Material, Heat2Size, Heat2Manufacturer
+
+**CWI and NDE Result Details Fields**:
+- WorkOrderNumber, ProjectNumber, WeldCategory, WeldSerialNumber
+- CWIName, CWIResult, NDEReportNumber, NDEName, NDEResult
+- CRIName, CRIResult, TRName, TRResult
+
+**NDE Report Film Details Fields**:
+- WorkOrderNumber, ProjectNumber, NDEReportNumber, ClockPosition
+- NDEIndications, NDEWeldCheck, NDERejectIndications, NDERemarks
+- CRIFilmQuality, CRIIndications, CRIWeldCheck, CRIRejectIndications, CRIRemarks
+- TRFilmQuality, TRIndications, TRWeldCheck, TRRejectIndications, TRRemarks
+
+DYNAMIC FIELD DETECTION RULES:
+
+**For Overall Details Section**:
+Core Fields (Always Include):
+- Work Order No., Project No., Weld Serial No., Weld Category
+- Contractor, CWI Result, NDE Result, CRI Result
+
+Additional fields based on query keywords:
+- "welder" → Add Welder columns
+- "heat" → Add Heat Serial Number columns
+- "date" → Add Weld Completion Date
+- "rod" → Add rod class columns
+
+**For Asset Details Section**:
+Core Fields (Always Include):
+- Weld Serial No., Heat Serial No. 1, Heat Serial No. 2
+- Heat 1 Description, Heat 2 Description
+
+Additional fields based on query:
+- "material" → Add Material columns
+- "manufacturer" → Add Manufacturer columns
+- "size" → Add Size columns
+- "asset type" → Add Asset and AssetSubcategory columns
+
+**For CWI and NDE Result Details Section**:
+Core Fields (Always Include):
+- Work Order No., Project No., Weld Serial No., Weld Category
+- CWI Result, NDE Result, CRI Result, TR Result
+
+**For NDE Report Film Details Section**:
+Core Fields (Always Include):
+- NDE Report No., Clock Position, NDE Indications, NDE Weld Check
+
+Additional fields based on query:
+- "reject" or "failure" → Add Reject Indications and Remarks columns
+- "CRI" → Add CRI columns
+- "TR" → Add TR columns
+- "film quality" → Add Film Quality columns
+
+Field Display Rules:
+- Use "-" for null/empty values
+- Consolidate Welder1-4 into single "Welders" column when displaying
+- Keep structured section format in output
+- Use clear column headers
+
+ANALYSIS AREAS TO COVER:
+- Weld identification and categorization
+- Material traceability and asset information
+- Inspection results across all stages (CWI, NDE, CRI, TR)
+- Film-level defect analysis (clock positions, indications)
+- Contractor and personnel assignments
+- Quality control metrics and patterns
+- Rejection reasons and remediation status
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - For eg: "Weld 250520 is a repaired tie-in weld in work order 100139423 with CWI Accept, NDE In Process, and CRI Reject results."
+2. **Section Heading** - Clearly indicate which section(s) you're displaying (e.g., "## Overall Details", "## Asset Details")
+3. **Table Contents** - MANDATORY: Display consolidated table with most relevant fields:
+   - *Critical Priority*: Apply intelligent section selection based on query keywords
+   - *Critical Priority*: Start with core fields for selected section, add query-specific fields
+   - Example: "Show me weld details for weld 250520" → Overall Details section with core fields
+   - Example: "Show asset details for weld 250520" → Asset Details section with all asset fields
+   - Example: "Get film details for weld 250520" → NDE Report Film Details section (may have multiple rows for different clock positions)
+   - Show representative records (full data if reasonable size, sample if large dataset)
+   - Use clear formatting and handle null values consistently
+   - For multi-row sections (like Film Details), display all rows
+   *Mandatory*: Never include all fields. Always apply intelligent section selection and field detection.
+4. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on insights relevant to the displayed section(s)
+        - Highlight critical information (rejections, pending inspections, material traceability)
+        - Identify any quality concerns or unusual patterns
+        - Provide actionable insights where applicable
+
+CRITICAL: The table output MUST follow intelligent section selection rules unless it satisfies the error handling rules. Analyze query keywords to select the most relevant section and fields. Keep structured format with clear section headings.
+
+Focus on providing comprehensive business analysis with emphasis on weld-specific details, inspection results, and material traceability based on the section(s) displayed.
+=== END GetDetailsbyWeldSerialNumber GUIDELINES ===
+"""
+
+    elif api_name == "GetHeatNumberDetailsbyWorkOrderNumberandCriteria":
+        api_specific_prompt = f"""
+=== GetHeatNumberDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
+**IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+This API returns heat number details for requested work order number with material traceability information.
+
+RESPONSE STRUCTURE:
+The API returns a flat array of heat number objects with material specifications.
+
+AVAILABLE FIELDS:
+- HeatNumber: Heat number identifier
+- Asset: Asset type (e.g., Pipe, Elbows, Weldolet, Welded Tapping Fitting)
+- AssetSubcategory: Asset subcategory (e.g., Seamless Line Pipe, Welded 22.5, Spherical Tee, Weldolet)
+- Material: Material type (e.g., Steel - GRADE X42, Steel - GRADE X52, Steel)
+- Size: Size specification (e.g., 12 NPS 0.375 SCH40, 4 NPS 0.237 SCH40, 36 NPS x 4 NPS)
+- Manufacturer: Manufacturer name (e.g., Tenaris Dalmine, TD Williamson, Tectubi)
+
+DYNAMIC FIELD DETECTION RULES:
+
+Core Fields (Always Include):
+- Heat Number
+- Asset
+- Asset Subcategory
+
+Additional Fields (Based on Query Keywords):
+- "material" or "grade" or "steel" → Add Material column
+- "size" or "dimension" or "diameter" or "NPS" → Add Size column
+- "manufacturer" or "supplier" or "vendor" → Add Manufacturer column
+- If query is general (e.g., "show heat numbers") → Display all fields
+
+Field Display Rules:
+- Use "-" for null/empty values (especially Manufacturer which is often empty)
+- Show all 6 fields unless query specifically requests subset
+- Maintain consistent column ordering: Heat Number, Asset, Asset Subcategory, Material, Size, Manufacturer
+- Use clear column headers
+
+DISPLAY STRATEGY FOR LARGE DATASETS:
+- If {actual_count} <= 20 records → Display all records in single table
+- If {actual_count} > 20 and <= 50 records → Display all with grouping by Asset type
+- If {actual_count} > 50 records → Display sample (first 20-30 records) with grouping by Asset type, mention total count
+- Always provide summary statistics regardless of display method
+
+GROUPING AND CATEGORIZATION:
+When dataset is large (>20 records), consider grouping by:
+- Asset type (e.g., "Pipes (15 heat numbers)", "Elbows (8 heat numbers)")
+- Material grade (e.g., "X42 Grade (10 heat numbers)", "X52 Grade (5 heat numbers)")
+- Provide grouped counts in Key Takeaways section
+
+ANALYSIS AREAS TO COVER:
+- Total heat number count
+- Asset type distribution (breakdown by Pipe, Elbows, Weldolet, etc.)
+- Material grade distribution (X42, X52, etc.)
+- Size variety and patterns
+- Manufacturer distribution and diversity
+- Material traceability insights
+- Asset subcategory breakdown
+- Any unusual patterns or concentrations
+
+RESPONSE FORMAT:
+1. Provide a one-sentence answer to the users specific question from a business perspective. Do not include any headings, additional commentary, or explanations.
+   - Use {actual_count} as the total count when reporting the volume. For eg: "Work order 100500514 has 25 heat numbers covering 4 different asset types."
+2. **Table Contents** - MANDATORY: Display consolidated table with most relevant fields:
+   - *Critical Priority*: ALWAYS start with core fields: Heat Number, Asset, Asset Subcategory
+   - *Critical Priority*: AUTOMATICALLY add additional fields based on query keywords
+   - *Critical Priority*: Apply display strategy based on dataset size (all records vs sample vs grouped)
+   - Example: "Show heat numbers for work order 100500514" → Display all 6 fields, apply size-based strategy
+   - Example: "Show heat numbers for pipes in work order 100500514" → Display all 6 fields, filtered by Asset=Pipe
+   - Example: "What materials are in work order 100500514" → Emphasize Material column, may group by material
+   - Show representative records (full data if reasonable size, sample with grouping if large dataset)
+   - Use clear formatting and handle null values consistently
+   - If showing sample, clearly indicate "Showing X of {actual_count} heat numbers"
+   *Mandatory*: Never include unnecessary columns. Always apply field detection rules and size-based display strategy.
+3. **Key Takeaways** Provide detailed insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
+    Additional enforcement instructions:
+        - Do not merge bullets into a paragraph. the next bullet must always start on a new line.
+        - Maintain numbering or - consistently.
+        - Keep each bullet concise and self-contained.
+        - Focus on heat number distribution, asset type breakdown, material composition
+        - Provide grouped counts (e.g., "15 Pipe heat numbers, 8 Elbows, 2 Weldolets")
+        - Highlight material grade distribution (e.g., "60% X42 grade, 40% X52 grade")
+        - Identify manufacturer diversity or concentration
+        - Note any size patterns or standardization
+        - Provide material traceability insights
+        - If sample displayed, provide overall statistics for full dataset
+
+CRITICAL: The table output MUST follow field detection rules and size-based display strategy unless it satisfies the error handling rules. For large datasets (>20 records), use grouping and sampling intelligently. Always provide comprehensive statistics in Key Takeaways even if table shows sample.
+
+For any counting questions, the total is {actual_count} heat number records. Focus on providing comprehensive business analysis with emphasis on material traceability, asset distribution, and material composition patterns.
+=== END GetHeatNumberDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
 """
     else:
         # Default fallback for unknown APIs
