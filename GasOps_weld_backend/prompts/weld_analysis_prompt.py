@@ -305,14 +305,15 @@ ERROR HANDLING RULES:
 - If the query is unclear or ambiguous:
   → Respond: "Your request is unclear. Could you please rephrase or provide more details?"
 - If the query requests more than available records:
-  → Respond: "The dataset contains only {actual_count} records, which is less than what you requested."
+  → Respond: "There are only {actual_count} records available, which is less than what you requested."
 - If the query refers to unknown fields/terms:
   → Respond in natural language by identifying what was being searched for.
 - Always phrase responses naturally, business-friendly, and conversational.
 - CRITICAL: Only apply the "no records" error handling when {actual_count} == 0. If {actual_count} > 0, proceed with normal analysis and table display.
 
 DATA INFORMATION:
-The dataset contains {actual_count} records that were returned by the API after applying the filters shown above. These records represent the results matching the search criteria extracted from the user's question.
+There are {actual_count} records that were returned by the API after applying the filters shown above. These records represent the results matching the search criteria extracted from the user's question.
+**IMPORTANT**: Never use the word "dataset" in your response. Use natural business language like "records", "work orders", "data", "results" instead.
 
 COMPREHENSIVE ANALYSIS METHODOLOGY:
 1. **Data Profiling** - Examine structure, fields, and data types
@@ -330,7 +331,7 @@ COMPREHENSIVE ANALYSIS METHODOLOGY:
     # API-specific sections
     if api_name == "GetWorkOrderInformation":
         # Build filter context for intelligent field hiding
-        filter_info = api_parameters if api_parameters else {{}}
+        filter_info = api_parameters if api_parameters else {}
 
         api_specific_prompt = f"""
 === GetWorkOrderInformation API - SPECIFIC GUIDELINES ===
@@ -367,30 +368,49 @@ Field Display Rules:
 - If there are multiple engineers/supervisors/contractors (engineer1, engineer2, etc.), consolidate into single column
 
 ROW COUNT DISPLAY LOGIC:
-**If {actual_count} <= 5 rows:**
-- Display full table with all rows
+**CRITICAL - If {actual_count} <= 5 rows:**
+- Display full table with ALL {actual_count} rows
 - Provide key takeaways
 
-**If {actual_count} > 5 rows:**
-- Display ONLY key takeaways/summary (NO table)
-- Add this message at the end: "The dataset contains {actual_count} records. Would you like to see the full data table?"
-- If user responds "yes" or requests full data in follow-up → Display full table with all rows
+**CRITICAL - If {actual_count} > 5 rows:**
+- Display **ONLY 5 rows** (first 5 from dataset) - **DO NOT DISPLAY ALL {actual_count} ROWS**
+- **STOP after 5 rows** - the table should contain EXACTLY 5 rows, not more
+- Provide key takeaways with full distributions (calculated from all {actual_count} records)
+- Add sample data prompt at the end
+
+**Follow-up Response (when user requests full data):**
+- If user says "yes", "show all", "full data", or similar → Display full table with all {actual_count} rows
+- **Skip key takeaways** on follow-up (already provided in previous message)
+- Just provide one-sentence confirmation and full table
 
 RESPONSE FORMAT:
 1. **One-sentence answer** to user's question from business perspective (no headings, no extra commentary)
    - Use {actual_count} as the total count. Example: "59 work orders are assigned in Bronx region"
 
-2. **Table Contents** (CONDITIONAL based on row count):
-   - **If {actual_count} <= 5**: Display full table with these rules:
+2. **Table Contents** (CONDITIONAL based on row count and context):
+   - **If {actual_count} <= 5**: Display full table with all rows:
      - Start with base identifier fields (excluding filtered fields)
      - Add only query-specific columns based on keywords
      - Show all {actual_count} rows
      - Use clear formatting and handle null values with "-"
 
-   - **If {actual_count} > 5**: Skip table, go directly to Key Takeaways
+   - **If {actual_count} > 5 AND this is initial query**: Display preview table with ONLY first 5 rows:
+     - **CRITICAL**: Show EXACTLY 5 rows in the table - NOT all {actual_count} rows
+     - Start with base identifier fields (excluding filtered fields)
+     - Add only query-specific columns based on keywords
+     - Show exactly 5 rows (first 5 from dataset) and STOP - **DO NOT continue displaying more rows**
+     - Use clear formatting and handle null values with "-"
 
-3. **Key Takeaways** - PERCENTILE-BASED DISTRIBUTION ANALYSIS:
-   Provide insights as separate bullet points with percentage breakdowns for displayed/relevant fields only.
+   - **If {actual_count} > 5 AND this is follow-up requesting full data**: Display full table with all rows:
+     - Start with base identifier fields (excluding filtered fields)
+     - Add only query-specific columns based on keywords
+     - Show all {actual_count} rows
+     - Use clear formatting and handle null values with "-"
+
+3. **Key Takeaways** (CONDITIONAL - skip on follow-up):
+   - **Show key takeaways** if this is initial response
+   - **Skip key takeaways** if this is follow-up response to show full data
+   - Provide insights as separate bullet points with percentage breakdowns for displayed/relevant fields only.
 
    **Required Analysis:**
    - Calculate percentile distribution for each relevant field
@@ -403,21 +423,41 @@ RESPONSE FORMAT:
    - Use consistent numbering or bullets (-)
    - Keep each bullet concise and self-contained
    - Focus on percentile breakdowns for displayed fields
+   - **ONLY state factual observations and statistical insights**
+   - **DO NOT include recommendations, suggestions, or action items** (no "should", "consider", "recommend", etc.)
+   - **DO NOT add interpretive commentary** - just state the facts and distributions
+   - **CRITICAL**: After all distribution bullets, ONLY add one final line (without heading) IF there is something alarming or out of ordinary. Otherwise, skip the summary line entirely.
 
-   **Examples:**
+   **Examples of GOOD insights (factual observations):**
    - "Region distribution: 60% Bronx (30 records), 30% Queens (15 records), 10% Manhattan (5 records)"
    - "Status breakdown: 75% Complete, 20% In Progress, 5% Pending"
    - "Engineer distribution: John Doe 40%, Jane Smith 35%, Mike Johnson 25%"
 
-4. **Data Request Prompt** (only if {actual_count} > 5):
-   - Add: "The dataset contains {actual_count} records. Would you like to see the full data table?"
+   Examples of when to add final line (only if alarming/unusual):
+   - "5 work orders are in Pending status and may require attention."
+   - "Unusually high number of work orders (15) are stuck in Rejected status."
+
+4. **Data Request Prompt** (only if {actual_count} > 5 AND this is initial response):
+   - Inform the user that the displayed data is a sample and ask if they need the full data
+   - Keep it natural and conversational (don't use the same phrasing every time)
+   - Examples: "The data displayed is just a sample. Do you need the full data?", "This is a preview. Would you like to see all records?", "Displaying sample data. Need the complete list?"
+   - **CRITICAL**: Never use the word "dataset" - use "data", "records", "list", "results" instead
+   - **DO NOT** add any other questions, suggestions, recommendations, or offers for additional analysis
+   - **DO NOT** ask if user wants visualizations, dashboards, or further breakdowns
+   - **DO NOT** offer to "generate" or "produce" anything beyond what was asked
 
 CRITICAL RULES:
+- **NEVER use the word "dataset" in your response** - use natural business terms like "records", "work orders", "data", "results" instead
 - Hide fields used in API filters (all values are identical)
 - Show only query-relevant columns + varying identifiers
-- If {actual_count} > 5, show ONLY summary/takeaways initially (no table)
-- Key takeaways must include percentile distributions for displayed fields
+- **If {actual_count} > 5 on initial query, show ONLY 5 ROWS in table** + key takeaways (calculated from all {actual_count}) + sample data prompt
+- **DO NOT show all {actual_count} rows when count > 5 on initial query** - only show 5 sample rows
+- If {actual_count} <= 5, show all rows
+- If {actual_count} > 5 on follow-up for full data, show all rows + NO key takeaways
+- Key takeaways must include percentile distributions calculated from ALL {actual_count} records (not just the 5 displayed)
 - Never include all columns - always apply intelligent field detection
+- **NEVER add unsolicited follow-up questions or suggestions at the end of your response**
+- **ONLY answer what was asked - do not offer additional analysis, visualizations, or next steps**
 
 For any counting questions, the total is {actual_count} records after filteration. Focus on percentile-based distribution analysis.
 === END GetWorkOrderInformation GUIDELINES ===
