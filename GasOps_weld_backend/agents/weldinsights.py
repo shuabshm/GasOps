@@ -1,5 +1,6 @@
 import os, json
 import logging
+import json
 from config.azure_client import get_azure_chat_openai
 from tools.execute_api import execute_api
 from tools.weldinsights_tools import get_weldinsights_tools
@@ -247,7 +248,7 @@ def api_router_step(user_input, auth_token=None):
         logger.error(f"API Router error: {str(e)}")
         return [{"error": f"API Router error: {str(e)}"}]
 
-def data_analysis_step(user_input, clean_data_array, api_name=None):
+def data_analysis_step(user_input, clean_data_array, api_name=None, api_parameters=None):
     """
     Enhanced data analysis with truncation detection.
 
@@ -255,11 +256,13 @@ def data_analysis_step(user_input, clean_data_array, api_name=None):
         user_input (str): User's query
         clean_data_array (list): Clean array of work order data
         api_name (str): Name of the API that was called (e.g., "GetWorkOrderInformation", "GetWeldDetailsbyWorkOrderNumberandCriteria")
+        api_parameters (dict): Parameters used to filter the data (e.g., {"HeatSerialNumber": "648801026"})
 
     Returns:
         str: AI analysis response
     """
-    import json
+    if api_parameters is None:
+        api_parameters = {}
     
     logger.info(f"Starting data analysis with {len(clean_data_array)} records")
     
@@ -294,7 +297,7 @@ def data_analysis_step(user_input, clean_data_array, api_name=None):
         sample_ids = [wo.get('TransmissionWorkOrderID', 'N/A') for wo in clean_data_array[:5] if isinstance(wo, dict)]
         logger.info(f"Data range - First ID: {first_id}, Last ID: {last_id}, Sample IDs: {sample_ids}")
     
-    analysis_prompt = get_data_analysis_prompt(user_input, clean_data_array, api_name)
+    analysis_prompt = get_data_analysis_prompt(user_input, clean_data_array, api_name, api_parameters)
     
     # Check prompt size
     prompt_size = len(analysis_prompt)
@@ -375,19 +378,20 @@ def handle_weldinsights(user_input, auth_token=None):
         # NEW STEP: Extract only the actual work order objects
         clean_data_array = extract_clean_data(api_results)
 
-        # Extract API name from first result
+        # Extract API name and parameters from first result
         api_name = api_results[0].get("api_name", "Unknown") if api_results else "Unknown"
+        api_parameters = api_results[0].get("parameters", {}) if api_results else {}
         logger.info(f"Processing data for API: {api_name}")
 
         if not clean_data_array:
             logger.warning("No clean data extracted. No work orders found matching the criteria.")
             # Pass empty array to data analysis to handle "no data found" case properly
-            final_response = data_analysis_step(user_input, [], api_name)
+            final_response = data_analysis_step(user_input, [], api_name, api_parameters)
             return final_response
 
         logger.info("Step 2: Data Analysis - Analyzing clean data...")
         # Step 2: Analyze the clean data array
-        final_response = data_analysis_step(user_input, clean_data_array, api_name)
+        final_response = data_analysis_step(user_input, clean_data_array, api_name, api_parameters)
 
         return final_response
 

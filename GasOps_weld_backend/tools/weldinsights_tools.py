@@ -238,6 +238,58 @@ def GetWeldsbyNDEIndicationandWorkOrderNumber(WorkOrderNumber,
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetWeldsbyNDEIndicationandWorkOrderNumber", parameters, auth_token, method="POST")
 
+
+def GetNDEReportProcessingDetailsbyWeldSerialNumber(WeldSerialNumber,
+                                                      auth_token=None,
+                                                      api_path="AITransmissionWorkOrder"):
+    """Tool function to get list of all NDE report numbers and their type by requested weld serial number"""
+
+    parameters = {
+        "WeldSerialNumber": WeldSerialNumber
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetNDEReportProcessingDetailsbyWeldSerialNumber", parameters, auth_token, method="POST")
+
+
+def GetDetailsbyWeldSerialNumber(WeldSerialNumber,
+                                   ProjectNumber=None,
+                                   HeatSerialNumber=None,
+                                   NDEReportNumber=None,
+                                   auth_token=None,
+                                   api_path="AITransmissionWorkOrder"):
+    """Tool function to get comprehensive weld details by weld serial number with optional filters"""
+
+    parameters = {
+        "WeldSerialNumber": WeldSerialNumber,
+        "ProjectNumber": ProjectNumber,
+        "HeatSerialNumber": HeatSerialNumber,
+        "NDEReportNumber": NDEReportNumber
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetDetailsbyWeldSerialNumber", parameters, auth_token, method="POST")
+
+
+def GetHeatNumberDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
+                                                       Asset=None,
+                                                       AssetSubcategory=None,
+                                                       Material=None,
+                                                       Size=None,
+                                                       Manufacturer=None,
+                                                       auth_token=None,
+                                                       api_path="AITransmissionWorkOrder"):
+    """Tool function to get heat number details for requested work order number with optional filtering criteria"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "Asset": Asset,
+        "AssetSubcategory": AssetSubcategory,
+        "Material": Material,
+        "Size": Size,
+        "Manufacturer": Manufacturer
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
+
 # Define all tools for OpenAI
 def get_weldinsights_tools():
     """Define all available tools for weld insights"""
@@ -666,6 +718,89 @@ def get_weldinsights_tools():
                         }
                     },
                     "required": ["WorkOrderNumber", "NDEIndication"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetNDEReportProcessingDetailsbyWeldSerialNumber",
+                "description": "Get list of all NDE report numbers and their type by requested weld serial number. WeldSerialNumber is required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WeldSerialNumber": {
+                            "type": "string",
+                            "description": "Weld serial number (required)"
+                        }
+                    },
+                    "required": ["WeldSerialNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetDetailsbyWeldSerialNumber",
+                "description": "Get comprehensive weld details by weld serial number with optional filters. Returns structured data including Overall Details, Asset Details, CWI and NDE Result Details, and NDE Report Film Details. WeldSerialNumber is required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WeldSerialNumber": {
+                            "type": "string",
+                            "description": "Weld serial number (required)"
+                        },
+                        "ProjectNumber": {
+                            "type": "string",
+                            "description": "Project number for additional filtering (optional)"
+                        },
+                        "HeatSerialNumber": {
+                            "type": "string",
+                            "description": "Heat serial number for additional filtering (optional)"
+                        },
+                        "NDEReportNumber": {
+                            "type": "string",
+                            "description": "NDE report number for additional filtering (optional)"
+                        }
+                    },
+                    "required": ["WeldSerialNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetHeatNumberDetailsbyWorkOrderNumberandCriteria",
+                "description": "Get heat number details for requested work order number with optional filtering criteria for material traceability. Returns heat numbers with asset, material, size, and manufacturer information. WorkOrderNumber is required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        },
+                        "Asset": {
+                            "type": "string",
+                            "description": "Asset type filter (e.g., Pipe, Elbows, Weldolet, etc.) - optional"
+                        },
+                        "AssetSubcategory": {
+                            "type": "string",
+                            "description": "Asset subcategory filter (e.g., Seamless Line Pipe, Welded 22.5, etc.) - optional"
+                        },
+                        "Material": {
+                            "type": "string",
+                            "description": "Material type filter (e.g., Steel - GRADE X42, Steel - GRADE X52, etc.) - optional"
+                        },
+                        "Size": {
+                            "type": "string",
+                            "description": "Size specification filter (e.g., 12 NPS 0.375 SCH40, 4 NPS 0.237 SCH40, etc.) - optional"
+                        },
+                        "Manufacturer": {
+                            "type": "string",
+                            "description": "Manufacturer name filter (e.g., Tenaris Dalmine, TD Williamson, etc.) - optional"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
                 }
             }
         }

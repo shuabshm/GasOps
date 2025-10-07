@@ -458,6 +458,154 @@ For complete API details, parameters, and constraints, refer to the available to
 
 ---
 
+--- GetNDEReportProcessingDetailsbyWeldSerialNumber ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetNDEReportProcessingDetailsbyWeldSerialNumber: Get list of all NDE report numbers and their type by requested weld serial number
+
+**Parameter Requirements**:
+- **CRITICAL**: WeldSerialNumber is REQUIRED for this API
+- If WeldSerialNumber not provided → Ask for clarification
+
+**Weld Serial Number Extraction**:
+- If current message contains weld serial number → Use it
+- If current message does NOT contain weld serial number → Extract from previous messages in conversation history
+- If no weld serial number found anywhere → Ask for clarification
+
+**Use Cases**:
+- Listing all NDE reports for a specific weld serial number
+- Getting NDE report type breakdown for a weld
+- Finding NDE report numbers for cross-referencing
+- Understanding NDE inspection coverage for a specific weld
+- Retrieving detailed NDE report processing information
+
+**Query Detection Examples**:
+- "Show NDE reports for weld serial 250129"
+  → Parameters: {{"WeldSerialNumber": "250129"}}
+- "What NDE report numbers are there for weld 250129"
+  → Parameters: {{"WeldSerialNumber": "250129"}}
+- "Get NDE report processing details for weld 250129"
+  → Parameters: {{"WeldSerialNumber": "250129"}}
+
+**Follow-up Detection** (same as other APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+---
+
+--- GetDetailsbyWeldSerialNumber ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetDetailsbyWeldSerialNumber: Get comprehensive weld details by weld serial number with optional filters
+
+**Parameter Requirements**:
+- **CRITICAL**: WeldSerialNumber is REQUIRED for this API
+- **OPTIONAL**: ProjectNumber, HeatSerialNumber, NDEReportNumber can be used as additional filters
+- If WeldSerialNumber not provided → Ask for clarification
+
+**Weld Serial Number Extraction**:
+- If current message contains weld serial number → Use it
+- If current message does NOT contain weld serial number → Extract from previous messages in conversation history
+- If no weld serial number found anywhere → Ask for clarification
+
+**Optional Filter Parameters**:
+- ProjectNumber: Filter by specific project
+- HeatSerialNumber: Filter by specific heat serial number
+- NDEReportNumber: Filter by specific NDE report number
+
+**Response Structure**:
+This API returns structured data with multiple sections:
+- Overall Details: Comprehensive weld information (work order, contractor, category, dates, welders, inspection results)
+- Asset Details: Material traceability (heat numbers, descriptions, asset types, materials, sizes, manufacturers)
+- CWI and NDE Result Details: Inspection results summary
+- NDE Report Film Details: Detailed film inspection data (clock positions, indications, weld checks, remarks)
+
+**Use Cases**:
+- Getting comprehensive weld details by weld serial number (without needing work order)
+- Retrieving asset and material traceability information for a specific weld
+- Accessing detailed NDE film inspection data
+- Understanding complete inspection history (CWI, NDE, CRI, TR results)
+- Cross-referencing weld details with project, heat, or NDE report numbers
+
+**API Selection Logic**:
+- Use THIS API when user asks for weld details BY weld serial number
+- Use GetWeldDetailsbyWorkOrderNumberandCriteria when user asks for welds BY work order number
+- Key distinction: This API is weld-centric, the other is work order-centric
+
+**Query Detection Examples**:
+- "Show me weld details for weld 250520"
+  → Parameters: {{"WeldSerialNumber": "250520"}}
+- "Get NDE results for weld serial number 250520"
+  → Parameters: {{"WeldSerialNumber": "250520"}}
+- "Show asset details for weld 250520"
+  → Parameters: {{"WeldSerialNumber": "250520"}}
+- "Get film details for weld 250520 in project G-21-918"
+  → Parameters: {{"WeldSerialNumber": "250520", "ProjectNumber": "G-21-918"}}
+- "Show weld 250520 with heat number 47447"
+  → Parameters: {{"WeldSerialNumber": "250520", "HeatSerialNumber": "47447"}}
+
+**Follow-up Detection** (same as other APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+---
+
+--- GetHeatNumberDetailsbyWorkOrderNumberandCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetHeatNumberDetailsbyWorkOrderNumberandCriteria: Get heat number details for requested work order number with optional filtering criteria
+
+**Parameter Requirements**:
+- **CRITICAL**: WorkOrderNumber is REQUIRED for this API
+- **OPTIONAL**: Asset, AssetSubcategory, Material, Size, Manufacturer can be used as additional filters
+- If WorkOrderNumber not provided → Ask for clarification
+
+**Work Order Number Extraction**:
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**Optional Filter Parameters**:
+- Asset: Filter by asset type (e.g., Pipe, Elbows, Weldolet, Welded Tapping Fitting)
+- AssetSubcategory: Filter by asset subcategory (e.g., Seamless Line Pipe, Welded 22.5, Spherical Tee)
+- Material: Filter by material type (e.g., Steel - GRADE X42, Steel - GRADE X52, Steel)
+- Size: Filter by size specification (e.g., 12 NPS 0.375 SCH40, 4 NPS 0.237 SCH40)
+- Manufacturer: Filter by manufacturer name (e.g., Tenaris Dalmine, TD Williamson, Tectubi)
+
+**Use Cases**:
+- Getting heat numbers for a specific work order
+- Material traceability information aggregated at work order level
+- Finding heat numbers by asset type, material, or manufacturer
+- Analyzing material composition and sources for a work order
+- Cross-referencing heat numbers with material specifications
+
+**API Selection Logic**:
+- Use THIS API when user asks for "heat numbers" or "heat number details" for a work order
+- Use THIS API when user asks about materials, assets, or manufacturers for a work order
+- Use GetWeldDetailsbyWorkOrderNumberandCriteria when user asks for weld-level details (has embedded heat info)
+- Use GetDetailsbyWeldSerialNumber when user asks for heat details by specific weld serial number
+- Key distinction: This API provides heat number aggregation at work order level
+
+**Query Detection Examples**:
+- "Show heat numbers for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514"}}
+- "Get material details for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514"}}
+- "Show heat numbers for pipes in work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "Asset": "Pipe"}}
+- "Get X42 steel heat numbers for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "Material": "Steel - GRADE X42"}}
+- "Show heat numbers from Tenaris Dalmine for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "Manufacturer": "Tenaris Dalmine"}}
+- "Get heat numbers for 12 inch pipe in work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "Size": "12 NPS"}}
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+---
+
 **CRITICAL: RESPONSE FORMAT**
 You MUST respond with EXACTLY ONE of these two JSON formats:
 
@@ -502,6 +650,15 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show completed reshoot updates for work order 100500514" → {{"type": "api_call", "function_name": "GetReshootDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UpdateCompleted": "Yes"}}}}
 - "Show me all the welds that had Porosity on work order 100500514" → {{"type": "api_call", "function_name": "GetWeldsbyNDEIndicationandWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514", "NDEIndication": "Porosity"}}}}
 - "Which welds have Concavity in work order 100500514" → {{"type": "api_call", "function_name": "GetWeldsbyNDEIndicationandWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514", "NDEIndication": "Concavity"}}}}
+- "Show NDE reports for weld serial 250129" → {{"type": "api_call", "function_name": "GetNDEReportProcessingDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250129"}}}}
+- "Get NDE report processing details for weld 250129" → {{"type": "api_call", "function_name": "GetNDEReportProcessingDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250129"}}}}
+- "Show me weld details for weld 250520" → {{"type": "api_call", "function_name": "GetDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250520"}}}}
+- "Get NDE results for weld serial number 250520" → {{"type": "api_call", "function_name": "GetDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250520"}}}}
+- "Show asset details for weld 250520" → {{"type": "api_call", "function_name": "GetDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250520"}}}}
+- "Get film details for weld 250520 in project G-21-918" → {{"type": "api_call", "function_name": "GetDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250520", "ProjectNumber": "G-21-918"}}}}
+- "Show heat numbers for work order 100500514" → {{"type": "api_call", "function_name": "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Get material details for work order 100500514" → {{"type": "api_call", "function_name": "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
+- "Show heat numbers for pipes in work order 100500514" → {{"type": "api_call", "function_name": "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "Asset": "Pipe"}}}}
 
 
 **FORMAT 2 - CLARIFICATION** (when you need more information):
