@@ -1,0 +1,398 @@
+conEdison
+LAST REVIEW DATE: 05/03/2022
+REVIEW CYCLE:
+EFFECTIVE DATE: 06/06/2022
+5 Years
+SPECIFICATION: G-1065-25a
+TITLE: QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+VOLUME: 2 (Section 13.0), 10, and Yellow Book
+* COURSE ID: GAS0589
+* REQUIRED TRAINING GROUPS: Gas Engineering Major Projects, Gas Engineering Transmission Maintenance
+Each group listed is responsible for its own training which may be specific to a title/individual and not to the group in its entirety. Please check with your local training coordinator/department.
+Administrative Revisions
+REV 25a (2/13/2024)
+Added "Substantive Revisions" to the continuation page of the revision table. Section 3.1 A) Added a star next to the section because it was missing.
+Section 5.1 B) Updated section reference 6.2 to 5.2, to align with the appropriate section.
+Section 5.2) Updated section reference 6.1 to 5.1 to align with the appropriate section. Section 5.3) Updated section reference 6.2 to 5.2 to align with the appropriate section. Section 5.5 Changed the work "may" to "shall".
+Section 7.0 corrected the spelling of "Welding".
+Section 10.0 updated the titles for referenced specifications G-1064 & G-1065.
+SUBSTANTIVE REVISIONS: (See )
+1) Cover Page
+- Removed "Core Group" and "Target Audience", added "Required Training Groups.
+Added new course "GAS0589"
+2) Table of Contents
+- Reordered Sections.
+SUBSTANTIVE REVISIONS: (Continued)
+3) Section 3.0
+- Renamed section from "Reference" to "References" and relocated section to new section 10.0. Renumbered subsequent sections.
+4) Section 3.1(A)
+- Changed referenced section from 4.2 to 3.2 to align with section.
+5) Section 8.1
+- Changed requirements for Spot Check.
+6) Section 9.0
+- Changed section title from "Records" to "Records Retention".
+G-1065-25a
+conEdison
+TITLE:
+Gas Operations Standards
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+* TABLE OF CONTENTS
+1.0
+SCOPE
+2
+2.0
+LEGAL REQUIREMENTS
+2
+3.0
+INITIAL QUALIFICATION OF WELDERS
+2
+4.0
+RETESTS
+5
+5.0
+TENURE OF QUALIFICATION
+6
+6.0
+RECORD OF QUALIFIED WELDERS
+7
+7.0
+QUALIFICATION OF WELDING PROCEDURES
+7
+8.0
+QUALITY ASSURANCE FOR WELDERS
+9
+9.0
+RECORDS RETENTION
+10
+10.0 REFERENCES
+10
+11.0 APPENDICES
+11
+EFFECTIVE DATE: 06/06/2022
+EH&S REVIEW BY: Craig Little
+OPERATIONS REVIEW BY: N/A
+AUTHOR:
+APPROVED BY:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 1 OF
+conEdison
+C. McCollum
+Anthony Mancino Chief Engineer Gas Engineering Transmission
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+1.0 SCOPE
+1.1 This specification outlines the requirements for qualifying welders and welding procedures.
+1.2 All welders must qualify in accordance with this specification before welding on Company-owned piping outside the property line, and for gas piping on Company and private property up to the outlet of the meter.
+2.0 LEGAL REQUIREMENTS
+FEDERAL: DOT 192.3, 192.225, 192.227 and 192.229
+STATE: 16NYCRR 255.225, 255.227, 255.229 and 255.230
+3.0 INITIAL QUALIFICATION OF WELDERS
+3.1 General
+* A) All welders shall be qualified for MULTIPLE qualification, as per Section 3.2.
+B) Arrangements for all tests shall be made through Gas Engineering.
+C) Each welder upon qualification shall be required to carry an ITS On Board eWallet card, which holds the welder's qualifications. If the welder does not have an ITS card, a card with their ITS ID number and a QR code of their qualifications is sufficient.
+D) All qualification welds shall be subject to visual inspection prior to destructive testing.
+E) The qualification of welders shall be conducted in the presence of an inspector or individual who is qualified at minimum as an ASNT VT Level II or AWS Certified Welding Inspector.
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 2 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+3.0 INITIAL QUALIFICATION OF WELDERS (Continued)
+3.1 General (Continued)
+F) All persons that perform destructive testing of qualification welds shall be qualified at minimum as an ASNT VT Level II or AWS Certified Welding Inspector, and all equipment used to perform qualification testing shall be operated and maintained per manufacturer's requirements.
+G) Paperwork for welder performance qualification shall at a minimum be signed by the contracted radiographic service.
+H) Each welder is required to pass the following exams for these covered tasks before they can weld on Con Edison Gas Piping:
+1. CT06A or CT06B-Inspecting for Atmospheric Corrosion
+2. CT23 & 24 Inspecting the Condition of Exposed Pipe
+3. CT44 & 54-Welding on a Pipeline
+4. CT70-Properties of Natural Gas and Abnormal Operating Conditions
+3.2 Type of Qualifications
+A) Multiple Qualification
+For Multiple Qualification, the welder shall make a test assembly using the appropriate qualified welding procedures for the butt weld, and the fillet weld. (G-1064)
+A welder who has successfully completed the multiple qualification test using pipe with an O.D. of 12.750" or more shall be qualified to weld in all positions, on all wall thicknesses, joint designs, and fittings, and on all pipe diameters
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 3 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+3.0 INITIAL QUALIFICATION OF WELDERS (Continued)
+3.2 Type of Qualifications (Continued)
+A) Multiple Qualification (Continued)
+Test Welds
+Welder Qualified For
+Welding on all diameters, fittings, positions, wall thicknesses, and joint designs (butt and fillet welds).
+Laying-out, cutting, contouring, beveling and welding a 12 3/4" OD or larger header pipe with a full-size branch, all pipe to be of a 3/8" wall thickness. A full- size hole shall be cut in the pipe run. The weld shall be made with the run-pipe axis in the horizontal position and the branch-pipe axis extending downward from the run.
+B) Welders Qualified Other Than by Con Edison
+A welder who is qualified by a company other than Con Edison, shall be CONSIDERED for acceptance for production welding on Company pipelines, only when all of the following conditions are met:
+1) The welder has qualified under a specification that is equivalent to Con Edison's G-1064 and G-1065.
+2) A copy of the current test results from the independent testing agency is delivered to Gas Engineering.
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 4 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+3.0 INITIAL QUALIFICATION OF WELDERS (Continued)
+3.2 Type of Qualifications (Continued)
+A) Multiple Qualification (Continued)
+3) The welder has been issued a qualification card.
+Gas Engineering shall determine the acceptability of all welding procedures and qualifying methods of other companies.
+3.3 Welder Qualification Tests to Be Performed
+A) Welds shall be subjected to the following prescribed tests, each as stipulated in API 1104:
+1) Visual Examination
+2) Radiographic Examination
+3) Destructive Tests
+B) Test results shall be recorded by the inspection agency on forms similar to those indicated in API 1104.
+C) Each welder must be qualified in accordance with Section 6, Section 12, Appendix A or Appendix B of the listed API Std 1104 or Section IX of the ASME Boiler and Pressure Vessel Code.
+4.0 RETESTS
+4.1 If a welder fails the qualification test, Gas Engineering may require further training prior to any retests.
+4.2 If a welder fails the test for one group, the welder shall not be tested for another group until the welder has passed the group the welder failed.
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 5 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+5.0 TENURE OF QUALIFICATION
+5.1 A welder qualified under this specification shall continue to be qualified providing:
+A) Radiographic inspection has indicated consistently satisfactory welds, as per G-1070.
+B) The welder has complied with the six month periodic requalification test. See Section 5.2.
+C) No change in essential variables used to qualify the original welding procedure.
+5.2 The six-month periodic requalification test shall consist of butt welding pipe samples and verification of quality by visual inspection and radiographic examination (RT). The size of the pipe to be used is listed in Table 1.
+TABLE 1
+Present Qualification
+Periodic Requalification Test
+Multiple Qualification
+Butt-weld 4" and larger x 3/16" to 3/4" wall thickness
+It shall be the responsibility of the welder or welder's employer to update requalification testing.
+The Field Representative shall forward to Gas Engineering the report certifying compliance with Section 5.1 (A) to 5.1 (C).
+5.3 The RT of a production butt weld performed within the two month period prior to expiration date of the welder's Identification Card may be substituted for the test as outlined in Section 5.2. The size of the pipe used to requalify using a production weld is listed in Table 1.
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 6 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+5.0 TENURE OF QUALIFICATION (Continued)
+5.4 It shall be the responsibility of the radiographic inspector to make the proper notations on the RT reports. The report shall contain:
+1) Weld number (not applicable on welding qualification or requalification reports)
+2) Weld procedure G-1064 or Shielded Metal Arc Welding (SMAW)
+3) Welder's name or Identification Number
+4) Location and date
+5) Size of pipe
+6) Name and/or Signature of Radiographer/Interpreter
+One copy of the RT report shall be given to the welder's employer and one copy to the Field Representative. The Field Representative shall forward a copy of the report to Gas Engineering.
+5.5 Gas Engineering shall require that a welder retake the qualification test where the welder's performance is in question.
+6.0 RECORD OF QUALIFIED WELDERS
+A record of the tests on the qualification and requalification weld shall be maintained by Gas Engineering.
+7.0 QUALIFICATION OF WELDING PROCEDURES
+7.1 General
+The qualification of a welding procedure shall include data as stipulated in API 1104, and shall be recorded in a form similar to that indicated in Figure 1 & 2 of API 1104 Section 5.
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 7 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+7.0 QUALIFICATION OF WELDING PROCEDURES (Continued)
+7.2 Qualification
+A) The qualified welding procedures shall form the basis for the tables and requirements for welding variables in the Company welding specification G-1064.
+B) Testing shall be performed only by company personnel or Gas Engineering approved third party weld testing companies with appropriate training, qualification, and experience to assure the weld qualification procedure meets requirements of API 1104.
+1) All equipment used to perform destructive testing of qualification welds shall be operated, maintained, and calibrated in accordance with manufacturer's requirements.
+2) Persons responsible for performing destructive testing of qualification welds shall be qualified to operate said equipment.
+C) Any change in a qualified procedure or the qualification of a new procedure requires the written approval of Gas Engineering, and must be performed in accordance with API 1104.
+D) The qualified procedure shall be filed with the New York State Public Service Commission. If a procedure is re-established as a new procedure, or otherwise changed, the NY PSC shall be updated.
+7.3 Records
+A) The details of each acceptable qualified procedure shall be recorded by the qualified testing personnel and shall show the complete results of the procedure qualification tests, as stipulated in API 1104.
+B) All records of qualified weld procedures shall be maintained by Gas Engineering.
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 8 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+7.0 QUALIFICATION OF WELDING PROCEDURES (Continued)
+7.4 Re-establishment of a Welding Procedure
+A welding procedure must be re-established as a new procedure when any of the essential variables listed in API 1104 are changed.
+* 8.0 QUALITY ASSURANCE FOR WELDERS
+*
+8.1 One unannounced non-destructive test (Spot Check) must be made at least once each calendar year at intervals not exceeding 15 months, on at least one of each welder's welds. A field weld is defined as any production weld. Non-destructive testing can include radiography, mag- particle or dye penetrant examinations performed by an independent testing agency. The installing organization shall maintain all inspection records in an electronic database where the inspection reports are scanned into. Engineering shall be notified of all completed spot checks.
+If a welder on the list did not have a spot check performed, arrangements should be made to have a spot check completed. It shall be the responsibility of each organization, who has qualified welders, to arrange for the spot checks of their welders. For example, it shall be the responsibility of Construction Services to spot check their welders and contractor welders assigned to Construction Services.
+Failure of a spot check requires unannounced testing of an additional weld. A second failure requires another unannounced test of an additional weld. A third failure requires the welder to take the initial qualification test again. All follow-up unannounced spot checks of a welder must be conducted within three months or as soon as possible.
+By the end of the 15th month, if a welder has not had a spot check performed, their welding qualification will be suspended. The welder can have their qualification reinstated, if their first weld on their next job is non-destructively tested and is acceptable.
+A welder's certification card shall be inspected and compared to the "Qualified Welders" list for compliance by a Gas Engineering approved 3rd party weld testing agency and/or a Con Edison Field Representative.
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 9 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+8.0 QUALITY ASSURANCE FOR WELDERS (Continued)
+8.2 When the welder's performance is in question, Gas Engineering may require that the welder have further training or retake the qualification test.
+9.0 RECORDS RETENTION
+Any records generated in the course of performing work in accordance with this specification shall be maintained as required by Corporate Instruction CI-870-1 "Records Management". Guidance on the retention of Company Gas Operations records can also be found on the Records Management intranet site.
+* 10.0 REFERENCES
+API 1104 - American Petroleum Institute Standard for Welding Pipeline and Related Facilities, API Standard 1104, Twentieth Edition, including Sections 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, Annex, Errata/Addendum [2007] and Errata 2 [2008], Reaffirmed April 2010.
+G-1064
+-
+Welding Procedure Specification for Shielded Metal Arc Welding of Steel Pipe and Fittings
+G-1066
+-
+Qualification of Nondestructive Testing (NDT) Personnel & Procedure
+G-1065
+-
+Qualification of Welders and Welding Procedures
+G-1070
+-
+Radiographic Inspection of Pipeline Welds
+G-8212
+-
+Operator Qualification (OQ) Compliance Program
+CI-870-1
+-
+Records Management
+Welder Qualification Process Flow Chart
+PQR1
+-
+Weld Procedure Qualification for G-1064- Grade B to X60 Pipe
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 10 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+TITLE:
+QUALIFICATION OF WELDERS AND WELDING PROCEDURES
+10.0 REFERENCES (Continued)
+PQR2
+-
+Weld Procedure Qualification for G-1064- X60 to X70 Pipe
+PQR3
+-
+Weld Procedure Qualification for G-1064- Wrought Iron Grade B - Fillet Welding
+PQR4
+-
+Weld Procedure Qualification for G-1064- Wrought Iron Grade B - Butt Welding
+11.0 APPENDICES
+A. Welder Qualification Process Flow Chart
+EFFECTIVE DATE: 06/06/2022
+NUMBER:
+DATE APPROVED:
+VOLUME: 2 (Section 13.0), 10, & Yellow Book
+PAGE 11 OF
+G-1065-25a
+05/03/2022
+Construction Standards and O&M Manual
+11 PAGES
+conEdison
+Paper copies of operating documents are uncontrolled and therefore may be outdated. Verify current version prior to use.
+WELDING QUALIFICATION PROCESS
+Has Initial Qualification=
+=Has Re-Qualification:
+Con Edison - Gas API Welder CE300
+Start
+Con Edison - Gas API Welder CE301 (Re-Qualification) 6 months
+Once Per Calender Year For Qualified Welders
+(Initial Qualification) 6 months
+No
+No
+Passed?
+No
+Passed?
+-Has Passed Spot Check1
+Yes
+Passed All Exams?
+-Yes-
+Has it been more than 6 months?
+No
+Has it been more than 6 months?
+Yes
+-Has Passed Spot Check-
+-Yes-
+Repeat 6 Month Re-Qualification & Spot Check
+No
+No
+Redo Initial Qualification
+-Yes-
+Has welder failed the test more than once?
+-Yes
+Has it been at least 48 hours?
+-No-
+Appendix A
+G-1065-25a
+ITS Testing
+Con Edison - Gas API Welder Field Spot Check CE302
+Yes
+Passed?
+No
+API Gas Welder Fully Qualified
+Yes
