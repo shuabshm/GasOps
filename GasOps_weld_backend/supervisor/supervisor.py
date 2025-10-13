@@ -1,5 +1,6 @@
 from agents.mtr_agent import handle_mtr_agent
 from agents.weldinsights import handle_weldinsights
+from agents.specs_agent import handle_specs_agent
 from config.azure_client import get_azure_chat_openai
 from datetime import datetime
 import json
@@ -50,6 +51,7 @@ async def supervisor(query, database_name=None, auth_token=None):
         Available agents and their domains:
         1. WeldInsightsAgent: Handles queries related to work orders, welds, weld details, heat number traceability, NDE reports, inspection results, welders, contractors, projects, regions, and material information in the context of work orders and welds. Use this when user asks about work orders, finding work orders by heat number, weld serial numbers, or getting heat numbers for a work order.
         2. MTRAgent: Handles queries related to material test report (MTR) documents, detailed material properties from MTR files, chemical composition, mechanical properties, standards compliance (API 5L, ASME), and MTR-specific heat number data. Use this when user asks for MTR data, material properties, chemical composition, or test report details for a heat number.
+        3. SpecsAgent: Handles queries about specifications, compliance requirements, regulatory standards, technical specifications, welding requirements, pipeline standards, material specifications, inspection procedures, and any questions requiring reference to specification documents. Use this when user asks about specs, requirements, standards, procedures, or "what is required for..."
 
         Key Distinction for Heat Number Queries:
         - If asking "which work order has heat number X" or "heat numbers in work order Y" → WeldInsightsAgent (work order context)
@@ -81,6 +83,15 @@ async def supervisor(query, database_name=None, auth_token=None):
 
         User: "Show me material properties for heat number 648801026"
         Response: {{"agent": "MTRAgent"}}
+
+        User: "What welding requirements apply to gas pipelines?"
+        Response: {{"agent": "SpecsAgent"}}
+
+        User: "What's required before a welder can weld on Company-owned piping?"
+        Response: {{"agent": "SpecsAgent"}}
+
+        User: "What are the inspection procedures for pipeline welding?"
+        Response: {{"agent": "SpecsAgent"}}
 
         Respond in the following format:
         - If general question: {{"answer": "<direct answer>"}}
@@ -122,6 +133,13 @@ async def supervisor(query, database_name=None, auth_token=None):
         except Exception as e:
             logger.error(f"MTR agent failed: {str(e)}")
             return {"error": "MTR processing failed"}
+    elif parsed.get("agent") == "SpecsAgent":
+        logger.info("Routing query to Specs agent")
+        try:
+            return handle_specs_agent(query, auth_token)
+        except Exception as e:
+            logger.error(f"Specs agent failed: {str(e)}")
+            return {"error": "Specifications processing failed"}
 
     logger.info("Returning direct response (no agent routing required)")
     return parsed

@@ -1,0 +1,640 @@
+conEdison
+LAST REVIEW DATE: 3/28/16
+REVIEW CYCLE: 5 Years
+SPECIFICATION: G-8107-16
+TITLE:
+STEEL PIPE FOR GAS MAINS AND
+SERVICES
+VOLUME:
+6
+REVISIONS: (See )
+1) This specification has been revised to incorporate comments made by GTI's technical experts and Con Edison's subject matter experts.
+2) Section 3.1
+- Clarified that the latest editions of the applicable ASTM and API standards are to be use for conformance.
+3) Section 4.1 (C) - Added API 5L X60 and X70 as approved grades.
+4) Section 4.2 (C)
+- Added X60 and X70 as approved for the submerged arc weld manufacturing process.
+5) Section 4.2 (D)
+- Added section indicating pipe grades approved for the double submerged arc weld manufacturing process.
+G-8107-16
+conEdison
+Gas Operations Standards
+TITLE:
+STEEL PIPE FOR GAS MAINS AND
+SERVICES
+TABLE OF CONTENTS
+SECTION
+TITLE
+PAGE
+1.0
+SCOPE
+2
+2.0
+DEFINITIONS
+2
+3.0
+GENERAL REQUIREMENTS
+2
+4.0
+MATERIALS AND MANUFACTURING PROCESS
+3
+5.0 APPROVED PIPE SIZES AND GRADES
+3
+6.0 APPROVED LENGTHS
+4
+7.0
+PIPE ENDS
+5
+8.0
+PIPE COATINGS
+5
+9.0
+PIPE MARKINGS
+5
+10.0 TRANSPORTATION AND PROTECTION OF PIPE
+6
+11.0
+INSPECTION AND REJECTION OF PIPE
+6
+12.0 APPROVED MANUFACTURERS
+7
+13.0
+QUALITY CONTROL 8
+ENVIRONMENTAL REVIEW BY: W. Miller
+SAFETY REVIEW BY: W. Miller
+PREPARED BY:
+APPROVED BY:
+DATE:
+VOLUME: 6
+PAGE 1
+J. Powers
+Robert Mayou
+Chief Engineer
+Gas Transmission Engineering
+3/28/16
+Purchase and Test
+OF 8 PAGES
+TITLE: STEEL PIPE FOR GAS MAINS AND SERVICES
+1.0 SCOPE
+This specification concerns the purchase of steel pipe for use on the Company gas system.
+2.0 DEFINITIONS
+2.1 Company
+- Consolidated Edison Company of New York, Inc.
+2.2 Manufacturer
+- The party that manufactures steel pipe.
+2.3 Coater
+- The party that applies coating on bare steel pipe prior to delivery to the Company.
+2.4 Vendor
+- The party from whom the Company purchases the pipe.
+2.5 API
+- American Petroleum Institute.
+2.6 ASTM
+- American Society for Testing and Materials.
+3.0 GENERAL REQUIREMENTS
+* 3.1 All steel pipe shall conform to this specification and to
+• ASTM Specification A53/A53M- "Standard Specification for Pipe, Steel, Black and Hot-Dipped, Zinc-Coated, Welded and Seamless" in accordance with the latest edition of A53/A53M.
+or
+• ASTM Specification A106/A106M - "Standard Specification for Seamless Carbon Steel Pipe for High - Temperature Service" in accordance with the latest edition of A106/A106M
+or
+• In accordance with the latest edition of API Specification 5L/ISO 3183 "Specification for Line Pipe" which includes the latest Errata and Addendums.
+The indicated revisions are incorporated by reference in 16 NYCRR Part 10. In cases where this specification differs from the ASTM or API Specifications, this specification shall prevail.
+3.2 Aluminum pipe or pipe made from amphoteric materials is not approved.
+NUMBER:
+DATE:
+VOLUME: 6
+PAGE 2
+conEdison
+G-8107-16
+3/28/16
+Purchase and Test
+OF 8 PAGES
+TITLE: STEEL PIPE FOR GAS MAINS AND SERVICES
+4.0 MATERIALS AND MANUFACTURING PROCESS
+4.1 The following grades of steel are approved for gas piping:
+A) ASTM A53 Grade B
+B) ASTM A106 Grade B
+C) API 5L Grades B, X42, X46, X52, X56, X60 and X70.
+4.2 The following processes of manufacture conforming to ASTM A53, ASTM A106, and API 5L are approved for gas piping:
+A) Seamless - all sizes
+B) Electric Resistance Weld - all sizes
+C) Submerged Arc Weld - 20" O.D. and larger for Grade B and for API 5L X42, X46, X52, X56, X60 and X70.
+* D) Double Submerged Arc Weld - 20" O.D. and larger for Grade B and for API 5L X42, X46, X52, X56, X60 and X70.
+4.3 The interior of all pipes shall be smooth, free of scale, oil, grease and projections.
+5.0 APPROVED STEEL PIPE SIZES AND GRADES
+The following pipe sizes and grades are approved for Distribution (up to 99 psig) and Transmission (above 125 psig) for standard construction.
+Nominal
+Outside
+Identification-Steel
+CLASS & STOCK NUMBERS FOR WELDED END PIPES
+Pipe Size In.
+Iron Pipe Size
+Sched. No.
+Wall Thick. In.
+Bare SGL R/L
+Bare DBL R/L
+Coated SGL R/L
+Coated DBL R/L
+1
+1.315
+Std
+40
+0.133
+320-1753
+non-stock
+323-0372
+non-stock
+1
+1.315
+XS
+80
+0.179
+320-0250
+non-stock
+non-stock
+non-stock
+1 1/4
+1.660
+Std.
+40
+0.140
+320-1761
+non-stock
+323-0729
+non-stock
+1 1/4
+1.660
+XS
+80
+0.191
+320-1415
+non-stock
+non-stock
+non-stock
+1 1/2
+1.900
+Std.
+40
+0.145
+320-1779
+non-stock
+323-0349
+non-stock
+1 1/2
+1.900
+XS
+80
+0.200
+320-1423
+non-stock
+non-stock
+non-stock
+2
+2.375
+Std.
+40
+0.154
+320-0367
+non-stock
+non-stock
+non-stock
+2
+2.375
+XS
+80
+0.218
+320-1431
+non-stock
+non-stock
+323-0711
+3
+3.500
+Std.
+40
+0.216
+320-0359
+non-stock
+323-0299
+non-stock
+3
+3.500
+XS
+80
+0.300
+320-1456
+non-stock
+non-stock
+non-stock
+4
+4.500
+Std.
+40
+0.237
+320-0342
+non-stock
+323-0273
+323-0596
+4
+4.500
+XS
+80
+0.337
+320-1464
+non-stock
+non-stock
+non-stock
+6
+6.625
+Std.
+40
+0.280
+320-1613
+320-0334
+323-0612
+323-0257
+Contact Gas Transmission Engineering - Major Projects to specify appropriate schedule and grade of transmission pipe (>125 psig)
+NUMBER:
+DATE:
+VOLUME: 6
+PAGE 3
+conEdison
+G-8107-16
+3/28/16
+Purchase and Test
+OF 8 PAGES
+Diam.
+Distribution ( <= 99 psig) (see Note a)
+Transmission (>125 psig) (see Note b)
+In.
+TITLE: STEEL PIPE FOR GAS MAINS AND SERVICES
+5.0 APPROVED STEEL PIPE SIZES AND GRADES (Continued)
+Nominal
+Outside
+Identification-Steel
+CLASS & STOCK NUMBERS FOR WELDED END PIPES (Continued)
+Pipe Size In.
+Diam.
+Iron Pipe Size
+Sched. No.
+Wall Thick. In.
+Bare SGL R/L
+Bare DBL R/L
+Coated SGL R/L
+Coated DBL R/L
+6
+6.625
+XS
+80
+0.432
+320-1472
+non-stock
+non-stock
+non-stock
+8
+8.625
+Std
+40
+0.322
+320-2009
+non-stock
+323-0620
+323-0240
+8
+8.625
+XS
+80
+0.500
+320-1522
+non-stock
+non-stock
+non-stock
+10
+10.750
+Std.
+40
+0.365
+320-0318
+non-stock
+323-0638
+323-0224
+10
+10.750
+XS
+60
+0.500
+320-1803
+non-stock
+non-stock
+non-stock
+12
+12.750
+Std.
+0.375
+320-2025
+320-0300
+323-0646
+323-0216
+12
+12.750
+XS
+1
+0.500
+320-1530
+non-stock
+non-stock
+non-stock
+16
+16.000
+Std.
+30
+0.375
+320-0292
+non-stock
+non-stock
+323-0208
+16
+16.000
+XS
+40
+0.500
+320-1829
+non-stock
+non-stock
+non-stock
+20
+20.000
+Std.
+20
+0.375
+320-2264
+320-0284
+non-stock
+323-0182
+20
+20.000
+XS
+30
+0.500
+non-stock
+non-stock
+non-stock
+non-stock
+24
+24.000
+Std.
+20
+0.375
+320-0276
+non-stock
+non-stock
+323-0166
+24
+24.000
+XS
+0.500
+320-2298
+320-0243
+non-stock
+non-stock
+26
+26.000
+Std.
+-
+0.375
+non-stock
+non-stock
+non-stock
+non-stock
+26
+26.000
+XS
+20
+0.500
+non-stock
+non-stock
+non-stock
+non-stock
+30
+30.000
+Std.
+0.375
+non-stock
+320-1969
+non-stock
+323-0737
+30
+30.000
+XS
+20
+0.500
+non-stock
+320-2462
+non-stock
+323-0810
+36
+36.000
+Std.
+0.375
+non-stock
+320-0227
+non-stock
+non-stock
+36
+36.000
+Std.
+0.562
+non-stock
+non-stock
+non-stock
+non-stock
+36
+36.000
+Std.
+30
+0.625
+non-stock
+non-stock
+non-stock
+non-stock
+Note a) - Any approved schedule and grade of steel may be used for distribution pipe ( <= 99 psig). See Section 4.1
+Note b) - Contact Gas Transmission Engineering - Major Projects to specify appropriate schedule and grade of transmission pipe (>125 psig). See Section 13.6 for toughness testing requirements for transmission pipe (>125 psig).
+6.0 APPROVED LENGTHS
+6.1 Pipe lengths approved are:
+A) Single Random lengths (SR) 20 feet, and Double Random lengths (DR) 40 feet with the following tolerances:
+SR
+DR
+Shortest length in the entire shipment
+18.0 feet
+35.0 feet
+NUMBER:
+DATE:
+VOLUME: 6
+PAGE 4
+conEdison
+G-8107-16
+3/28/16
+Purchase and Test
+OF 8 PAGES
+-
+-
+-
+-
+Contact Gas Transmission Engineering - Major Projects to specify appropriate schedule and grade of transmission pipe (>125 psig)
+Distribution ( <= 99 psig) (see Note a)
+Transmission (>125 psig) (see Note b)
+In.
+TITLE: STEEL PIPE FOR GAS MAINS AND SERVICES
+6.0 APPROVED LENGTHS
+B) Longest lengths available.
+C) Lengths as ordered on individual requisitions.
+6.2 Jointers, two or more shorter lengths of pipe joined together by welding or other means to meet length requirements, are not acceptable.
+7.0 PIPE ENDS
+7.1 Pipe that is 2 inches in diameter and larger shall be beveled for welding to conform to the requirements of API 5L or ASTM A106.
+7.2 End tolerances shall conform to API 5L or ASTM A106 to facilitate the installation of mechanical compression joints.
+7.3 The inside and outside edges of the pipe ends shall be free of burrs, projections, dents or gouges.
+8.0 PIPE COATING
+8.1 Coating, when required shall be as per Purchase Specification G-8062, "Extruded Polyolefin Coating on Steel Gas Pipe".
+8.2 Bare steel pipe supplied to the Company shall have a lacquer coating, uniform in thickness on the outside pipe surface. No coating is required on bare steel pipe supplied to a coater.
+8.3 Galvanized steel pipe is not approved.
+9.0 PIPE MARKINGS
+9.1 By Manufacturer - Marking of all bare pipe shall conform to the requirements of API 5L, ASTM A106 or ASTM A53.
+9.2 By Coater or Vendor - Coated pipe purchased shall have the pipe diameter, wall thickness, grade, Con Ed, date pipe was coated, heat number and API or ASTM specification under which the pipe has been manufactured paint stenciled on the coating surface as per API 5L, ASTM A106 or ASTM A53 along the pipe length.
+NUMBER:
+DATE:
+VOLUME: 6
+PAGE 5
+conEdison
+G-8107-16
+3/28/16
+Purchase and Test
+OF 8 PAGES
+TITLE: STEEL PIPE FOR GAS MAINS AND SERVICES
+9.0 PIPE MARKINGS (Continued)
+9.3 All required markings shall be legible and permanent.
+10.0 TRANSPORTATION AND PROTECTION OF PIPE
+10.1 Pipe transportation, handling and storage shall be in accordance with Company Specification G-8003, "Transporting, Handling, and Storing Steel Gas Pipe".
+10.2 The vendor shall be responsible for damages to the pipe or coating due to transportation.
+11.0 INSPECTION AND REJECTION OF PIPE
+11.1 Bare pipe shall be visually inspected for dents, gouges, grooves, or arc burns prior to surface preparation by the Coater. Any defects found shall be reported to the Transportation and Stores Department of the Company and the damaged pipe length in question shall not be coated.
+11.2 A dent that contains or affects the longitudinal weld is not acceptable.
+11.3 Pipe containing a dent in which the dent contains a scratch, gouge, groove or arc burn is not acceptable. A dent may be defined as a depression, which produces a gross disturbance in the curvature of the pipe wall as opposed to a scratch or gouge that reduces the pipe wall thickness.
+11.4 The pipe shall contain no dents greater than 1/4 inch. The length of the dent in any direction shall not exceed one-half the pipe diameter.
+11.5 Pipe containing gouges or grooves having a depth greater than 12 percent of the specified wall thickness, measured from the surface of the pipe is not acceptable.
+11.6 Pipe containing any arc burns is not acceptable.
+11.7 The Company reserves the right to inspect, test and subsequently reject any pipe that does not conform in any way to the standards set forth in this specification, or the API or ASTM Specification under which the pipe is manufactured, or the associated coating specifications as set forth herein. The vendor shall be liable for all costs incurred by the Company as a result of pipe failing to comply with this specification.
+NUMBER:
+DATE:
+VOLUME: 6
+PAGE 6
+conEdison
+G-8107-16
+3/28/16
+Purchase and Test
+OF 8 PAGES
+TITLE: STEEL PIPE FOR GAS MAINS AND SERVICES
+12.0 APPROVED MANUFACTURERS
+12.1 The following pipe manufacturers are approved:
+DOMESTIC
+FOREIGN
+Mill Name
+City, State
+Mill Name
+City, Country
+American Steel Pipe
+Birmingham, AL
+Hyundai Pipe Co.
+Ulsan, S. Korea
+Berg Steel Pipe Corp.
+Panama City, FL
+Mannesmann
+Hamm, Germany
+Dura-Bond Pipe
+Steelton, PA
+Mittal/Iscor Steel Vereeniging,
+S. Africa
+Ipsco Tubulars
+Camanche,IA
+Seah Steel Corp.
+Pohang City, S.Korea
+Koppel Steel
+Ambridge, PA
+Sumitomo Metal
+Japan
+Lone Star Steel
+Lone Star, TX
+Tenaris Dalmine
+Dalmine, Italy
+Maverick Tube
+Conroe, TX
+Tenaris Siderca
+Buenos Aires, Argentina
+Newport Steel
+Wilder, KY
+Tubacero
+Monterrey, Mexico
+Paragon Industries
+Sapulpa, OK
+Zeleziarne-Podbr.
+Podbrezova, Slovakia
+Sharon Tube
+Sharon, PA
+Stupp Corp.
+Baton Rouge, LA
+Tex-Tube
+Houston, TX
+USS- Div. of USX Corp.
+Lorain, OH
+USS- Div. of USX Corp.
+McKeesport, PA
+V&M Star
+Houston, TX
+V&M Star
+Youngstown, OH
+Wheatland Tube
+Wheatland, PA
+Pipe manufactured by companies other than those listed above shall be purchased only with the written approval of the Chief Gas Engineer, Gas Transmission Engineering or duly authorized representative.
+12.2 Manufacturers or vendors supplying pipe which do not conform to this specification and/or display poor workmanship shall not be acceptable for subsequent bids until written approval is received from the Chief Gas Engineer, Gas Transmission Engineering or duly authorized representative.
+12.3 The Company's Purchasing Department may canvass other pipe manufacturers and direct all potential pipe suppliers to the Chief Gas Engineer, Gas Transmission Engineering or duly authorized representative who will evaluate the manufacturer's product in accordance with the contents of this specification.
+12.4 Manufacturers not approved in Section 12.1 may request consideration for approval by submitting quality control procedures, specifications, catalogs, and a certificate that all pipe supplied will meet the requirements of this specification. This shall be sent to the Chief Gas Engineer, Gas Transmission Engineering or duly authorized representative.
+NUMBER:
+DATE:
+VOLUME: 6
+PAGE 7
+conEdison
+G-8107-16
+3/28/16
+Purchase and Test
+OF 8 PAGES
+TITLE: STEEL PIPE FOR GAS MAINS AND SERVICES
+13.0 QUALITY CONTROL
+13.1 The vendor shall submit written notification to the Chief Gas Engineer, Gas Transmission Engineering or duly authorized representative of any changes to be made by the manufacturer concerning the design, fabrication, material or marking of the pipe. This notification shall be made in advance of any changes and must receive written approval from the Chief Gas Engineer, Gas Transmission Engineering or duly authorized representative in order to be acceptable.
+13.2 The vendor shall keep records of all materials supplied to Con Edison. The records shall include mill certificates, the material description, the manufacturer and the heat numbers. They shall be available to Con Edison upon request.
+13.3 The vendor shall maintain a quality control program to insure that all pipe shipped to Con Edison meets referenced standards.
+13.4 For pipe that is 8" and larger, dimensional data shall be recorded for a minimum of 10% of each item in each shipment. Dimensional data shall include outside diameter, wall thickness, roundness, bevel ends, etc. The vendor shall externally mark each inspected length of pipe with a painted yellow dot readily visible to Con Edison inspectors. The vendor shall maintain these records at their facility and make them available to Con Edison upon request.
+13.5 When an out-of-specification length of pipe is found by the vendor in a shipment, the entire shipment shall be inspected and documented before shipment to Con Edison. The vendor shall maintain these records at their facility and make them available to Con Edison upon request.
+13.6 Any pipe to be used for transmission (>125psig) shall be toughness tested as per "Appendix A - Steel Pipe Toughness Standards For All New Pipe >125 Psig". This will be requested when required. These test results will be sent to Gas Transmission Engineering - Major Projects for approval prior to delivery to the pipe coater and Con Edison. One set of toughness tests is required for every 100 lengths per heat of pipe.
+NUMBER:
+DATE:
+VOLUME: 6
+PAGE 8
+conEdison
+G-8107-16
+3/28/16
+Purchase and Test
+OF 8 PAGES
+APPENDIX A
+STEEL PIPE TOUGHNESS STANDARDS FOR ALL NEW PIPE > 125 PSIG
+PIPE SAMPLES:
+1" through 10", cut 6" long pipe section 12" through 36", cut 8" x 8" coupons Note: the test coupon must include the seam area on all welded pipe.
+PIPE IDENTIFICATION:
+Samples shall be from the same lot number or heat number.
+CHARPY V-NOTCH (CVN) TOUGHNESS TESTS:
+Full size samples shall be tested at a temperature of -10 degrees F and as per API 5L SR5A/SR5B, ASTM E23 and ASTM A370. Three CVN specimens shall be evaluated for each test: the Base Metal, the Weld, and the Heat Affected Zone (HAZ). Acceptable values for each test are as follows:
+ABSORBED ENERGY:
+MINIMUM OF EACH TEST SPECIMEN ≥ 15 FT-LB
+LATERAL EXPANSION:
+MINIMUM OF EACH TEST SPECIMEN ≥ 0.020 IN.
+PERCENT SHEAR:
+MINIMUM OF EACH TEST SPECIMEN ≥ 20 %
+Note: If subsize samples are used, the test temperature shall be lowered and absorbed energy adjusted to be equivalent to full size samples at -10 degrees F as per ASTM A370 and ASME Boiler and Pressure Vessel Code, Section VIII, Div. 1, Subsection A, UG-84 requirements. Also for this condition (sub size samples) percent shear is not required.
+G-8107-16
+1 of 1

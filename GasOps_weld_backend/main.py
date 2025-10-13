@@ -148,13 +148,20 @@ async def ask(
         "token": body.token
     }
 
-    # 5-field response format following OQ pattern
+    # Handle specs sources if available
+    sources = []
+    if isinstance(result, dict) and "sources" in result:
+        sources = result["sources"]
+        logger.info(f"Included {len(sources)} spec sources in response")
+
+    # 6-field response format with sources support
     return {
         "answer": response_text,
         "timestamp": timestamp_bot,
         "context": context_list,
         "user_details": user_details,
-        "decrypted_fields": decrypted_fields
+        "decrypted_fields": decrypted_fields,
+        "sources": sources  # Include specs sources for citations
     }
 
 if __name__ == "__main__":
