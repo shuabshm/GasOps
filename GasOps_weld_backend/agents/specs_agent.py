@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from tools.specs_llm import ask_question
+from prompts.specs_prompt import ask_question
 
 logger = logging.getLogger(__name__)
 
