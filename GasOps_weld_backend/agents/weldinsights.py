@@ -43,6 +43,148 @@ def execute_weldinsights_tool_call(tool_call, auth_token=None):
         logger.error(f"WeldInsights tool {function_name} failed: {str(e)}")
         return {"error": f"Tool execution failed: {str(e)}"}
 
+def execute_multi_api_calls(calls, auth_token=None):
+    """
+    Execute multiple API calls to the same API with different parameters.
+    NEW modular function for multi-call feature.
+
+    Args:
+        calls (list): List of call objects, each containing function_name and parameters
+        auth_token (str, optional): Authentication token for API calls
+
+    Returns:
+        list: List of API result objects from all calls
+    """
+    api_results = []
+    warnings = []
+
+    for i, call in enumerate(calls, 1):
+        function_name = call.get("function_name")
+        parameters = call.get("parameters", {})
+
+        logger.info(f"Multi-call {i}/{len(calls)}: Executing {function_name} with parameters {parameters}")
+
+        try:
+            result = execute_api("AITransmissionWorkOrder", function_name, parameters, auth_token, method="POST")
+            api_results.append({
+                "api_name": function_name,
+                "parameters": parameters,
+                "data": result
+            })
+            logger.info(f"Multi-call {i}/{len(calls)}: Success")
+        except Exception as e:
+            logger.error(f"Multi-call {i}/{len(calls)}: Failed - {str(e)}")
+            warnings.append(f"Call {i} failed: {str(e)}")
+            # Continue with partial results
+
+    # Add warnings to results if any failures occurred
+    if warnings:
+        logger.warning(f"Multi-call completed with {len(warnings)} failures: {warnings}")
+
+    return api_results
+
+def deduplicate_data_by_json(clean_data_array):
+    """
+    Deduplicate records using JSON stringify approach.
+    NEW modular function for multi-call feature.
+
+    Args:
+        clean_data_array (list): List of data objects that may contain duplicates
+
+    Returns:
+        list: Deduplicated list of data objects
+    """
+    if not clean_data_array:
+        return clean_data_array
+
+    seen_json_keys = set()
+    deduplicated = []
+
+    for item in clean_data_array:
+        if isinstance(item, dict):
+            # Sort keys to ensure consistent JSON string regardless of field order
+            json_key = json.dumps(item, sort_keys=True)
+
+            if json_key not in seen_json_keys:
+                seen_json_keys.add(json_key)
+                deduplicated.append(item)
+        else:
+            # Not a dict, include anyway
+            deduplicated.append(item)
+
+    duplicates_removed = len(clean_data_array) - len(deduplicated)
+    if duplicates_removed > 0:
+        logger.info(f"Deduplication: Removed {duplicates_removed} duplicate records using JSON stringify")
+
+    return deduplicated
+
+def extract_clean_data(api_results):
+    """
+    Extract only the actual data from API responses.
+
+    Handles two patterns:
+    1. Array-based APIs (GetWorkOrderInformation, etc.): Returns list of objects
+    2. Nested object APIs (GetDetailsbyWeldSerialNumber): Returns single nested object
+
+    Args:
+        api_results (list): List of API response objects
+
+    Returns:
+        list: Clean data (list of objects OR single nested object wrapped in list)
+    """
+    clean_data_arrays = []
+
+    for api_result in api_results:
+        if "error" in api_result:
+            continue
+
+        api_name = api_result.get("api_name", "Unknown")
+
+        # Navigate the actual API response structure
+        api_data = api_result.get("data", {})
+
+        # Based on debug output: api_result["data"]["data"]["Data"]
+        data_array = None
+        if isinstance(api_data, dict) and "data" in api_data:
+            nested_data = api_data["data"]
+            if isinstance(nested_data, dict) and "Data" in nested_data:
+                data_array = nested_data["Data"]
+                logger.info(f"Successfully extracted Data field from {api_name} API")
+
+        # SPECIAL HANDLING FOR GetDetailsbyWeldSerialNumber
+        # This API returns nested object structure, not array
+        if api_name == "GetDetailsbyWeldSerialNumber":
+            if isinstance(data_array, dict):
+                # It's a nested object with sections like "Overall Details", "Asset Details", etc.
+                # Wrap it in a list so it can be processed uniformly
+                clean_data_arrays.append(data_array)
+                logger.info(f"Extracted nested object structure from {api_name} API (1 weld serial number)")
+            else:
+                logger.warning(f"Unexpected data structure for {api_name} - expected dict, got {type(data_array)}")
+
+        # NORMAL HANDLING FOR ALL OTHER APIs
+        # These return arrays of objects
+        elif data_array is not None and isinstance(data_array, list):
+            clean_data_arrays.extend(data_array)
+            logger.info(f"Extracted {len(data_array)} work order objects from {api_name} API")
+        else:
+            logger.warning(f"Could not extract data array from {api_name} API - data_array is {type(data_array)}")
+
+    logger.info(f"Total clean data objects extracted: {len(clean_data_arrays)}")
+
+    # Log cleaned data structure for debugging
+    if len(clean_data_arrays) > 0:
+        first_item = clean_data_arrays[0]
+        if isinstance(first_item, dict):
+            # Check if it's a nested object (GetDetailsbyWeldSerialNumber) or regular object
+            if any(key in first_item for key in ["Overall Details", "Asset Details", "CWI and NDE Result Details"]):
+                logger.info(f"First item is nested object with sections: {list(first_item.keys())}")
+            else:
+                sample_ids = [wo.get('TransmissionWorkOrderID', 'N/A') for wo in clean_data_arrays[:5] if isinstance(wo, dict)]
+                logger.info(f"Sample TransmissionWorkOrderIDs: {sample_ids}")
+
+    return clean_data_arrays
+
 def api_router_step(user_input, auth_token=None):
     """Step 1: API Router - Selects and calls appropriate APIs"""
     router_prompt = get_api_router_prompt(user_input)
@@ -125,19 +267,30 @@ def api_router_step(user_input, auth_token=None):
                         response_type = parsed_response["type"]
 
                         if response_type == "api_call":
-                            # Handle consistent API call format
-                            function_name = parsed_response.get("function_name")
-                            parameters = parsed_response.get("parameters", {})
+                            # Check if this is multi-call format (has "calls" array)
+                            if "calls" in parsed_response and isinstance(parsed_response["calls"], list):
+                                # MULTI-CALL FORMAT - NEW feature
+                                calls = parsed_response["calls"]
+                                logger.info(f"LLM provided multi-call format with {len(calls)} calls")
 
-                            logger.info(f"LLM provided consistent API call format: {function_name} with params {parameters}")
+                                # Execute all calls using the new multi-call function
+                                api_results = execute_multi_api_calls(calls, auth_token)
+                                return api_results
 
-                            # Execute the API call
-                            tool_result = execute_api("AITransmissionWorkOrder", function_name, parameters, auth_token, method="POST")
-                            return [{
-                                "api_name": function_name,
-                                "parameters": parameters,
-                                "data": tool_result
-                            }]
+                            else:
+                                # SINGLE-CALL FORMAT - Existing behavior (unchanged)
+                                function_name = parsed_response.get("function_name")
+                                parameters = parsed_response.get("parameters", {})
+
+                                logger.info(f"LLM provided consistent API call format: {function_name} with params {parameters}")
+
+                                # Execute the API call
+                                tool_result = execute_api("AITransmissionWorkOrder", function_name, parameters, auth_token, method="POST")
+                                return [{
+                                    "api_name": function_name,
+                                    "parameters": parameters,
+                                    "data": tool_result
+                                }]
 
                         elif response_type == "clarification":
                             # Handle consistent clarification format
@@ -202,13 +355,13 @@ def api_router_step(user_input, auth_token=None):
         logger.error(f"API Router error: {str(e)}")
         return [{"error": f"API Router error: {str(e)}"}]
 
-def data_analysis_step(user_input, api_results, api_name=None, api_parameters=None):
+def data_analysis_step(user_input, clean_data_array, api_name=None, api_parameters=None):
     """
-    Data analysis with raw API results - AI handles nested structures and counting.
+    Enhanced data analysis with truncation detection.
 
     Args:
         user_input (str): User's query
-        api_results (list): Raw API results with nested structures
+        clean_data_array (list): Clean array of data (list of objects OR single nested object)
         api_name (str): Name of the API that was called
         api_parameters (dict): Parameters used to filter the data
 
@@ -218,10 +371,51 @@ def data_analysis_step(user_input, api_results, api_name=None, api_parameters=No
     if api_parameters is None:
         api_parameters = {}
 
-    logger.info(f"Starting data analysis with raw API results")
+    logger.info(f"Starting data analysis with {len(clean_data_array)} records")
 
-    # Get the analysis prompt with raw data
-    analysis_prompt = get_data_analysis_prompt(user_input, api_results, api_name, api_parameters)
+    # Check for potential truncation issues
+    try:
+        data_json = json.dumps(clean_data_array)
+        data_size = len(data_json)
+        logger.info(f"Total data size: {data_size} characters")
+
+        # Check if data might be too large for AI context
+        if data_size > 200000:  # 200k characters
+            logger.warning("Data size exceeds safe limits - truncation likely")
+        elif data_size > 100000:  # 100k characters
+            logger.warning("Data size is very large - potential truncation risk")
+        else:
+            logger.info("Data size is within safe limits")
+
+        # Test if we can recreate the JSON properly
+        reconstructed = json.loads(data_json)
+        if len(reconstructed) != len(clean_data_array):
+            logger.error(f"JSON reconstruction failed. Original: {len(clean_data_array)}, Reconstructed: {len(reconstructed)}")
+        else:
+            logger.info(f"JSON reconstruction successful - {len(reconstructed)} records")
+
+    except Exception as e:
+        logger.error(f"JSON processing failed: {str(e)}")
+
+    # Show first and last few records to verify completeness
+    if len(clean_data_array) > 0:
+        first_item = clean_data_array[0]
+        if isinstance(first_item, dict):
+            if any(key in first_item for key in ["Overall Details", "Asset Details", "CWI and NDE Result Details"]):
+                logger.info(f"Processing nested object structure for GetDetailsbyWeldSerialNumber")
+            else:
+                first_id = first_item.get('TransmissionWorkOrderID', 'N/A')
+                last_id = clean_data_array[-1].get('TransmissionWorkOrderID', 'N/A') if isinstance(clean_data_array[-1], dict) else 'N/A'
+                sample_ids = [wo.get('TransmissionWorkOrderID', 'N/A') for wo in clean_data_array[:5] if isinstance(wo, dict)]
+                logger.info(f"Data range - First ID: {first_id}, Last ID: {last_id}, Sample IDs: {sample_ids}")
+
+    analysis_prompt = get_data_analysis_prompt(user_input, clean_data_array, api_name, api_parameters)
+
+    # Check prompt size
+    prompt_size = len(analysis_prompt)
+    logger.info(f"Analysis prompt size: {prompt_size} characters")
+    if prompt_size > 150000:
+        logger.warning("Prompt size is very large - may cause AI processing issues")
 
     messages = [
         {
@@ -230,7 +424,7 @@ def data_analysis_step(user_input, api_results, api_name=None, api_parameters=No
         },
         {
             "role": "user",
-            "content": f"Analyze the API data to answer: {user_input}"
+            "content": f"Analyze the complete dataset to answer: {user_input}"
         }
     ]
 
@@ -238,11 +432,17 @@ def data_analysis_step(user_input, api_results, api_name=None, api_parameters=No
         response = azure_client.chat.completions.create(
             model=azureopenai,
             messages=messages,
-            temperature=0.1
+            temperature=0.0  # Zero temperature for precise data analysis and counting
         )
         ai_response = response.choices[0].message.content
 
         logger.info("Data analysis completed successfully")
+
+        # Try to extract count from AI response for verification
+        import re
+        count_matches = re.findall(r'\b(\d+)\b', ai_response)
+        if count_matches:
+            logger.info(f"Numbers found in AI response: {count_matches}, Expected count: {len(clean_data_array)}")
 
         return ai_response
 
@@ -275,15 +475,40 @@ def handle_weldinsights(user_input, auth_token=None):
 
         # Log API results structure for debugging
         logger.info(f"Received {len(api_results)} API results")
+        for i, result in enumerate(api_results):
+            if "data" in result and isinstance(result["data"], dict):
+                nested_data = result["data"].get("data", {})
+                if isinstance(nested_data, dict) and "Data" in nested_data:
+                    data_obj = nested_data["Data"]
+                    if data_obj is not None and isinstance(data_obj, (list, str)):
+                        data_length = len(data_obj)
+                        logger.info(f"API Result {i+1}: Contains {data_length} data objects")
+                    else:
+                        logger.info(f"API Result {i+1}: Data field is {type(data_obj)}")
+
+        logger.info("Step 1.5: Extracting clean data...")
+        # Extract clean data (handles both array and nested object patterns)
+        clean_data_array = extract_clean_data(api_results)
+
+        # NEW: Deduplicate if multiple API calls were made
+        if len(api_results) > 1:
+            logger.info(f"Multiple API calls detected ({len(api_results)} calls), applying deduplication...")
+            clean_data_array = deduplicate_data_by_json(clean_data_array)
 
         # Extract API name and parameters from first result
         api_name = api_results[0].get("api_name", "Unknown") if api_results else "Unknown"
         api_parameters = api_results[0].get("parameters", {}) if api_results else {}
-        logger.info(f"Processing raw data for API: {api_name}")
+        logger.info(f"Processing data for API: {api_name}")
 
-        logger.info("Step 2: Data Analysis - Analyzing raw API data...")
-        # Step 2: Pass raw API results to analysis agent
-        final_response = data_analysis_step(user_input, api_results, api_name, api_parameters)
+        if not clean_data_array:
+            logger.warning("No clean data extracted. No records found matching the criteria.")
+            # Pass empty array to data analysis to handle "no data found" case properly
+            final_response = data_analysis_step(user_input, [], api_name, api_parameters)
+            return final_response
+
+        logger.info("Step 2: Data Analysis - Analyzing clean data...")
+        # Step 2: Analyze the clean data array
+        final_response = data_analysis_step(user_input, clean_data_array, api_name, api_parameters)
 
         return final_response
 
