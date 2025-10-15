@@ -92,10 +92,20 @@ def get_api_router_prompt(user_input: str) -> str:
     except Exception as e:
         contractor_names = "Error loading contractor names"
 
+    aliases = {
+        "WorkOrderNumber": ["Work Order," "WR No"],
+        "WorkOrderStatusDescription": "Status",
+        "WeldSerialNumber": ["Weld Number", "WeldNo", "Joint Id", "Joint number"],
+        "Welder": ["Joiner"],
+        "HeatNumber": ["Heat No", "Heat #", "Asset", "Asset Number"],
+        "ProjectNumber": "Jobnumber"
+    }
+
     return f"""
 You are an API Router. Analyze the user query and call the appropriate API(s) to fetch data with the filters as parameters accordingly.
 
 User Query: {user_input}
+ALIASES: {aliases}
 
 **GLOBAL RULE : Ambiguous Numeric or Alphanumeric Identifiers**
 
