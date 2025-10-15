@@ -1,4 +1,4 @@
-def get_api_prompt(api_parameters=None):
+def get_api_prompt():
     """
     Returns the API-specific prompt for GetHeatNumberDetailsbyWorkOrderNumberandCriteria API
 
@@ -8,8 +8,6 @@ def get_api_prompt(api_parameters=None):
     Returns:
         str: The formatted API-specific prompt
     """
-    filter_info = api_parameters if api_parameters else {}
-    
     return f"""
 === GetHeatNumberDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
 **IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
@@ -125,7 +123,7 @@ RESPONSE FORMAT:
 
    *Mandatory*: Never include unnecessary columns. Always apply targeted field display and smart hiding rules.
 
-3. **Key Takeaways** (CONDITIONAL - skip on follow-up):
+3. **Key Takeaways** (CONDITIONAL - skip on follow-up)(Do not mention "key takeaways" or "insights summary" in the response):
    - **Show key takeaways** if this is initial response
    - **Skip key takeaways** if this is follow-up response to show full data
    - Provide targeted insights as separate bullet points. Each point must appear on its own line, numbered or with a bullet (-), and never combined into a single paragraph.
@@ -162,3 +160,49 @@ CRITICAL RULES:
 For any counting questions, the total is [X] heat number records. Focus on providing targeted analysis based on what the user asks about, with emphasis on material traceability when relevant.
 === END GetHeatNumberDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
 """
+
+
+# def get_api_prompt():
+#     """
+#     Returns the API-specific prompt for GetHeatNumberDetailsbyWorkOrderNumberandCriteria API.
+    
+#     This prompt is now simplified, as the data is pre-processed outside the AI.
+#     It focuses purely on output formatting and content rules.
+#     """
+#     return f"""
+#       === GetHeatNumberDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
+#       **IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+
+#       RESPONSE FLOW:
+#       - If `is_follow_up` is False (Initial Response):
+#          - Provide a one-sentence answer using the 'total_records' count.
+#          - Provide a bulleted list of key takeaways, each on a new line.
+#          - End with a single, conversational question to prompt for more data.
+#          - DO NOT include a table.
+
+#       - If `is_follow_up` is True (Follow-up Response):
+#          - Provide a one-sentence confirmation.
+#          - Display a markdown table with ALL the data from the 'full_data' field.
+#          - DO NOT include key takeaways or a follow-up question.
+
+#       RESPONSE FORMAT RULES:
+#       - **One-sentence answer**: Use the `total_records` count. If filters were applied, mention them. Example: "Work order 100500514 has 25 heat numbers across 4 asset types."
+#       - **Table Columns**:
+#          - ALWAYS show: HeatNumber, Asset, AssetSubcategory.
+#          - Conditionally show other fields based on user query keywords in `user_input`:
+#             - "material" or "grade" -> add Material column.
+#             - "size" or "dimension" -> add Size column.
+#             - "manufacturer" or "supplier" -> add Manufacturer column.
+#          - Conditionally hide filter fields (Asset, AssetSubcategory, etc.) if they were used as filters and thus have a uniform value across all records.
+#          - Use "-" for null values.
+#       - **Key Takeaways**:
+#          - Use the statistical data from `full_analysis_data` to create concise, factual bullets.
+#          - Example: "• Material distribution: 60% Steel - GRADE X42, 40% Steel - GRADE X52."
+#          - DO NOT include suggestions or recommendations.
+#       - **Follow-up Prompt**: Keep it brief and conversational. Example: "Would you like to see the full list?"
+
+#       CRITICAL RULES:
+#       - **NEVER use the word "dataset"**. Use "records," "data," or "heat numbers."
+#       - **Count is provided**: Use the exact `total_records` from the `ACTUAL PRE-PROCESSED DATA` section.
+#       - **Table display is conditional**: Follow the rules for Initial vs. Follow-up responses.
+#       """

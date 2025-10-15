@@ -23,6 +23,7 @@ def get_common_prompt(user_input, clean_data_array, api_name, filter_context):
         "WorkOrderStatusDescription": "Status",
         "WeldSerialNumber": ["Weld Number", "WeldNo", "Joint Id", "Joint number"],
         "Welder": ["Joiner"],
+        "HeatNumber": ["Heat No", "Heat #", "Asset", "Asset Number"],
         "ProjectNumber": "Jobnumber"
     }
 
@@ -86,3 +87,20 @@ COMPREHENSIVE ANALYSIS METHODOLOGY:
 
 === END COMMON GUIDELINES ===
 """
+
+
+def get_no_data_prompt(user_input, api_parameters):
+    """
+    Wrapper function required by weld_insight_agent.py for the 0-record case.
+    
+    It leverages the existing error-handling logic within get_common_prompt 
+    by passing an empty data array, forcing the actual_count to be 0.
+    """
+    # Pass an empty list to trigger the 0-record logic inside get_common_prompt
+    clean_data_array = []
+    # Use a placeholder API name since the request failed to retrieve data anyway
+    api_name = "NoDataFound"
+    filter_context = str(api_parameters)
+    
+    # Delegate the actual prompt construction to the core function
+    return get_common_prompt(user_input, clean_data_array, api_name, filter_context)

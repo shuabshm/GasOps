@@ -1,20 +1,20 @@
-# Import common prompt
-from prompts.weld_apis_prompts.common_prompt import get_common_prompt
+# # Import common prompt
+# from prompts.weld_apis_prompts.common_prompt import get_common_prompt
 
-# Import API-specific prompts
-from prompts.weld_apis_prompts.GetWorkOrderInformation import get_api_prompt as get_work_order_info_prompt
-from prompts.weld_apis_prompts.GetWeldDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_weld_details_prompt
-from prompts.weld_apis_prompts.GetWelderNameDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_welder_name_details_prompt
-from prompts.weld_apis_prompts.GetUnlockWeldDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_unlock_weld_details_prompt
-from prompts.weld_apis_prompts.GetWorkOrderDetailsbyCriteria import get_api_prompt as get_work_order_details_by_criteria_prompt
-from prompts.weld_apis_prompts.GetNDEReportNumbersbyWorkOrderNumber import get_api_prompt as get_nde_report_numbers_prompt
-from prompts.weld_apis_prompts.GetWorkOrderNDEIndicationsbyCriteria import get_api_prompt as get_work_order_nde_indications_prompt
-from prompts.weld_apis_prompts.GetWorkOrderRejactableNDEIndicationsbyCriteria import get_api_prompt as get_rejectable_nde_indications_prompt
-from prompts.weld_apis_prompts.GetReshootDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_reshoot_details_prompt
-from prompts.weld_apis_prompts.GetWeldsbyNDEIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_nde_indication_prompt
-from prompts.weld_apis_prompts.GetNDEReportProcessingDetailsbyWeldSerialNumber import get_api_prompt as get_nde_report_processing_details_prompt
-from prompts.weld_apis_prompts.GetDetailsbyWeldSerialNumber import get_api_prompt as get_details_by_weld_serial_prompt
-from prompts.weld_apis_prompts.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_heat_number_details_prompt
+# # Import API-specific prompts
+# from prompts.weld_apis_prompts.GetWorkOrderInformation import get_api_prompt as get_work_order_info_prompt
+# from prompts.weld_apis_prompts.GetWeldDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_weld_details_prompt
+# from prompts.weld_apis_prompts.GetWelderNameDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_welder_name_details_prompt
+# from prompts.weld_apis_prompts.GetUnlockWeldDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_unlock_weld_details_prompt
+# from prompts.weld_apis_prompts.GetWorkOrderDetailsbyCriteria import get_api_prompt as get_work_order_details_by_criteria_prompt
+# from prompts.weld_apis_prompts.GetNDEReportNumbersbyWorkOrderNumber import get_api_prompt as get_nde_report_numbers_prompt
+# from prompts.weld_apis_prompts.GetWorkOrderNDEIndicationsbyCriteria import get_api_prompt as get_work_order_nde_indications_prompt
+# from prompts.weld_apis_prompts.GetWorkOrderRejactableNDEIndicationsbyCriteria import get_api_prompt as get_rejectable_nde_indications_prompt
+# from prompts.weld_apis_prompts.GetReshootDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_reshoot_details_prompt
+# from prompts.weld_apis_prompts.GetWeldsbyNDEIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_nde_indication_prompt
+# from prompts.weld_apis_prompts.GetNDEReportProcessingDetailsbyWeldSerialNumber import get_api_prompt as get_nde_report_processing_details_prompt
+# from prompts.weld_apis_prompts.GetDetailsbyWeldSerialNumber import get_api_prompt as get_details_by_weld_serial_prompt
+# from prompts.weld_apis_prompts.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_heat_number_details_prompt
 
 # def get_data_analysis_prompt(user_input, api_results):
 #     """
@@ -4310,71 +4310,166 @@ from prompts.weld_apis_prompts.GetHeatNumberDetailsbyWorkOrderNumberandCriteria 
 
 
 
-def get_data_analysis_prompt(user_input, clean_data_array, api_name=None, api_parameters=None):
-    # Note: clean_data_array is the extracted clean data from API response
-    # For regular APIs: list of objects
-    # For GetDetailsbyWeldSerialNumber: single nested object wrapped in list
+# def get_data_analysis_prompt(user_input, clean_data_array, api_name=None, api_parameters=None):
+#     # Note: clean_data_array is the extracted clean data from API response
+#     # For regular APIs: list of objects
+#     # For GetDetailsbyWeldSerialNumber: single nested object wrapped in list
 
-    # Build filter context intelligently
-    if api_parameters is None:
-        api_parameters = {}
+#     # Build filter context intelligently
+#     if api_parameters is None:
+#         api_parameters = {}
 
-    filter_context = ""
-    if api_parameters:
-        filter_parts = []
-        for param, value in api_parameters.items():
-            filter_parts.append(f"{param}={value}")
-        filter_context = f"\nAPI Filters Applied: {', '.join(filter_parts)}\n"
+#     filter_context = ""
+#     if api_parameters:
+#         filter_parts = []
+#         for param, value in api_parameters.items():
+#             filter_parts.append(f"{param}={value}")
+#         filter_context = f"\nAPI Filters Applied: {', '.join(filter_parts)}\n"
 
-    # Get common prompt from separate module
-    common_prompt = get_common_prompt(user_input, clean_data_array, api_name, filter_context)
+#     # Get common prompt from separate module
+#     common_prompt = get_common_prompt(user_input, clean_data_array, api_name, filter_context)
 
-    # API-specific sections
+#     # API-specific sections
+#     if api_name == "GetWorkOrderInformation":
+#         api_specific_prompt = get_work_order_info_prompt(api_parameters)
+
+#     elif api_name == "GetWeldDetailsbyWorkOrderNumberandCriteria":
+#         api_specific_prompt = get_weld_details_prompt(api_parameters)
+
+#     elif api_name == "GetWelderNameDetailsbyWorkOrderNumberandCriteria":
+#         api_specific_prompt = get_welder_name_details_prompt(api_parameters)
+
+#     elif api_name == "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria":
+#         api_specific_prompt = get_unlock_weld_details_prompt(api_parameters)
+
+#     elif api_name == "GetWorkOrderDetailsbyCriteria":
+#         api_specific_prompt = get_work_order_details_by_criteria_prompt(api_parameters)
+
+#     elif api_name == "GetNDEReportNumbersbyWorkOrderNumber":
+#         api_specific_prompt = get_nde_report_numbers_prompt(api_parameters)
+
+#     elif api_name == "GetWorkOrderNDEIndicationsbyCriteria":
+#         api_specific_prompt = get_work_order_nde_indications_prompt(api_parameters)
+
+#     elif api_name == "GetWorkOrderRejactableNDEIndicationsbyCriteria":
+#         api_specific_prompt = get_rejectable_nde_indications_prompt(api_parameters)
+
+#     elif api_name == "GetReshootDetailsbyWorkOrderNumberandCriteria":
+#         api_specific_prompt = get_reshoot_details_prompt(api_parameters)
+
+#     elif api_name == "GetWeldsbyNDEIndicationandWorkOrderNumber":
+#         api_specific_prompt = get_welds_by_nde_indication_prompt(api_parameters)
+
+#     elif api_name == "GetNDEReportProcessingDetailsbyWeldSerialNumber":
+#         api_specific_prompt = get_nde_report_processing_details_prompt(api_parameters)
+
+#     elif api_name == "GetDetailsbyWeldSerialNumber":
+#         api_specific_prompt = get_details_by_weld_serial_prompt(api_parameters)
+
+#     elif api_name == "GetHeatNumberDetailsbyWorkOrderNumberandCriteria":
+#         api_specific_prompt = get_heat_number_details_prompt(api_parameters)
+#     else:
+#         # Default fallback for unknown APIs
+#         api_specific_prompt = f"""
+# === GENERIC API GUIDELINES ===
+# Provide a general analysis of the records (count them from the nested JSON) based on the user's query.
+# Use standard data analysis practices and present results in a clear, business-friendly format.
+# === END GENERIC GUIDELINES ===
+# """
+
+#     return common_prompt + api_specific_prompt
+
+
+# Import common prompt, including the needed get_common_prompt
+from prompts.weld_apis_prompts.common_prompt import get_common_prompt
+import json
+from utils.data_extractor import extract_clean_data
+from utils.data_transformers import get_transformer
+# Import API-specific prompts
+from prompts.weld_apis_prompts.GetWorkOrderInformation import get_api_prompt as get_work_order_info_prompt
+from prompts.weld_apis_prompts.GetWeldDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_weld_details_prompt
+from prompts.weld_apis_prompts.GetWelderNameDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_welder_name_details_prompt
+from prompts.weld_apis_prompts.GetUnlockWeldDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_unlock_weld_details_prompt
+from prompts.weld_apis_prompts.GetWorkOrderDetailsbyCriteria import get_api_prompt as get_work_order_details_by_criteria_prompt
+from prompts.weld_apis_prompts.GetNDEReportNumbersbyWorkOrderNumber import get_api_prompt as get_nde_report_numbers_prompt
+from prompts.weld_apis_prompts.GetWorkOrderNDEIndicationsbyCriteria import get_api_prompt as get_work_order_nde_indications_prompt
+from prompts.weld_apis_prompts.GetWorkOrderRejactableNDEIndicationsbyCriteria import get_api_prompt as get_rejectable_nde_indications_prompt
+from prompts.weld_apis_prompts.GetReshootDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_reshoot_details_prompt
+from prompts.weld_apis_prompts.GetWeldsbyNDEIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_nde_indication_prompt
+from prompts.weld_apis_prompts.GetNDEReportProcessingDetailsbyWeldSerialNumber import get_api_prompt as get_nde_report_processing_details_prompt
+from prompts.weld_apis_prompts.GetDetailsbyWeldSerialNumber import get_api_prompt as get_details_by_weld_serial_prompt
+from prompts.weld_apis_prompts.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_heat_number_details_prompt
+
+
+def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_follow_up=False):
+    """
+    Constructs the final, AI-ready prompt based on pre-processed analysis results.
+    """
+    total_records = analysis_results.get("total_records", 0)
+    api_parameters = analysis_results.get("filter_applied", {})
+
+    # Use the common prompt for consistent instructions. The common prompt uses 'raw_data'
+    # but does not need to parse it, only include it in the prompt text.
+    common_prompt_text = get_common_prompt(user_input, analysis_results['raw_data'], api_name, str(api_parameters))
+    
+    # Check for empty data first to handle the no-results case
+    if total_records == 0:
+        # If no data, the common prompt handles the instructions for the AI response
+        return common_prompt_text
+        
+    # Build a concise, factual representation of the data to send to the AI
+    data_representation = {
+        "total_records": total_records,
+        "full_data": analysis_results.get("raw_data"),
+        "full_analysis_data": analysis_results.get("counts"),
+        "is_follow_up": is_follow_up
+    }
+    
+    # Get the specific prompt for the API
+    api_specific_prompt = ""
     if api_name == "GetWorkOrderInformation":
         api_specific_prompt = get_work_order_info_prompt(api_parameters)
-
     elif api_name == "GetWeldDetailsbyWorkOrderNumberandCriteria":
         api_specific_prompt = get_weld_details_prompt(api_parameters)
-
     elif api_name == "GetWelderNameDetailsbyWorkOrderNumberandCriteria":
         api_specific_prompt = get_welder_name_details_prompt(api_parameters)
-
     elif api_name == "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria":
         api_specific_prompt = get_unlock_weld_details_prompt(api_parameters)
-
     elif api_name == "GetWorkOrderDetailsbyCriteria":
         api_specific_prompt = get_work_order_details_by_criteria_prompt(api_parameters)
-
     elif api_name == "GetNDEReportNumbersbyWorkOrderNumber":
         api_specific_prompt = get_nde_report_numbers_prompt(api_parameters)
-
     elif api_name == "GetWorkOrderNDEIndicationsbyCriteria":
         api_specific_prompt = get_work_order_nde_indications_prompt(api_parameters)
-
     elif api_name == "GetWorkOrderRejactableNDEIndicationsbyCriteria":
         api_specific_prompt = get_rejectable_nde_indications_prompt(api_parameters)
-
     elif api_name == "GetReshootDetailsbyWorkOrderNumberandCriteria":
         api_specific_prompt = get_reshoot_details_prompt(api_parameters)
-
     elif api_name == "GetWeldsbyNDEIndicationandWorkOrderNumber":
         api_specific_prompt = get_welds_by_nde_indication_prompt(api_parameters)
-
     elif api_name == "GetNDEReportProcessingDetailsbyWeldSerialNumber":
         api_specific_prompt = get_nde_report_processing_details_prompt(api_parameters)
-
     elif api_name == "GetDetailsbyWeldSerialNumber":
         api_specific_prompt = get_details_by_weld_serial_prompt(api_parameters)
-
     elif api_name == "GetHeatNumberDetailsbyWorkOrderNumberandCriteria":
-        api_specific_prompt = get_heat_number_details_prompt(api_parameters)
+        api_specific_prompt = get_heat_number_details_prompt() 
     else:
-        # Default fallback for unknown APIs
         api_specific_prompt = f"""
 === GENERIC API GUIDELINES ===
 Provide a general analysis of the records (count them from the nested JSON) based on the user's query.
 Use standard data analysis practices and present results in a clear, business-friendly format.
 === END GENERIC GUIDELINES ===
 """
+        
+    # Combine all parts into the final prompt
+    final_prompt = f"""
+{common_prompt_text}
 
-    return common_prompt + api_specific_prompt
+{api_specific_prompt}
+
+ACTUAL PRE-PROCESSED DATA AND ANALYSIS:
+{json.dumps(data_representation, indent=2)}
+
+Answer the user's request based ONLY on the data and rules provided above.
+"""
+    return final_prompt
