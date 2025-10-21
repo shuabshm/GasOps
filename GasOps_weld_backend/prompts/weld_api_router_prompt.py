@@ -93,12 +93,12 @@ def get_api_router_prompt(user_input: str) -> str:
         contractor_names = "Error loading contractor names"
 
     aliases = {
-        "WorkOrderNumber": ["Work Order," "WR No"],
+        "WorkOrderNumber": ["Work Order," "WR No", "WON"],
         "WorkOrderStatusDescription": "Status",
-        "WeldSerialNumber": ["Weld Number", "WeldNo", "Joint Id", "Joint number"],
+        "WeldSerialNumber": ["Weld Number", "WeldNo", "Joint Id", "Joint number","Joint"],
         "Welder": ["Joiner"],
         "HeatNumber": ["Heat No", "Heat #", "Asset", "Asset Number"],
-        "ProjectNumber": "Jobnumber"
+        "ProjectNumber": ["Jobnumber"]
     }
 
     return f"""
