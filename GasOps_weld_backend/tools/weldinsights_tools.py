@@ -2,6 +2,7 @@
 # Tool Functions - One for each API
 
 from tools.execute_api import execute_api
+from utils.workorderSummaryOrchestrator import orchestrate_work_orderSummary
 
 def GetWorkOrderInformation(WorkOrderNumber=None,
                            WorkOrderStatusDescription=None,
@@ -289,6 +290,15 @@ def GetHeatNumberDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
+
+
+def GetWorkOrderSummary(WorkOrderNumber, auth_token=None):
+    """
+    Tool function to orchestrate a summary analysis by calling multiple APIs in parallel.
+    This function calls GetWorkOrderInformation and GetWeldDetailsbyWorkOrderNumberandCriteria.
+    """
+    # This will call the core orchestration logic
+    return orchestrate_work_orderSummary(WorkOrderNumber, auth_token)
 
 # Define all tools for OpenAI
 def get_weldinsights_tools():
@@ -798,6 +808,23 @@ def get_weldinsights_tools():
                         "Manufacturer": {
                             "type": "string",
                             "description": "Manufacturer name filter (e.g., Tenaris Dalmine, TD Williamson, etc.) - optional"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWorkOrderSummary",
+                "description": "Provides a comprehensive summary for a specific work order, including high-level details and a detailed breakdown of weld statuses and welder assignments.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "The work order number for which to generate the summary."
                         }
                     },
                     "required": ["WorkOrderNumber"]
