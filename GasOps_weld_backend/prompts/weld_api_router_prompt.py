@@ -479,9 +479,9 @@ For complete API details, parameters, and constraints, refer to the available to
 
 **GroupBy Clarification Examples**:
 - Query: "Show rejectable NDE indications for work order 101351590"
-  → Ask: "How would you like to see the rejectable indications? By indication type, by weld, by welder, or another grouping?"
+  → Ask: "How would you like to see the rejectable indications? By by weld, by welder, or another grouping?"
 - Query: "What are the most common rejectable indications"
-  → Ask: "For which work order or weld serial number? And how would you like them grouped (by indication type, by welder, by work order, etc.)?"
+  → Ask: "For which work order or weld serial number? And how would you like them grouped ( by welder, by work order, etc.)?"
 
 ---
 

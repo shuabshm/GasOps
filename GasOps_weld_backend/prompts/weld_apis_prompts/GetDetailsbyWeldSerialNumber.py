@@ -281,7 +281,8 @@
 def get_api_prompt(api_parameters=None):
     """
     Returns the API-specific prompt for GetDetailsbyWeldSerialNumber API,
-    optimized to eliminate field redundancy for generic "show me details" queries.
+    optimized to eliminate field redundancy for generic "show me details" queries and
+    ensure the correct table structure.
 
     Args:
         api_parameters (dict): Optional dictionary of API filter parameters
@@ -379,16 +380,20 @@ Additional fields based on query keywords:
 - **CRITICAL REDUNDANCY RULE (Generic Query Only):** If the query is **Generic ("details")**, **DO NOT** display any Heat Serial Number or Description fields here; they will be displayed fully in the Asset Details section.
 
 **Asset Details Section**:
-Core Fields (Always Include):
-- HeatSerialNumber1, Heat1Description
-- HeatSerialNumber2, Heat2Description
+Core Fields (Always Include for comparison):
+- HeatSerialNumber1, HeatSerialNumber2
+- Heat1Description, Heat2Description
+- Heat1Asset, Heat2Asset
+- Heat1Material, Heat2Material
+- Heat1Size, Heat2Size
+- Heat1Manufacturer, Heat2Manufacturer
 
 Additional fields based on query:
 - "material" / "grade" → Add Heat1Material, Heat2Material
 - "manufacturer" / "supplier" → Add Heat1Manufacturer, Heat2Manufacturer
 - "size" → Add Heat1Size, Heat2Size
 - "asset" / "type" → Add Heat1Asset, Heat1AssetSubcategory, Heat2Asset, Heat2AssetSubcategory
-- General query → Show core + Asset, AssetSubcategory, Material for both heats
+- **CRITICAL DEFAULT TABLE RULE:** If the user asks specifically for **Asset Comparison** (e.g., "show me the assets," "compare heat numbers"), the table MUST default to the six comparison fields defined in the Core Fields list above.
 
 **CWI and NDE Result Details Section**:
 Core Fields (Always Include):
@@ -404,10 +409,11 @@ Core Fields (Always Include):
 
 Additional fields based on query:
 - "reject" / "failure" / "defect" → Add NDERejectIndications, NDERemarks
-- "CRI" → Add CRIName, CRIResult, CRIFilmQuality, CRIIndications, CRIWeldCheck, CRIRejectIndications, CRIRemarks
-- "TR" → Add TRName, TRResult, TRFilmQuality, TRIndications, TRWeldCheck, TRRejectIndications, TRRemarks
+- **CRITICAL COMPLETENESS RULE (Generic Query Only):** If the query is **Generic ("details")**, then also include ALL CRI and TR film-related columns: CRIFilmQuality, CRIIndications, CRIWeldCheck, CRIRejectIndications, CRIRemarks, TRFilmQuality, TRIndications, TRWeldCheck, TRRejectIndications, TRRemarks.
+- "CRI" → Add CRIFilmQuality, CRIIndications, CRIWeldCheck, CRIRejectIndications, CRIRemarks
+- "TR" → Add TRFilmQuality, TRIndications, TRWeldCheck, TRRejectIndications, TRRemarks
 - "film quality" → Add CRIFilmQuality, TRFilmQuality
-- General query → Show core + NDERejectIndications
+- General query (Non-generic) → Show core + NDERejectIndications
 
 Field Display Rules:
 - Use "-" for null/empty values
@@ -431,10 +437,10 @@ USER INTENT ANALYSIS FOR KEY INSIGHTS:
 
 **RULE 3: Inspection Agreement/Discrepancy Analysis (Specific Question Override)**
 - If the user asks specifically about **AGREEMENT** between two inspection results (e.g., "NDE agree with CRI?"):
-    - **Step 1 (Formal Answer):** State the formal result agreement/disagreement based on the high-level **NDE Result** and **CRI Result** fields.
-    - **Step 2 (Contextual Note):** If the formal results **Agree** (both Accept/Reject) AND the **NDE Report Film Details** contain a non-blank **CRIIndications** or **NDEIndications** field, immediately add a second sentence acknowledging the *presence* of an indication that was *formally accepted*. **Do not interpret the severity; only state the fact.**
-    - **Example (if NDE/CRI both Accept but indication exists):** "The NDE result was Accept and the CRI result was Accept. However, inspection details note the presence of a 'Slag Inclusion' indication, which was accepted by the inspector."
-    - **Example (if NDE/CRI disagree):** "The NDE result was Reject while the CRI result was Accept, indicating a formal disagreement between the inspection stages."
+    - **Step 1 (Formal Answer):** State the formal result agreement/disagreement based on the high-level **NDE Result** and **CRI Result** fields.
+    - **Step 2 (Contextual Note):** If the formal results **Agree** (both Accept/Reject) AND the **NDE Report Film Details** contain a non-blank **CRIIndications** or **NDEIndications** field, immediately add a second sentence acknowledging the *presence* of an indication that was *formally accepted*. **Do not interpret the severity; only state the fact.**
+    - **Example (if NDE/CRI both Accept but indication exists):** "The NDE result was Accept and the CRI result was Accept. However, inspection details note the presence of a 'Slag Inclusion' indication, which was accepted by the inspector."
+    - **Example (if NDE/CRI disagree):** "The NDE result was Reject while the CRI result was Accept, indicating a formal disagreement between the inspection stages."
 
 **CRITICAL Content Filter Evasion:** The parameter name is **CutOut**, which means a weld has been permanently removed/decommissioned. **When generating conversational text (Step 1 and Step 3), ALWAYS use the term "Removed" or "Decommissioned" instead of "Cut Out" to describe the WeldCategory status to avoid triggering the content filter.**
 
@@ -475,11 +481,12 @@ RESPONSE FLOW - **TWO-PHASE APPROACH**:
 
 1. **Factual Summary**: Provide a comprehensive and factual summary of the information in a clear, humanized format.
     * Start with a brief, conversational lead-in. This sentence should identify the main unique identifier that was the subject of the user's query (e.g., Weld Serial Number, Heat Number, NDE Report Number...).
+    * **CRITICAL ASSET OVERRIDE:** If the query is Asset-related (e.g., "asset details," "heat number," "material"), **SKIP the bulleted summary** and instead present the default comparison table (Asset Details section) directly.
     * Present the key information using bullet points for clarity.
     * Stick to the facts found directly in the API response. Do not add any sentences that interpret or infer the data's meaning (e.g., "This means...", "This represents...", "This highlights...").
     * Maintain the strict adherence to the **CRITICAL GUARDRAIL**.
 
-2.  **NO TABLE**: Do not display any table or structured data.
+2.  **NO TABLE (Default Rule):** Do not display any table or structured data **UNLESS** the **CRITICAL ASSET OVERRIDE** was triggered.
 
 3.  **Dynamic Follow-up Question**: Offer to show the full details in a structured table format.
 
@@ -498,61 +505,70 @@ TABLE FORMAT CONSISTENCY:
 **Use VERTICAL table format for all sections** (single weld = single record):
 
 **Overall Details Section:**
+```
+## Overall Details
 
-Overall Details
-
-Field	Value
-Work Order No.	100139423
-Weld Category	Production
-Contractor	ABC Welding
-Welders	John Doe, Jane Smith
-CWI Result	Accept
-CWI Name	Bob Williams
-NDE Result	Reject
-NDE Name	Mary Jones
-NDE Report No.	NDE2025-00571
-CRI Result	Reject
-CRI Name	Tom Lee
-Completion Date	2024-12-15
-Tie-In Weld	No
+| Field | Value |
+|-------|-------|
+| Work Order No. | 100139423 |
+| Weld Category | Production |
+| Contractor | ABC Welding |
+| Welders | John Doe, Jane Smith |
+| CWI Result | Accept |
+| CWI Name | Bob Williams |
+| NDE Result | Reject |
+| NDE Name | Mary Jones |
+| NDE Report No. | NDE2025-00571 |
+| CRI Result | Reject |
+| CRI Name | Tom Lee |
+| Completion Date | 2024-12-15 |
+| Tie-In Weld | No |
+```
 
 **Asset Details Section:**
+```
+## Asset Details
 
-Asset Details
-
-Field	Heat 1	Heat 2
-Heat Serial Number	648801026	648801027
-Description	Seamless Line Pipe	Seamless Line Pipe
-Asset Type	Pipe	Pipe
-Material	Steel - GRADE X42	Steel - GRADE X42
-Size	12 NPS 0.375 SCH40	12 NPS 0.375 SCH40
-Manufacturer	Tenaris Dalmine	Tenaris Dalmine
+| Field | Heat 1 | Heat 2 |
+|-------|--------|--------|
+| Heat Serial Number | 648801026 | 648801027 |
+| Description | Seamless Line Pipe | Seamless Line Pipe |
+| Asset Type | Pipe | Pipe |
+| Material | Steel - GRADE X42 | Steel - GRADE X42 |
+| Size | 12 NPS 0.375 SCH40 | 12 NPS 0.375 SCH40 |
+| Manufacturer | Tenaris Dalmine | Tenaris Dalmine |
+```
 
 **CWI and NDE Result Details Section:**
+```
+## CWI and NDE Result Details
 
-CWI and NDE Result Details
-
-Field	Value
-Work Order No.	100139423
-Weld Category	Production
-CWI Result	Accept
-CWI Name	Bob Williams
-NDE Result	Reject
-NDE Name	Mary Jones
-NDE Report No.	NDE2025-00571
-CRI Result	Reject
-CRI Name	Tom Lee
-TR Result	-
-TR Name	-
+| Field | Value |
+|-------|-------|
+| Work Order No. | 100139423 |
+| Weld Category | Production |
+| CWI Result | Accept |
+| CWI Name | Bob Williams |
+| NDE Result | Reject |
+| NDE Name | Mary Jones |
+| NDE Report No. | NDE2025-00571 |
+| CRI Result | Reject |
+| CRI Name | Tom Lee |
+| TR Result | - |
+| TR Name | - |
+```
 
 **NDE Report Film Details Section** (Multiple rows possible):
+```
+## NDE Report Film Details
 
-NDE Report Film Details
-
-Work Order No.	Clock Position	NDE Indications	NDE Weld Check	NDE Reject Indications	NDE Remarks
-100139423	12	Concavity	Accept	-	Minor concavity
-100139423	3	Porosity	Reject	Porosity	Excessive porosity
-100139423	6	None	Accept	-	Clean weld
+| Work Order No. | Clock Position | NDE Indications | NDE Weld Check | NDE Reject Indications | NDE Remarks |
+|----------------|----------------|-----------------|----------------|------------------------|-------------|
+| 100139423 | 12 | Concavity | Accept | - | Minor concavity |
+| 100139423 | 3 | Porosity | Reject | Porosity | Excessive porosity |
+| 100139423 | 6 | None | Accept | - | Clean weld |
+```
 
 === END GetDetailsbyWeldSerialNumber GUIDELINES ===
 """
+
