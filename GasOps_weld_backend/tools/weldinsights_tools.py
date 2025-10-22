@@ -813,22 +813,5 @@ def get_weldinsights_tools():
                     "required": ["WorkOrderNumber"]
                 }
             }
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "GetWorkOrderSummary",
-                "description": "Provides a comprehensive summary for a specific work order, including high-level details and a detailed breakdown of weld statuses and welder assignments.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "WorkOrderNumber": {
-                            "type": "string",
-                            "description": "The work order number for which to generate the summary."
-                        }
-                    },
-                    "required": ["WorkOrderNumber"]
-                }
-            }
         }
     ]
