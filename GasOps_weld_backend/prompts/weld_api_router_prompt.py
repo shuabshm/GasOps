@@ -93,12 +93,12 @@ def get_api_router_prompt(user_input: str) -> str:
         contractor_names = "Error loading contractor names"
 
     aliases = {
-        "WorkOrderNumber": ["Work Order," "WR No"],
+        "WorkOrderNumber": ["Work Order," "WR No", "WON"],
         "WorkOrderStatusDescription": "Status",
-        "WeldSerialNumber": ["Weld Number", "WeldNo", "Joint Id", "Joint number"],
+        "WeldSerialNumber": ["Weld Number", "WeldNo", "Joint Id", "Joint number","Joint"],
         "Welder": ["Joiner"],
         "HeatNumber": ["Heat No", "Heat #", "Asset", "Asset Number"],
-        "ProjectNumber": "Jobnumber"
+        "ProjectNumber": ["Jobnumber"]
     }
 
     return f"""
@@ -714,20 +714,6 @@ For complete API details, parameters, and constraints, refer to the available to
 - If unclear → Ask for clarification
 
 ---
-
---- GetWorkOrderSummary ---
-**Purpose**: This is a specialized tool that provides a comprehensive, multi-faceted summary of a single work order. It orchestrates parallel calls to multiple APIs (GetWorkOrderInformation and GetWeldDetailsbyWorkOrderNumberandCriteria) to gather all necessary data and provide a single, detailed response. Use this tool when the user asks for a general overview, a summary, or a dashboard view of a specific work order, as this tool is optimized for a holistic analysis rather than single-field filtering.
-**Parameters**:
-- WorkOrderNumber: string (REQUIRED)
-- This tool requires only the WorkOrderNumber to fetch all associated data for a comprehensive summary.
-**Use Cases**:
-- "Give me a summary of work order 100500514"
-- "Show me the dashboard for work order 100500514"
-- "Tell me about work order 100500514"
-**API Selection Logic**:
-- Use this tool when the user asks for a comprehensive overview or a summary of a single work order number.
-- Do NOT use this tool for specific filtering requests (e.g., "Show completed work orders" or "Show me welds with CWI Accepted"). For those, use the individual APIs.
-
 
 **CRITICAL: RESPONSE FORMAT**
 You MUST respond with EXACTLY ONE of these two JSON formats:

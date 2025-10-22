@@ -1179,28 +1179,56 @@ except Exception as e:
     azure_client, azureopenai = None, None
 
 def execute_weldinsights_tool_call(tool_call, auth_token=None):
+    """
+    Dynamically executes tool functions from weldinsights_tools.py.
+    This allows each tool to handle its own logic (API call or orchestration).
+    """
     function_name = tool_call.function.name
     arguments = json.loads(tool_call.function.arguments)
-    api_path = arguments.pop("api_path", "AITransmissionWorkOrder")
-    parameters = {k: v for k, v in arguments.items() if v is not None}
+
     logger.info(f"Executing WeldInsights tool: {function_name}")
+
     try:
-        result = execute_api(api_path, function_name, parameters, auth_token, method="POST")
-        logger.info(f"WeldInsights tool {function_name} executed successfully")
-        return result
+        # Dynamically import and call the tool function
+        import tools.weldinsights_tools as tools_module
+
+        if hasattr(tools_module, function_name):
+            tool_function = getattr(tools_module, function_name)
+            # Call the actual Python function with arguments and auth_token
+            result = tool_function(**arguments, auth_token=auth_token)
+            logger.info(f"WeldInsights tool {function_name} executed successfully")
+            return result
+        else:
+            error_msg = f"Tool function {function_name} not found in weldinsights_tools"
+            logger.error(error_msg)
+            return {"error": error_msg}
+
     except Exception as e:
         logger.error(f"WeldInsights tool {function_name} failed: {str(e)}")
         return {"error": f"Tool execution failed: {str(e)}"}
 
 def execute_multi_api_calls(calls, auth_token=None):
+    """
+    Execute multiple API calls dynamically using tool functions.
+    """
     api_results = []
     warnings = []
+
+    import tools.weldinsights_tools as tools_module
+
     for i, call in enumerate(calls, 1):
         function_name = call.get("function_name")
         parameters = call.get("parameters", {})
         logger.info(f"Multi-call {i}/{len(calls)}: Executing {function_name} with parameters {parameters}")
         try:
-            result = execute_api("AITransmissionWorkOrder", function_name, parameters, auth_token, method="POST")
+            # Dynamically call the tool function
+            if hasattr(tools_module, function_name):
+                tool_function = getattr(tools_module, function_name)
+                result = tool_function(**parameters, auth_token=auth_token)
+            else:
+                # Fallback to direct API call if function not found
+                result = execute_api("AITransmissionWorkOrder", function_name, parameters, auth_token, method="POST")
+
             api_results.append({
                 "api_name": function_name,
                 "parameters": parameters,
@@ -1301,7 +1329,16 @@ def api_router_step(user_input, auth_token=None):
                                 function_name = parsed_response.get("function_name")
                                 parameters = parsed_response.get("parameters", {})
                                 logger.info(f"LLM provided consistent API call format: {function_name} with params {parameters}")
-                                tool_result = execute_api("AITransmissionWorkOrder", function_name, parameters, auth_token, method="POST")
+
+                                # Dynamically call the tool function
+                                import tools.weldinsights_tools as tools_module
+                                if hasattr(tools_module, function_name):
+                                    tool_function = getattr(tools_module, function_name)
+                                    tool_result = tool_function(**parameters, auth_token=auth_token)
+                                else:
+                                    # Fallback to direct API call if function not found
+                                    tool_result = execute_api("AITransmissionWorkOrder", function_name, parameters, auth_token, method="POST")
+
                                 return [{
                                     "api_name": function_name,
                                     "parameters": parameters,
@@ -1318,7 +1355,16 @@ def api_router_step(user_input, auth_token=None):
                                 function_name = function_name[10:]
                             arguments = parsed_response["arguments"]
                             logger.info(f"LLM provided legacy tool call format: {function_name} with args {arguments}")
-                            tool_result = execute_api("AITransmissionWorkOrder", function_name, arguments, auth_token, method="POST")
+
+                            # Dynamically call the tool function
+                            import tools.weldinsights_tools as tools_module
+                            if hasattr(tools_module, function_name):
+                                tool_function = getattr(tools_module, function_name)
+                                tool_result = tool_function(**arguments, auth_token=auth_token)
+                            else:
+                                # Fallback to direct API call if function not found
+                                tool_result = execute_api("AITransmissionWorkOrder", function_name, arguments, auth_token, method="POST")
+
                             return [{
                                 "api_name": function_name,
                                 "parameters": arguments,
@@ -1326,7 +1372,16 @@ def api_router_step(user_input, auth_token=None):
                             }]
                         elif any(key in parsed_response for key in ['ContractorName', 'ContractorCWIName', 'ContractorNDEName', 'ContractorCRIName']):
                             logger.info(f"LLM provided legacy parameters format: {parsed_response}")
-                            tool_result = execute_api("AITransmissionWorkOrder", "GetWorkOrderInformation", parsed_response, auth_token, method="POST")
+
+                            # Dynamically call GetWorkOrderInformation
+                            import tools.weldinsights_tools as tools_module
+                            if hasattr(tools_module, 'GetWorkOrderInformation'):
+                                tool_function = getattr(tools_module, 'GetWorkOrderInformation')
+                                tool_result = tool_function(**parsed_response, auth_token=auth_token)
+                            else:
+                                # Fallback to direct API call if function not found
+                                tool_result = execute_api("AITransmissionWorkOrder", "GetWorkOrderInformation", parsed_response, auth_token, method="POST")
+
                             return [{
                                 "api_name": "GetWorkOrderInformation",
                                 "parameters": parsed_response,
