@@ -40,43 +40,73 @@ TABLE STRUCTURE:
 
 Column 1: Project Number
 Column 2: Work Order Number
+Column 3: Weld Count
 Sort by: Project Number
 
 RESPONSE FORMAT:
 1. **One-sentence answer** to user's specific question (no headings, no extra commentary)
-   - Example: "Williams Peter worked on 7 work orders, completing a total of 301 welds."
+   - Example: "Williams Peter(430829(WelderITSID)) worked on 7 work orders, completing a total of 301 welds."
    - Use analytics to provide accurate counts
 
 2. **Table** - Display immediately after the answer:
-   - **Default columns**: Project Number | Work Order Number
+   - **Default columns**: Project Number | Work Order Number | Weld Count
    - Sort by Project Number
    - Use clear formatting and handle null values with "-"
    - Include markdown formatting for tables
    - Show ALL records in the table
 
+3. **Follow-up question** - After the table, ask ONE intelligent question:
+   - Offer to show weld serial numbers for a specific work order
+   - Use the first work order from the sorted table as suggestion
+   - Examples:
+     - "Would you like to see the weld serial numbers for work order 100500514?"
+   - Keep it natural and contextual
+   - Only ONE question, keep it brief
+
 CRITICAL RULES:
 - Use the analytics fields to answer counting questions accurately
 - Sort table by Project Number
-- Display one-sentence answer followed immediately by the full table
-- No key takeaways, no insights, no follow-up questions
+- Display: answer + table + one follow-up question
 - Answer the user's specific question directly using analytics
 - **NEVER use the word "dataset"** - use "records", "data", "work orders" instead
-- **NEVER add unsolicited follow-up questions or suggestions**
+- Follow-up question must be relevant and helpful (suggest the first work order after sorting)
 
 TABLE FORMAT EXAMPLE:
 ```
-| Project Number | Work Order Number |
-|----------------|-------------------|
-| G-21-918 | 100139423P2 |
-| G-22-905 | 100145174 |
-| G-23-901 | 100170592 |
-| G-23-901 | 100500514 |
+| Project Number | Work Order Number | Weld Count |
+|----------------|-------------------|------------|
+| G-21-918 | 100139423P2 | 79 |
+| G-22-905 | 100145174 | 78 |
+| G-23-901 | 100170592 | 49 |
+| G-23-901 | 100500514 | 77 |
 ```
 
 SPECIAL HANDLING:
 - If user asks about specific work orders, filter and present relevant records
 - If user asks about specific projects, filter by ProjectNumber
 - Handle partial name matches gracefully (the API accepts partial names)
+
+**IMPORTANT - Handling Follow-up for Weld Serial Numbers:**
+When user asks to see weld serial numbers for a specific work order (as a follow-up):
+1. Extract the WeldSerialNumbers_Full field for that work order from processed_records
+2. Split the semicolon-separated list into individual weld serial numbers
+3. Display them in a **sorted table format** with one column:
+
+   **Table Format:**
+   ```
+   | Weld Serial Number |
+   |--------------------|
+   | 240248 |
+   | 240250 |
+   | 240251 |
+   | 240252 |
+   ```
+4. Sort the weld serial numbers alphanumerically
+5. Include ALL weld serial numbers in the table
+6. Use markdown table formatting
+7. After the table, state the total count: "Total: X welds"
+8. Do NOT display any other fields or information
+9. Keep it simple and clean - just the table and total count
 
 === END GetWorkOrdersbyWelderName GUIDELINES ===
 """
