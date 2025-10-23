@@ -292,6 +292,18 @@ def GetHeatNumberDetailsbyWorkOrderNumberandCriteria(WorkOrderNumber,
     return execute_api(api_path, "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", parameters, auth_token, method="POST")
 
 
+def GetWorkOrdersbyWelderName(WelderName,
+                                auth_token=None,
+                                api_path="AITransmissionWorkOrder"):
+    """Tool function to get list of work orders where there are welds made by respective welder name"""
+
+    parameters = {
+        "WelderName": WelderName
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWorkOrdersbyWelderName", parameters, auth_token, method="POST")
+
+
 def GetWorkOrderSummary(WorkOrderNumber, auth_token=None):
     """
     Tool function to orchestrate a summary analysis by calling multiple APIs in parallel.
@@ -811,6 +823,23 @@ def get_weldinsights_tools():
                         }
                     },
                     "required": ["WorkOrderNumber"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWorkOrdersbyWelderName",
+                "description": "Get list of work orders where there are welds made by a specific welder. Returns work order-level data with weld counts and serial numbers. WelderName is required. Accepts partial names.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WelderName": {
+                            "type": "string",
+                            "description": "Welder name (required). Accepts partial names (e.g., 'Vandaly' will match 'Vandaly Brian')"
+                        }
+                    },
+                    "required": ["WelderName"]
                 }
             }
         }

@@ -715,6 +715,56 @@ For complete API details, parameters, and constraints, refer to the available to
 
 ---
 
+--- GetWorkOrdersbyWelderName ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWorkOrdersbyWelderName: Get list of work orders where there are welds made by a specific welder
+
+**Parameter Requirements**:
+- **CRITICAL**: WelderName is REQUIRED for this API
+- If WelderName not provided → Ask for clarification
+
+**WelderName Parameter**:
+- REQUIRED field for this API
+- Accepts partial names (e.g., "Vandaly" will match "Vandaly Brian")
+- Extract welder name from user query
+- If user doesn't specify a welder name → Ask for clarification
+
+**Use Cases**:
+- Finding all work orders a specific welder worked on
+- Getting weld counts per work order for a welder
+- Analyzing welder workload across multiple work orders
+- Identifying which projects a welder contributed to
+- Tracking welder activity and assignment history
+
+**Query Detection Examples**:
+- "Show work orders for welder Vandaly"
+  → Parameters: {{"WelderName": "Vandaly"}}
+- "Which work orders did Brian work on"
+  → Parameters: {{"WelderName": "Brian"}}
+- "Get all projects where John Smith welded"
+  → Parameters: {{"WelderName": "John Smith"}}
+- "Show me work orders for welder ID 370417"
+  → First ask for welder name, as API requires name not ID
+- "What work orders has the welder worked on"
+  → Ask: "Which welder are you asking about?"
+
+**Response Structure**:
+This API returns work order-level data with:
+- WorkOrderNumber: Work order identifier
+- ProjectNumber: Project identifier
+- WelderName: Full welder name
+- WelderITSID: Welder ITS ID
+- WeldCount: Number of welds by this welder in this work order
+- WeldSerialNumbers: Semicolon-separated list of weld serial numbers
+
+**Filter Logic**:
+- Extract welder name from user query
+- Partial name matching is supported by the API
+- If multiple possible interpretations → Ask for clarification
+- If welder name is ambiguous → Ask for full name or clarification
+
+---
+
 **CRITICAL: RESPONSE FORMAT**
 You MUST respond with EXACTLY ONE of these two JSON formats:
 
@@ -768,6 +818,9 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show heat numbers for work order 100500514" → {{"type": "api_call", "function_name": "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "Get material details for work order 100500514" → {{"type": "api_call", "function_name": "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "Show heat numbers for pipes in work order 100500514" → {{"type": "api_call", "function_name": "GetHeatNumberDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "Asset": "Pipe"}}}}
+- "Show work orders for welder Vandaly" → {{"type": "api_call", "function_name": "GetWorkOrdersbyWelderName", "parameters": {{"WelderName": "Vandaly"}}}}
+- "Which work orders did Brian work on" → {{"type": "api_call", "function_name": "GetWorkOrdersbyWelderName", "parameters": {{"WelderName": "Brian"}}}}
+- "Get all projects where John Smith welded" → {{"type": "api_call", "function_name": "GetWorkOrdersbyWelderName", "parameters": {{"WelderName": "John Smith"}}}}
 
 
 **FORMAT 2 - CLARIFICATION** (when you need more information):
