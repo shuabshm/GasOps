@@ -2,7 +2,6 @@
 # Tool Functions - One for each API
 
 from tools.execute_api import execute_api
-from utils.workorderSummaryOrchestrator import orchestrate_work_orderSummary
 
 def GetWorkOrderInformation(WorkOrderNumber=None,
                            WorkOrderStatusDescription=None,
@@ -303,14 +302,6 @@ def GetWorkOrdersbyWelderName(WelderName,
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetWorkOrdersbyWelderName", parameters, auth_token, method="POST")
 
-
-def GetWorkOrderSummary(WorkOrderNumber, auth_token=None):
-    """
-    Tool function to orchestrate a summary analysis by calling multiple APIs in parallel.
-    This function calls GetWorkOrderInformation and GetWeldDetailsbyWorkOrderNumberandCriteria.
-    """
-    # This will call the core orchestration logic
-    return orchestrate_work_orderSummary(WorkOrderNumber, auth_token)
 
 # Define all tools for OpenAI
 def get_weldinsights_tools():

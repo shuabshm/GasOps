@@ -4399,6 +4399,7 @@ from prompts.weld_apis_prompts.GetWeldsbyNDEIndicationandWorkOrderNumber import 
 from prompts.weld_apis_prompts.GetNDEReportProcessingDetailsbyWeldSerialNumber import get_api_prompt as get_nde_report_processing_details_prompt
 from prompts.weld_apis_prompts.GetDetailsbyWeldSerialNumber import get_api_prompt as get_details_by_weld_serial_prompt
 from prompts.weld_apis_prompts.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_heat_number_details_prompt
+from prompts.weld_apis_prompts.GetWorkOrdersbyWelderName import get_api_prompt as get_work_orders_by_welder_name_prompt
 
 
 def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_follow_up=False):
@@ -4452,7 +4453,9 @@ def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_fol
     elif api_name == "GetDetailsbyWeldSerialNumber":
         api_specific_prompt = get_details_by_weld_serial_prompt(api_parameters)
     elif api_name == "GetHeatNumberDetailsbyWorkOrderNumberandCriteria":
-        api_specific_prompt = get_heat_number_details_prompt() 
+        api_specific_prompt = get_heat_number_details_prompt()
+    elif api_name == "GetWorkOrdersbyWelderName":
+        api_specific_prompt = get_work_orders_by_welder_name_prompt(api_parameters)
     else:
         api_specific_prompt = f"""
 === GENERIC API GUIDELINES ===

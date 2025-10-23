@@ -1348,45 +1348,6 @@ def api_router_step(user_input, auth_token=None):
                             clarification_message = parsed_response.get("message", "")
                             logger.info("LLM provided consistent clarification format")
                             return [{"clarification": clarification_message}]
-                    elif isinstance(parsed_response, dict):
-                        if "name" in parsed_response and "arguments" in parsed_response:
-                            function_name = parsed_response["name"]
-                            if function_name.startswith("functions."):
-                                function_name = function_name[10:]
-                            arguments = parsed_response["arguments"]
-                            logger.info(f"LLM provided legacy tool call format: {function_name} with args {arguments}")
-
-                            # Dynamically call the tool function
-                            import tools.weldinsights_tools as tools_module
-                            if hasattr(tools_module, function_name):
-                                tool_function = getattr(tools_module, function_name)
-                                tool_result = tool_function(**arguments, auth_token=auth_token)
-                            else:
-                                # Fallback to direct API call if function not found
-                                tool_result = execute_api("AITransmissionWorkOrder", function_name, arguments, auth_token, method="POST")
-
-                            return [{
-                                "api_name": function_name,
-                                "parameters": arguments,
-                                "data": tool_result
-                            }]
-                        elif any(key in parsed_response for key in ['ContractorName', 'ContractorCWIName', 'ContractorNDEName', 'ContractorCRIName']):
-                            logger.info(f"LLM provided legacy parameters format: {parsed_response}")
-
-                            # Dynamically call GetWorkOrderInformation
-                            import tools.weldinsights_tools as tools_module
-                            if hasattr(tools_module, 'GetWorkOrderInformation'):
-                                tool_function = getattr(tools_module, 'GetWorkOrderInformation')
-                                tool_result = tool_function(**parsed_response, auth_token=auth_token)
-                            else:
-                                # Fallback to direct API call if function not found
-                                tool_result = execute_api("AITransmissionWorkOrder", "GetWorkOrderInformation", parsed_response, auth_token, method="POST")
-
-                            return [{
-                                "api_name": "GetWorkOrderInformation",
-                                "parameters": parsed_response,
-                                "data": tool_result
-                            }]
                 except json.JSONDecodeError as e:
                     logger.warning(f"Failed to parse JSON response: {e}")
                 except Exception as e:
@@ -1427,16 +1388,9 @@ def data_analysis_step(user_input, clean_data_array, api_name=None, api_paramete
             "filter_applied": api_parameters
         }
 
-    # CRITICAL FIX: Use the calculated total from the transformer. 
-    # For grouping APIs, this is typically total_grouped_records, but general APIs use total_records.
-    # We must assume the transformer correctly sets the primary count to "total_records" 
-    # OR that the transformer for aggregation APIs sets "total_grouped_records".
-    # For safety, let's use the field most likely to exist, which is `total_records`.
+    # All transformers now return a standardized "total_records" field
+    # This provides a consistent interface for checking if data exists
     total_records = analysis_results.get("total_records", 0)
-
-    # Fallback check for aggregation APIs that might use a specific key like 'total_grouped_records'
-    if api_name in ["GetWorkOrderNDEIndicationsbyCriteria", "GetWorkOrderRejactableNDEIndicationsbyCriteria"]:
-         total_records = analysis_results.get("total_grouped_records", 0)
 
     if total_records == 0:
         # The redundant warning line is confirmed to be the source of the confusing log entries.

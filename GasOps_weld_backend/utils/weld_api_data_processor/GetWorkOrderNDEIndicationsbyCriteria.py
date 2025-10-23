@@ -12,8 +12,9 @@ def analyze_GetWorkOrderNDEIndicationsbyCriteria(clean_data_array, api_parameter
     and the distribution of indication types.
     """
     total_grouped_records = len(clean_data_array)
-    
+
     analysis_results = {
+        "total_records": total_grouped_records, # Standard field for consistency across all APIs
         "total_grouped_records": total_grouped_records, # Number of rows in the aggregated table
         "raw_data": clean_data_array,
         "filter_applied": api_parameters,
