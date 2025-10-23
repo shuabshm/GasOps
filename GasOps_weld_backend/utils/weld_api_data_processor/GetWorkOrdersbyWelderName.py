@@ -16,16 +16,19 @@ def analyze_GetWorkOrdersbyWelderName(clean_data_array, api_parameters):
     Returns:
         dict: Enriched data with analytics and processed records
     """
-    total_work_orders = len(clean_data_array)
+    total_records = len(clean_data_array)
 
-    if total_work_orders == 0:
+    if total_records == 0:
         logger.info("No work orders found for the given welder")
         return {
-            "total_work_orders": 0,
+            "total_records": 0,
+            "raw_data": [],
+            "filter_applied": api_parameters,
             "total_welds": 0,
             "work_order_with_most_welds": None,
             "max_welds_count": 0,
-            "welder_name": api_parameters.get("WelderName", "Unknown"),
+            "welder_full_name": None,
+            "welder_name_queried": api_parameters.get("WelderName", "Unknown"),
             "processed_records": []
         }
 
@@ -74,7 +77,9 @@ def analyze_GetWorkOrdersbyWelderName(clean_data_array, api_parameters):
 
     # Return enriched data with analytics
     return {
-        "total_work_orders": total_work_orders,
+        "total_records": total_records,
+        "raw_data": clean_data_array,  # Original data from API
+        "filter_applied": api_parameters,
         "total_welds": total_welds,
         "work_order_with_most_welds": work_order_with_most_welds,
         "max_welds_count": max_welds_count,

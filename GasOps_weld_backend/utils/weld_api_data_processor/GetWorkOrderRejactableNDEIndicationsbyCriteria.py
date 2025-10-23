@@ -13,8 +13,9 @@ def analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria(clean_data_array, api
     The distribution for the GroupBy field is redundant and intentionally removed.
     """
     total_grouped_records = len(clean_data_array)
-    
+
     analysis_results = {
+        "total_records": total_grouped_records, # Standard field for consistency across all APIs
         "total_grouped_records": total_grouped_records,
         "raw_data": clean_data_array,
         "filter_applied": api_parameters,
