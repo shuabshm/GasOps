@@ -13,7 +13,8 @@ from utils.weld_api_data_processor.GetWeldsbyNDEIndicationandWorkOrderNumber imp
 from utils.weld_api_data_processor.GetWorkOrderDetailsbyCriteria import analyze_GetWorkOrderDetailsbyCriteria
 from utils.weld_api_data_processor.GetWorkOrderInformation import analyze_GetWorkOrderInformation
 from utils.weld_api_data_processor.GetWorkOrderNDEIndicationsbyCriteria import analyze_GetWorkOrderNDEIndicationsbyCriteria
-from utils.weld_api_data_processor.GetWorkOrderRejactableNDEIndicationsbyCriteria import analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria 
+from utils.weld_api_data_processor.GetWorkOrderRejactableNDEIndicationsbyCriteria import analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrdersbyWelderName import analyze_GetWorkOrdersbyWelderName
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,8 @@ def get_transformer(api_name):
         return analyze_GetWorkOrderNDEIndicationsbyCriteria
     elif api_name == "GetWorkOrderRejactableNDEIndicationsbyCriteria":
         return analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria
+    elif api_name == "GetWorkOrdersbyWelderName":
+        return analyze_GetWorkOrdersbyWelderName
     # Add other API transformers here
     # elif api_name == "GetWorkOrderInformation":
     #     return analyze_work_order_data

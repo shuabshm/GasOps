@@ -65,11 +65,10 @@ TARGETED KEY INSIGHTS:
 
 | GroupBy Pattern | Insights Focus |
 |----------------|----------------|
-| ["Indication"] | Indication type distribution, most/least common indication types, total indication count |
-| ["WelderName", "Indication"] | Welder performance patterns, which welders have most indications, indication distribution per welder |
-| ["NDEName", "Indication"] | Inspector patterns, NDE performance analysis, indication detection patterns per inspector |
-| ["WorkOrderNumber", "Indication"] | Work order comparison, cross-work order indication patterns, work order quality analysis |
-| ["WeldSerialNumber", "Indication"] | Weld-level indication analysis, specific weld quality issues |
+| ["WelderName"] | Welder performance patterns, which welders have most indications, indication distribution per welder |
+| ["NDEName"] | Inspector patterns, NDE performance analysis, indication detection patterns per inspector |
+| ["WorkOrderNumber"] | Work order comparison, cross-work order indication patterns, work order quality analysis |
+| ["WeldSerialNumber"] | Weld-level indication analysis, specific weld quality issues |
 | Other combinations | Adapt insights to match the grouping dimensions used |
 
 **Always include:**
@@ -98,9 +97,9 @@ RESPONSE FORMAT:
      - Use clear formatting and handle null values with "-"
 
    Examples:
-   - GroupBy=["Indication"] → Columns: Indication, Count
-   - GroupBy=["WelderName", "Indication"] → Columns: WelderName, Indication, Count
-   - GroupBy=["WorkOrderNumber", "Indication"] → Columns: WorkOrderNumber, Indication, Count
+   - GroupBy=["NDEName"] → Columns: NDEName, Indication, Count
+   - GroupBy=["WelderName"] → Columns: WelderName, Indication, Count
+   - GroupBy=["WorkOrderNumber"] → Columns: WorkOrderNumber, Indication, Count
 
    *Mandatory*: Display exactly the fields from GroupBy plus Count. DO NOT add extra fields not in the response.
 
@@ -112,10 +111,9 @@ RESPONSE FORMAT:
    - Maintain numbering or - consistently.
    - Keep each bullet concise and self-contained.
    - **Focus insights on what's in the GroupBy** (indication → indication insights, welder → welder insights, etc.)
-   - For ["Indication"] grouping: indication type distribution, most/least common types
-   - For ["WelderName", "Indication"]: welder performance, which welders have quality issues
-   - For ["NDEName", "Indication"]: inspector patterns, detection consistency
-   - For ["WorkOrderNumber", "Indication"]: work order quality comparison
+   - For ["WelderName"]: welder performance, which welders have quality issues
+   - For ["NDEName"]: inspector patterns, detection consistency
+   - For ["WorkOrderNumber"]: work order quality comparison
    - Highlight the most frequent indications/patterns and their counts
    - If sample displayed, provide overall statistics for full dataset
 
