@@ -21,26 +21,30 @@ def analyze_GetWorkOrderInformation(clean_data_array, api_parameters):
         "raw_data": clean_data_array,
         "filter_applied": api_parameters,
         "counts": {
-            # Core Distributions
-            "status_distribution": defaultdict(int),
-            "region_distribution": defaultdict(int),
-            "project_distribution": defaultdict(int),
-            "contractor_distribution": defaultdict(int),
-            
-            # Personnel Distributions (Consolidated & Single)
-            "engineer_distribution": defaultdict(int),     # Consolidated Engineer1-4
-            "supervisor_distribution": defaultdict(int),   # Consolidated Supervisor1-4 (NOTE: Input payload shows 'SupervisorName')
-            "manager_distribution": defaultdict(int),      # Consolidated Manager1-4 (NOTE: Input payload shows 'ManagerName')
-            "employee_distribution": defaultdict(int),     # <-- NEW: Explicit EmployeeName distribution
-            "records_support_distribution": defaultdict(int),# <-- NEW: Explicit RecordsSupport distribution
+            # Identifiers
+            "work_order_number_distribution": defaultdict(int),
+            "project_number_distribution": defaultdict(int),
 
-            # Specialized/CWI Personnel
-            "contractor_cwi_distribution": defaultdict(int),
-            "contractor_nde_distribution": defaultdict(int),
-            "contractor_cri_distribution": defaultdict(int),
+            # Core Distributions
+            "region_name_distribution": defaultdict(int),
+            "work_order_status_distribution": defaultdict(int),
             "crew_distribution": defaultdict(int),
-            
-            # Temporal
+            "is_redig_distribution": defaultdict(int),
+            "created_on_date_distribution": defaultdict(int),
+
+            # Contractor Info
+            "contractor_name_distribution": defaultdict(int),
+            "contractor_cwi_name_distribution": defaultdict(int),
+            "contractor_nde_name_distribution": defaultdict(int),
+            "contractor_cri_name_distribution": defaultdict(int),
+
+            # Personnel Distributions (Consolidated)
+            "manager_distribution": defaultdict(int),
+            "supervisor_distribution": defaultdict(int),
+            "engineer_distribution": defaultdict(int),
+            "records_support_distribution": defaultdict(int),
+
+            # Temporal Stats
             "date_stats": {}
         }
     }
@@ -66,42 +70,37 @@ def analyze_GetWorkOrderInformation(clean_data_array, api_parameters):
                 
     # --- Perform Statistical Analysis ---
     for record in clean_data_array:
+        # Identifiers
+        counts["work_order_number_distribution"][record.get("WorkOrderNumber", "Unknown")] += 1
+        counts["project_number_distribution"][record.get("ProjectNumber", "Unknown")] += 1
+
         # Core Distributions
-        counts["status_distribution"][record.get("WorkOrderStatusDescription", "N/A")] += 1
-        counts["region_distribution"][record.get("RegionName", "N/A")] += 1
-        counts["project_distribution"][record.get("ProjectNumber", "N/A")] += 1
-        counts["contractor_distribution"][record.get("ContractorName", "N/A")] += 1
-        counts["crew_distribution"][record.get("Crew", "N/A")] += 1
-        
-        # Specialized/CWI Contractor Personnel
-        counts["contractor_cwi_distribution"][record.get("ContractorCWIName", "N/A")] += 1
-        counts["contractor_nde_distribution"][record.get("ContractorNDEName", "N/A")] += 1
-        counts["contractor_cri_distribution"][record.get("ContractorCRIName", "N/A")] += 1
-        
-        # Explicit Single Personnel Fields (EmployeeName, RecordsSupport)
-        counts["employee_distribution"][record.get("EmployeeName", "N/A")] += 1
-        counts["records_support_distribution"][record.get("RecordsSupport", "N/A")] += 1
+        counts["region_name_distribution"][record.get("RegionName", "Unknown")] += 1
+        counts["work_order_status_distribution"][record.get("WorkOrderStatusDescription", "Unknown")] += 1
+        counts["crew_distribution"][record.get("Crew", "Unknown")] += 1
+        counts["is_redig_distribution"][record.get("IsRedig", "Unknown")] += 1
+        counts["created_on_date_distribution"][record.get("CreatedOnDate", "Unknown")] += 1
 
-        # Consolidated Personnel (Engineers, Supervisors, Managers)
-        # Check for multi-field (Engineer1-4) or fall back to single field (EngineerName)
-        
-        # Engineer: Try Engineer1-4, then fall back to single 'EngineerName' if needed
-        if not process_personnel(record, "Engineer", counts["engineer_distribution"]):
-            single_engineer = record.get("EngineerName")
-            if single_engineer and single_engineer.strip() != "":
-                 counts["engineer_distribution"][single_engineer] += 1
+        # Contractor Info
+        counts["contractor_name_distribution"][record.get("ContractorName", "Unknown")] += 1
+        counts["contractor_cwi_name_distribution"][record.get("ContractorCWIName", "Unknown")] += 1
+        counts["contractor_nde_name_distribution"][record.get("ContractorNDEName", "Unknown")] += 1
+        counts["contractor_cri_name_distribution"][record.get("ContractorCRIName", "Unknown")] += 1
 
-        # Supervisor: Try Supervisor1-4, then fall back to single 'SupervisorName'
-        if not process_personnel(record, "Supervisor", counts["supervisor_distribution"]):
-            single_supervisor = record.get("SupervisorName")
-            if single_supervisor and single_supervisor.strip() != "":
-                 counts["supervisor_distribution"][single_supervisor] += 1
+        # Single Personnel Fields
+        counts["records_support_distribution"][record.get("RecordsSupport", "Unknown")] += 1
 
-        # Manager: Try Manager1-4, then fall back to single 'ManagerName'
-        if not process_personnel(record, "Manager", counts["manager_distribution"]):
-            single_manager = record.get("ManagerName")
-            if single_manager and single_manager.strip() != "":
-                 counts["manager_distribution"][single_manager] += 1
+        # Consolidated Personnel (Manager, Supervisors, Engineers)
+        # Process Manager field (single field, not multi)
+        manager = record.get("Manager")
+        if manager and manager.strip() != "":
+            counts["manager_distribution"][manager.strip()] += 1
+
+        # Process Supervisor1-4 fields
+        process_personnel(record, "Supervisor", counts["supervisor_distribution"])
+
+        # Process Engineer1-4 fields
+        process_personnel(record, "Engineer", counts["engineer_distribution"])
         
         # Temporal Analysis: Parse the date string for min/max
         created_date_str = record.get("CreatedOnDate")
@@ -139,5 +138,24 @@ def analyze_GetWorkOrderInformation(clean_data_array, api_parameters):
         # Find min/max dates accurately using datetime objects
         counts["date_stats"]["earliest_created_date"] = min(created_dates).isoformat()
         counts["date_stats"]["latest_created_date"] = max(created_dates).isoformat()
-    
+
+    # Add distinct counts for ALL fields
+    analysis_results["distinct_counts"] = {
+        "total_distinct_work_order_numbers": len(set(record.get("WorkOrderNumber") for record in clean_data_array if record.get("WorkOrderNumber"))),
+        "total_distinct_project_numbers": len(set(record.get("ProjectNumber") for record in clean_data_array if record.get("ProjectNumber"))),
+        "total_distinct_region_names": len(set(record.get("RegionName") for record in clean_data_array if record.get("RegionName") and record.get("RegionName").strip())),
+        "total_distinct_work_order_statuses": len(set(record.get("WorkOrderStatusDescription") for record in clean_data_array if record.get("WorkOrderStatusDescription") and record.get("WorkOrderStatusDescription").strip())),
+        "total_distinct_crews": len(set(record.get("Crew") for record in clean_data_array if record.get("Crew") and record.get("Crew").strip())),
+        "total_distinct_is_redig": len(set(record.get("IsRedig") for record in clean_data_array if record.get("IsRedig"))),
+        "total_distinct_created_on_dates": len(set(record.get("CreatedOnDate") for record in clean_data_array if record.get("CreatedOnDate"))),
+        "total_distinct_contractor_names": len(set(record.get("ContractorName") for record in clean_data_array if record.get("ContractorName") and record.get("ContractorName").strip())),
+        "total_distinct_contractor_cwi_names": len(set(record.get("ContractorCWIName") for record in clean_data_array if record.get("ContractorCWIName") and record.get("ContractorCWIName").strip())),
+        "total_distinct_contractor_nde_names": len(set(record.get("ContractorNDEName") for record in clean_data_array if record.get("ContractorNDEName") and record.get("ContractorNDEName").strip())),
+        "total_distinct_contractor_cri_names": len(set(record.get("ContractorCRIName") for record in clean_data_array if record.get("ContractorCRIName") and record.get("ContractorCRIName").strip())),
+        "total_distinct_managers": len(set(record.get("Manager") for record in clean_data_array if record.get("Manager") and record.get("Manager").strip())),
+        "total_distinct_supervisors": len(set(record.get(f"Supervisor{i}") for record in clean_data_array for i in range(1, 5) if record.get(f"Supervisor{i}") and record.get(f"Supervisor{i}").strip())),
+        "total_distinct_engineers": len(set(record.get(f"Engineer{i}") for record in clean_data_array for i in range(1, 5) if record.get(f"Engineer{i}") and record.get(f"Engineer{i}").strip())),
+        "total_distinct_records_support": len(set(record.get("RecordsSupport") for record in clean_data_array if record.get("RecordsSupport") and record.get("RecordsSupport").strip()))
+    }
+
     return analysis_results

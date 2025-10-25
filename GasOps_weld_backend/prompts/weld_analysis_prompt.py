@@ -4423,8 +4423,15 @@ def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_fol
         "total_records": total_records,
         "full_data": analysis_results.get("raw_data"),
         "full_analysis_data": analysis_results.get("counts"),
+        "distinct_counts": analysis_results.get("distinct_counts", {}),
         "is_follow_up": is_follow_up
     }
+
+    # Special handling for GetWelderNameDetailsbyWorkOrderNumberandCriteria API
+    # This API pre-aggregates data, so we pass the aggregated_data instead of raw_data
+    if api_name == "GetWelderNameDetailsbyWorkOrderNumberandCriteria":
+        data_representation["aggregated_data"] = analysis_results.get("aggregated_data", [])
+        data_representation["total_unique_welders"] = analysis_results.get("total_unique_welders", 0)
     
     # Get the specific prompt for the API
     api_specific_prompt = ""

@@ -392,7 +392,7 @@ For complete API details, parameters, and constraints, refer to the available to
   - WeldSerialNumber
 - **CRITICAL**: GroupBy parameter is REQUIRED
 - If WorkOrderNumber/WeldSerialNumber not provided → Ask for clarification
-- If GroupBy not provided → Ask for clarification with suggested grouping options
+- If GroupBy not provided → take WorkOrderNumber as default GroupBy
 
 **GroupBy Parameter**:
 - REQUIRED field for this API

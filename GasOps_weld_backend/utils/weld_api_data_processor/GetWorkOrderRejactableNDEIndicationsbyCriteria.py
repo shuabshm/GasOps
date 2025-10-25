@@ -20,51 +20,41 @@ def analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria(clean_data_array, api
         "raw_data": clean_data_array,
         "filter_applied": api_parameters,
         "counts": {
-            "total_rejectable_occurrences": 0,
-            "rejectable_indication_type_distribution": defaultdict(int),
+            "work_order_number_distribution": defaultdict(int),
+            "indication_distribution": defaultdict(int)
         }
     }
 
     if total_grouped_records == 0:
         return analysis_results
 
-    # --- Setup Aggregators ---
-    total_rejectable_occurrences = 0
-    indication_type_counts = analysis_results["counts"]["rejectable_indication_type_distribution"]
-    
-    # --- Core Aggregation Loop ---
-    for record in clean_data_array:
-        try:
-            # 1. Sum the 'Count' field to get the total number of critical defects (Crucial Metric)
-            count = int(record.get("Count", 0))
-            total_rejectable_occurrences += count
-            
-            # 2. Indication Type Distribution: Tally by the defect count
-            indication_type = record.get("Indication", "N/A")
-            indication_type_counts[indication_type] += count 
-                
-        except ValueError:
-            logger.warning(f"Non-integer value found for 'Count' field in record.")
+    # --- Perform Statistical Analysis ---
 
-    analysis_results["counts"]["total_rejectable_occurrences"] = total_rejectable_occurrences
-    
-    # --- Format Distributions ---
-    
-    # Helper to calculate distributions with 2 decimal places based on total rejectable occurrences
+    work_order_number_counts = analysis_results["counts"]["work_order_number_distribution"]
+    indication_counts = analysis_results["counts"]["indication_distribution"]
+
+    for record in clean_data_array:
+        work_order_number_counts[record.get("WorkOrderNumber", "Unknown")] += 1
+        indication_counts[record.get("Indication", "Unknown")] += 1
+
+    # Format the distributions with counts and percentages
     def get_distributions(counts):
-        if total_rejectable_occurrences == 0: return {}
+        if total_grouped_records == 0: return {}
         return {
             item: {
-                "count": count, 
-                "percentage": round((count / total_rejectable_occurrences) * 100, 2)
+                "count": count,
+                "percentage": round((count / total_grouped_records) * 100, 2)
             }
             for item, count in counts.items()
         }
 
-    # Final Distribution: ONLY the Indication Type Distribution
-    analysis_results["counts"]["rejectable_indication_type_distribution"] = get_distributions(indication_type_counts)
-    
-    # Remove the placeholder for the grouping distribution entirely
-    # The AI will perform the workload breakdown (Welder distribution) directly from the 'raw_data' table rows.
-    
+    analysis_results["counts"]["work_order_number_distribution"] = get_distributions(work_order_number_counts)
+    analysis_results["counts"]["indication_distribution"] = get_distributions(indication_counts)
+
+    # Add distinct counts
+    analysis_results["distinct_counts"] = {
+        "total_distinct_work_order_numbers": len(set(record.get("WorkOrderNumber") for record in clean_data_array if record.get("WorkOrderNumber"))),
+        "total_distinct_indications": len(set(record.get("Indication") for record in clean_data_array if record.get("Indication") and record.get("Indication").strip()))
+    }
+
     return analysis_results

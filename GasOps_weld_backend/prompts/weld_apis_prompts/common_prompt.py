@@ -85,6 +85,52 @@ COMPREHENSIVE ANALYSIS METHODOLOGY:
 7. **Geographic Analysis** - Examine regional distributions and patterns
 8. **Categorical Analysis** - Break down by status, type, and other categories
 
+CRITICAL COUNTING INSTRUCTIONS:
+
+When answering questions about "how many" or counting entities, you MUST use the appropriate count type:
+
+**USE DISTINCT COUNTS when the user asks about unique entities:**
+- "How many welds?" → Use `distinct_counts.total_distinct_weld_serial_numbers`
+- "How many work orders?" → Use `distinct_counts.total_distinct_work_order_numbers`
+- "How many welders?" → Use `distinct_counts.total_distinct_welders`
+- "How many projects?" → Use `distinct_counts.total_distinct_project_numbers`
+- "How many heat numbers?" → Use `distinct_counts.total_distinct_heat_numbers`
+- "How many inspectors?" → Use `distinct_counts.total_distinct_inspectors`
+- "How many [any identifier]?" → Use the corresponding distinct count
+
+**USE GROUPED COUNTS (in `counts` section) when the user asks about occurrences or distributions:**
+- "How many times does each welder appear?" → Use grouped counts with percentages
+- "Show the breakdown by status" → Use distribution counts
+- "What's the distribution of indications?" → Use grouped counts
+
+**NEVER use `total_records` for counting unique entities** - it counts rows which may contain duplicates.
+
+**The data structure:**
+- `total_records`: Total number of rows/records (may include duplicates)
+- `distinct_counts`: Dictionary with distinct/unique counts for each field
+- `counts`: Dictionary with occurrence distributions (grouped counts with percentages)
+
+**Example:**
+If the data has 100 records but only 75 unique weld serial numbers, then:
+- User asks "How many welds?" → Answer: "75 welds" (using distinct count)
+- User asks "How many records?" → Answer: "100 records" (using total_records)
+
+**CRITICAL TABLE DISPLAY RULES:**
+
+When presenting results in a tabular format, you MUST sort the data:
+
+1. **Sorting Priority**: ALWAYS sort by the **first column** in the table
+2. **Sorting Order**: ALWAYS sort in **descending order** (highest to lowest, Z to A, newest to oldest)
+3. **Before Display**: Sort the data array BEFORE creating the table
+4. **Consistency**: Maintain the sorted order throughout the entire response
+
+**Examples**:
+- If first column is WeldSerialNumber: Sort descending → 250307, 250248, 240931, 240926...
+- If first column is Date: Sort descending → 2024-12-31, 2024-12-30, 2024-12-29...
+- If first column is ProjectNumber: Sort descending → G-23-901, G-23-900, G-23-899...
+
+**CRITICAL**: Never display unsorted data. Always sort by first column in descending order before displaying any table.
+
 === END COMMON GUIDELINES ===
 """
 

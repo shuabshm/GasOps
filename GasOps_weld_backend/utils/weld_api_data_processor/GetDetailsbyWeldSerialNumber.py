@@ -66,5 +66,25 @@ def analyze_GetDetailsbyWeldSerialNumber(clean_data_array, api_parameters):
             indication_counts, total_indications
         )
         analysis_results["counts"]["total_indications_found"] = total_indications
-        
+
+    # Add distinct counts for identifier fields
+    # Since this API returns a single weld object, we extract identifiers from nested sections
+    distinct_counts = {}
+
+    # Extract identifiers from the main weld object
+    if "WeldSerialNumber" in weld_detail_object:
+        distinct_counts["weld_serial_number"] = weld_detail_object.get("WeldSerialNumber")
+    if "ProjectNumber" in weld_detail_object:
+        distinct_counts["project_number"] = weld_detail_object.get("ProjectNumber")
+
+    # Extract distinct NDEReportNumbers from film details if available
+    if film_detail_count > 0:
+        nde_report_numbers = set(
+            film.get("NDEReportNumber") for film in film_details
+            if film.get("NDEReportNumber") and film.get("NDEReportNumber").strip()
+        )
+        distinct_counts["total_distinct_nde_report_numbers"] = len(nde_report_numbers)
+
+    analysis_results["distinct_counts"] = distinct_counts
+
     return analysis_results
