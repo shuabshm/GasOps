@@ -19,9 +19,8 @@ def analyze_GetWorkOrderNDEIndicationsbyCriteria(clean_data_array, api_parameter
         "raw_data": clean_data_array,
         "filter_applied": api_parameters,
         "counts": {
-            "total_indication_occurrences": 0, # <-- CRITICAL: Sum of the 'Count' field
-            "indication_type_distribution": defaultdict(int),
-            "grouping_field_distribution": defaultdict(int), # Distribution based on the non-Indication GroupBy field
+            "work_order_number_distribution": defaultdict(int),
+            "indication_distribution": defaultdict(int)
         }
     }
 
@@ -29,53 +28,32 @@ def analyze_GetWorkOrderNDEIndicationsbyCriteria(clean_data_array, api_parameter
         return analysis_results
 
     # --- Perform Statistical Analysis ---
-    
-    total_indication_occurrences = 0
-    indication_type_counts = analysis_results["counts"]["indication_type_distribution"]
-    grouping_field_counts = analysis_results["counts"]["grouping_field_distribution"]
 
-    # Determine the primary grouping field (it's often the second element in the GroupBy array)
-    group_by_fields = api_parameters.get('GroupBy', [])
-    # Find the field that is NOT 'Indication' (e.g., WeldSerialNumber, WelderName)
-    primary_grouping_field = next((field for field in group_by_fields if field != 'Indication'), None)
-    
+    work_order_number_counts = analysis_results["counts"]["work_order_number_distribution"]
+    indication_counts = analysis_results["counts"]["indication_distribution"]
+
     for record in clean_data_array:
-        try:
-            # 1. Sum the 'Count' field to get the total number of defects
-            count = int(record.get("Count", 0))
-            total_indication_occurrences += count
-            
-            # 2. Count the distribution of specific NDE Indication types (e.g., Porosity, Crack)
-            indication_type = record.get("Indication", "N/A")
-            indication_type_counts[indication_type] += count # Tally by the total count, not by row
-            
-            # 3. Count the distribution based on the grouping field (e.g., Welder, Weld Serial Number)
-            if primary_grouping_field:
-                group_value = record.get(primary_grouping_field, "N/A")
-                grouping_field_counts[group_value] += count # Tally by the total count
-                
-        except ValueError:
-            logger.warning(f"Non-integer value found for 'Count' field in record.")
+        work_order_number_counts[record.get("WorkOrderNumber", "Unknown")] += 1
+        indication_counts[record.get("Indication", "Unknown")] += 1
 
-    analysis_results["counts"]["total_indication_occurrences"] = total_indication_occurrences
-    
-    # Format the distributions (based on total indication occurrences)
+    # Format the distributions with counts and percentages
     def get_distributions(counts):
-        if total_indication_occurrences == 0: return {}
+        if total_grouped_records == 0: return {}
         return {
             item: {
-                "count": count, 
-                "percentage": round((count / total_indication_occurrences) * 100, 2)
+                "count": count,
+                "percentage": round((count / total_grouped_records) * 100, 2)
             }
             for item, count in counts.items()
         }
 
-    analysis_results["counts"]["indication_type_distribution"] = get_distributions(indication_type_counts)
-    
-    # Only include grouping field distribution if a primary field was identified
-    if primary_grouping_field:
-        analysis_results["counts"]["grouping_field_distribution"] = get_distributions(grouping_field_counts)
-    else:
-        analysis_results["counts"]["grouping_field_distribution"] = {} # Clear if not relevant
+    analysis_results["counts"]["work_order_number_distribution"] = get_distributions(work_order_number_counts)
+    analysis_results["counts"]["indication_distribution"] = get_distributions(indication_counts)
+
+    # Add distinct counts
+    analysis_results["distinct_counts"] = {
+        "total_distinct_work_order_numbers": len(set(record.get("WorkOrderNumber") for record in clean_data_array if record.get("WorkOrderNumber"))),
+        "total_distinct_indications": len(set(record.get("Indication") for record in clean_data_array if record.get("Indication") and record.get("Indication").strip()))
+    }
 
     return analysis_results

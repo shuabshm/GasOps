@@ -17,8 +17,8 @@ def analyze_GetWorkOrderDetailsbyCriteria(clean_data_array, api_parameters):
         "raw_data": clean_data_array,  # Full list of work order records
         "filter_applied": api_parameters,
         "counts": {
-            "project_distribution": defaultdict(int),
-            "location_distribution": defaultdict(int),
+            "work_order_number_distribution": defaultdict(int),
+            "project_number_distribution": defaultdict(int)
         }
     }
 
@@ -26,13 +26,13 @@ def analyze_GetWorkOrderDetailsbyCriteria(clean_data_array, api_parameters):
         return analysis_results
 
     # --- Perform statistical analysis ---
-    
-    project_counts = analysis_results["counts"]["project_distribution"]
-    location_counts = analysis_results["counts"]["location_distribution"]
-    
+
+    work_order_number_counts = analysis_results["counts"]["work_order_number_distribution"]
+    project_number_counts = analysis_results["counts"]["project_number_distribution"]
+
     for record in clean_data_array:
-        project_counts[record.get("ProjectNumber", "N/A")] += 1
-        location_counts[record.get("Location", "N/A")] += 1
+        work_order_number_counts[record.get("WorkOrderNumber", "Unknown")] += 1
+        project_number_counts[record.get("ProjectNumber", "Unknown")] += 1
         
     # Format the distributions with counts and percentages (rounded to 2 decimal places)
     def get_distributions(counts):
@@ -45,7 +45,13 @@ def analyze_GetWorkOrderDetailsbyCriteria(clean_data_array, api_parameters):
             for item, count in counts.items()
         }
 
-    analysis_results["counts"]["project_distribution"] = get_distributions(project_counts)
-    analysis_results["counts"]["location_distribution"] = get_distributions(location_counts)
-    
+    analysis_results["counts"]["work_order_number_distribution"] = get_distributions(work_order_number_counts)
+    analysis_results["counts"]["project_number_distribution"] = get_distributions(project_number_counts)
+
+    # Add distinct counts (excluding Location as per user request)
+    analysis_results["distinct_counts"] = {
+        "total_distinct_work_order_numbers": len(set(record.get("WorkOrderNumber") for record in clean_data_array if record.get("WorkOrderNumber"))),
+        "total_distinct_project_numbers": len(set(record.get("ProjectNumber") for record in clean_data_array if record.get("ProjectNumber")))
+    }
+
     return analysis_results
