@@ -713,6 +713,48 @@ For complete API details, parameters, and constraints, refer to the available to
 
 ---
 
+--- GetWeldsbyCRIIndicationandWorkOrderNumber ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWeldsbyCRIIndicationandWorkOrderNumber: Get welds for requested work order number filtered by specific CRI indication type
+
+**Parameter Requirements**:
+- **CRITICAL**: Both WorkOrderNumber AND CRIIndication are REQUIRED for this API
+- If WorkOrderNumber not provided → Ask for clarification
+- If CRIIndication not provided → Ask for clarification
+
+**Work Order Number Extraction**:
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**CRIIndication Parameter**:
+- REQUIRED field for this API
+- Common CRI indication types: Porosity, Slag Inclusions, Burn Through, Crack, Undercut, etc.
+- Extract indication type from user query
+- If user doesn't specify indication type → Ask for clarification
+
+**Use Cases**:
+- Identifying welds with specific CRI indication types
+- Finding welds with quality issues (specific CRI indications)
+- Analyzing CRI indication patterns across welds
+- Prioritizing welds for repair based on indication counts
+- Quality control and defect tracking from CRI inspections
+
+**Query Detection Examples**:
+- "Show me all the welds that had Porosity CRI indication on work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "CRIIndication": "Porosity"}}
+- "Which welds have Slag Inclusions CRI indication in work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "CRIIndication": "Slag Inclusions"}}
+- "Welds that had Burn Through CRI indication"
+  → Parameters: {{"WorkOrderNumber": "[extracted from context]", "CRIIndication": "Burn Through"}}
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+---
+
 --- GetNDEReportProcessingDetailsbyWeldSerialNumber ---
 For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
 - GetNDEReportProcessingDetailsbyWeldSerialNumber: Get list of all NDE report numbers and their type by requested weld serial number
@@ -961,6 +1003,8 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show rejectable CRI indications for work order 100500514" → {{"type": "api_call", "function_name": "GetWorkOrderRejactableCRIIndicationsbyCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WorkOrderNumber"]}}}}
 - "Show rejectable CRI indications for weld serial 240911" → {{"type": "api_call", "function_name": "GetWorkOrderRejactableCRIIndicationsbyCriteria", "parameters": {{"WeldSerialNumber": "240911", "GroupBy": ["WeldSerialNumber"]}}}}
 - "Show rejectable CRI indications by inspector for work order 100500514" → {{"type": "api_call", "function_name": "GetWorkOrderRejactableCRIIndicationsbyCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["CRIName"]}}}}
+- "Show me all the welds that had Porosity CRI indication on work order 100500514" → {{"type": "api_call", "function_name": "GetWeldsbyCRIIndicationandWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514", "CRIIndication": "Porosity"}}}}
+- "Which welds have Slag Inclusions CRI indication in work order 100500514" → {{"type": "api_call", "function_name": "GetWeldsbyCRIIndicationandWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514", "CRIIndication": "Slag Inclusions"}}}}
 - "Show NDE reports for weld serial 250129" → {{"type": "api_call", "function_name": "GetNDEReportProcessingDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250129"}}}}
 - "Get NDE report processing details for weld 250129" → {{"type": "api_call", "function_name": "GetNDEReportProcessingDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250129"}}}}
 - "Show me weld details for weld 250520" → {{"type": "api_call", "function_name": "GetDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250520"}}}}

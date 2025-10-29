@@ -279,6 +279,20 @@ def GetWorkOrderRejactableCRIIndicationsbyCriteria(WorkOrderNumber=None,
     return execute_api(api_path, "GetWorkOrderRejactableCRIIndicationsbyCriteria", parameters, auth_token, method="POST")
 
 
+def GetWeldsbyCRIIndicationandWorkOrderNumber(WorkOrderNumber,
+                                                CRIIndication,
+                                                auth_token=None,
+                                                api_path="AITransmissionWorkOrder"):
+    """Tool function to get welds for requested work order number filtered by specific CRI indication type"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "CRIIndication": CRIIndication
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWeldsbyCRIIndicationandWorkOrderNumber", parameters, auth_token, method="POST")
+
+
 def GetNDEReportProcessingDetailsbyWeldSerialNumber(WeldSerialNumber,
                                                       auth_token=None,
                                                       api_path="AITransmissionWorkOrder"):
