@@ -4396,6 +4396,9 @@ from prompts.weld_apis_prompts.GetWorkOrderNDEIndicationsbyCriteria import get_a
 from prompts.weld_apis_prompts.GetWorkOrderRejactableNDEIndicationsbyCriteria import get_api_prompt as get_rejectable_nde_indications_prompt
 from prompts.weld_apis_prompts.GetReshootDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_reshoot_details_prompt
 from prompts.weld_apis_prompts.GetWeldsbyNDEIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_nde_indication_prompt
+from prompts.weld_apis_prompts.GetWeldsbyCRIIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_cri_indication_prompt
+from prompts.weld_apis_prompts.GetWorkOrderCRIIndicationsbyCriteria import get_api_prompt as get_work_order_cri_indications_prompt
+from prompts.weld_apis_prompts.GetWorkOrderRejactableCRIIndicationsbyCriteria import get_api_prompt as get_rejectable_cri_indications_prompt
 from prompts.weld_apis_prompts.GetNDEReportProcessingDetailsbyWeldSerialNumber import get_api_prompt as get_nde_report_processing_details_prompt
 from prompts.weld_apis_prompts.GetDetailsbyWeldSerialNumber import get_api_prompt as get_details_by_weld_serial_prompt
 from prompts.weld_apis_prompts.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_heat_number_details_prompt
@@ -4455,6 +4458,12 @@ def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_fol
         api_specific_prompt = get_reshoot_details_prompt(api_parameters)
     elif api_name == "GetWeldsbyNDEIndicationandWorkOrderNumber":
         api_specific_prompt = get_welds_by_nde_indication_prompt(api_parameters)
+    elif api_name == "GetWeldsbyCRIIndicationandWorkOrderNumber":
+        api_specific_prompt = get_welds_by_cri_indication_prompt(api_parameters)
+    elif api_name == "GetWorkOrderCRIIndicationsbyCriteria":
+        api_specific_prompt = get_work_order_cri_indications_prompt(api_parameters)
+    elif api_name == "GetWorkOrderRejactableCRIIndicationsbyCriteria":
+        api_specific_prompt = get_rejectable_cri_indications_prompt(api_parameters)
     elif api_name == "GetNDEReportProcessingDetailsbyWeldSerialNumber":
         api_specific_prompt = get_nde_report_processing_details_prompt(api_parameters)
     elif api_name == "GetDetailsbyWeldSerialNumber":

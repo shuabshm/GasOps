@@ -107,6 +107,16 @@ You are an API Router. Analyze the user query and call the appropriate API(s) to
 User Query: {user_input}
 ALIASES: {aliases}
 
+**CRITICAL: PARAMETER VALIDATION**
+- **ONLY use parameters that exist in the tool schema** for each API
+- **DO NOT invent or assume parameters** that are not defined in weldinsights_tools
+- **Check the exact function signature** in weldinsights_tools before selecting parameters
+- **If a user query requires filtering that doesn't map to an available parameter:**
+  - Call the API without that filter (get broader results)
+  - Let the response analysis/prompt handle the filtering logic
+  - Example: If user asks "welds ending with -R" but API has no WeldSerialNumber filter → Call with WorkOrderNumber only
+- **Invalid parameters will cause API call failures** - always validate against tool schema first
+
 **GLOBAL RULE : Ambiguous Numeric or Alphanumeric Identifiers**
 
 When the user mentions a number or code (e.g., "2357", "ABC123") without clearly indicating whether it refers to a Work Order Number, Weld Serial Number, Project Number, Welder ID, or another identifier, follow these steps:
@@ -447,11 +457,11 @@ For complete API details, parameters, and constraints, refer to the available to
 
 **GroupBy Parameter**:
 - REQUIRED field for this API
-- Common grouping fields: WorkOrderNumber, WeldSerialNumber, NDEName, WelderName
+- Grouping fields available: WorkOrderNumber, WeldSerialNumber, NDEName or WelderName.
 - User may not explicitly say "group by" - infer from context:
   - "Show rejectable indications per welder for work order 101351590" → GroupBy = ["WelderName"]
 - If unclear what to group by → Ask clarifying question with options
-
+**Critical Rule**: Never use GroupBy values outside of the approved list above.and never use group by with Indication or Indication Type.yes
 **Optional Filter Parameters**:
 - WelderName: Filter by specific welder
 - NDEName: Filter by specific NDE inspector
@@ -559,6 +569,184 @@ For complete API details, parameters, and constraints, refer to the available to
   → Parameters: {{"WorkOrderNumber": "100500514", "NDEIndication": "Concavity"}}
 - "Welds that had Lack of Fusion"
   → Parameters: {{"WorkOrderNumber": "[extracted from context]", "NDEIndication": "Lack of Fusion"}}
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+---
+
+--- GetWorkOrderCRIIndicationsbyCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWorkOrderCRIIndicationsbyCriteria: Get CRI indication details with grouping by specified fields
+
+**Parameter Requirements**:
+- **CRITICAL**: At least ONE of the following MUST be provided:
+  - WorkOrderNumber
+  - WeldSerialNumber
+- **CRITICAL**: GroupBy parameter is REQUIRED
+- If WorkOrderNumber/WeldSerialNumber not provided → Ask for clarification
+
+**GroupBy Parameter**:
+- REQUIRED field for this API
+- **ONLY valid values**: "WorkOrderNumber", "WeldSerialNumber", "CRIName"
+- **CRITICAL**: GroupBy accepts ONLY ONE value (not an array)
+- **Default GroupBy logic**:
+  - If user provides WorkOrderNumber → Default GroupBy = ["WorkOrderNumber"]
+  - If user provides WeldSerialNumber → Default GroupBy = ["WeldSerialNumber"]
+  - Do NOT ask user for GroupBy unless unclear
+- **Examples**:
+  - Query: "Show CRI indications for work order 100500514" → GroupBy = ["WorkOrderNumber"]
+  - Query: "Show CRI indications by welder for work order 100500514" → GroupBy = ["WorkOrderNumber"]
+  - Query: "Show CRI indications for weld serial 250129" → GroupBy = ["WeldSerialNumber"]
+
+**Optional Filter Parameters**:
+- WelderName: Filter by specific welder (filter parameter only, NOT a GroupBy option)
+- CRIName: Filter by specific CRI inspector (can be used as GroupBy or filter)
+
+**Use Cases**:
+- Analyzing CRI indication distribution by type
+- Understanding which CRI indications are most frequent
+- Grouping CRI indications by work order, weld, or CRI inspector
+- Identifying CRI indication patterns and trends
+- Quality control and defect tracking from CRI inspections
+
+**Work Order/Weld Serial Number Extraction**:
+- If current message contains work order/weld serial → Use it
+- If not in current message → Extract from previous messages in conversation history
+- If not found anywhere → Ask for clarification
+
+**Name Clarification Logic**:
+- If user mentions a name without specifying whether it's a welder or CRI inspector → Ask for clarification
+- Examples:
+  - Query: "Show CRI indications for John Smith in work order 100500514"
+    → Ask: "Is John Smith a welder or a CRI inspector?"
+  - Query: "Get CRI indications by Sarah Johnson"
+    → Ask: "Is Sarah Johnson a welder or a CRI inspector?"
+- Only apply WelderName or CRIName filter after clarification is received
+
+**Query Detection Examples**:
+- "Show CRI indications for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "GroupBy": ["WorkOrderNumber"]}}
+- "Show CRI indications for weld serial 250129"
+  → Parameters: {{"WeldSerialNumber": "250129", "GroupBy": ["WeldSerialNumber"]}}
+- "Show CRI indications by inspector for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "GroupBy": ["CRIName"]}}
+- "Show CRI indications by welder John Smith for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "WelderName": "John Smith", "GroupBy": ["WorkOrderNumber"]}}
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+---
+
+--- GetWorkOrderRejactableCRIIndicationsbyCriteria ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWorkOrderRejactableCRIIndicationsbyCriteria: Get rejectable CRI indication details with grouping by specified fields
+
+**Parameter Requirements**:
+- **CRITICAL**: At least ONE of the following MUST be provided:
+  - WorkOrderNumber
+  - WeldSerialNumber
+- **CRITICAL**: GroupBy parameter is REQUIRED
+- If WorkOrderNumber/WeldSerialNumber not provided → Ask for clarification
+
+**GroupBy Parameter**:
+- REQUIRED field for this API
+- **ONLY valid values**: "WorkOrderNumber", "WeldSerialNumber", "CRIName"
+- **CRITICAL**: GroupBy accepts ONLY ONE value (not an array)
+- **Default GroupBy logic**:
+  - If user provides WorkOrderNumber → Default GroupBy = ["WorkOrderNumber"]
+  - If user provides WeldSerialNumber → Default GroupBy = ["WeldSerialNumber"]
+  - If user implies grouping (e.g., "by weld serial number") → Use implied GroupBy
+  - Do NOT ask user for GroupBy unless unclear
+- **Examples**:
+  - Query: "Show rejectable CRI indications for work order 100500514" → GroupBy = ["WorkOrderNumber"]
+  - Query: "Show rejectable CRI indications for work order 100500514 by weld serial number" → GroupBy = ["WeldSerialNumber"]
+  - Query: "Show rejectable CRI indications for weld serial 240911" → GroupBy = ["WeldSerialNumber"]
+
+**Optional Filter Parameters**:
+- WelderName: Filter by specific welder (filter parameter only, NOT a GroupBy option)
+- CRIName: Filter by specific CRI inspector (can be used as GroupBy or filter)
+
+**Use Cases**:
+- Analyzing rejectable CRI indication distribution by type
+- Understanding which rejectable CRI indications are most frequent
+- Identifying critical quality defects requiring repair/attention
+- Grouping rejectable CRI indications by work order, weld, or CRI inspector
+- Quality control and defect tracking for rejectable defects
+- Tracking rejection trends for quality improvement
+
+**Work Order/Weld Serial Number Extraction**:
+- If current message contains work order/weld serial → Use it
+- If not in current message → Extract from previous messages in conversation history
+- If not found anywhere → Ask for clarification
+
+**Name Clarification Logic**:
+- If user mentions a name without specifying whether it's a welder or CRI inspector → Ask for clarification
+- Examples:
+  - Query: "Show rejectable CRI indications for John Smith in work order 100500514"
+    → Ask: "Is John Smith a welder or a CRI inspector?"
+  - Query: "Get rejectable CRI indications by Sarah Johnson"
+    → Ask: "Is Sarah Johnson a welder or a CRI inspector?"
+- Only apply WelderName or CRIName filter after clarification is received
+
+**Query Detection Examples**:
+- "Show rejectable CRI indications for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "GroupBy": ["WorkOrderNumber"]}}
+- "Show rejectable CRI indications for work order 100500514 by weld serial number"
+  → Parameters: {{"WorkOrderNumber": "100500514", "GroupBy": ["WeldSerialNumber"]}}
+- "Show rejectable CRI indications for weld serial 240911"
+  → Parameters: {{"WeldSerialNumber": "240911", "GroupBy": ["WeldSerialNumber"]}}
+- "Show rejectable CRI indications by inspector for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "GroupBy": ["CRIName"]}}
+- "Show rejectable CRI indications by welder John Smith for work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "WelderName": "John Smith", "GroupBy": ["WorkOrderNumber"]}}
+
+**Follow-up Detection** (same as other work order APIs):
+- Contextual references: "which of those", "from those", etc. → Apply cumulative filters
+- New query without context → Apply only current filters
+- If unclear → Ask for clarification
+
+---
+
+--- GetWeldsbyCRIIndicationandWorkOrderNumber ---
+For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
+- GetWeldsbyCRIIndicationandWorkOrderNumber: Get welds for requested work order number filtered by specific CRI indication type
+
+**Parameter Requirements**:
+- **CRITICAL**: Both WorkOrderNumber AND CRIIndication are REQUIRED for this API
+- If WorkOrderNumber not provided → Ask for clarification
+- If CRIIndication not provided → Ask for clarification
+
+**Work Order Number Extraction**:
+- If current message contains work order number → Use it
+- If current message does NOT contain work order number → Extract from previous messages in conversation history
+- If no work order number found anywhere → Ask for clarification
+
+**CRIIndication Parameter**:
+- REQUIRED field for this API
+- Common CRI indication types: Porosity, Slag Inclusions, Burn Through, Crack, Undercut, etc.
+- Extract indication type from user query
+- If user doesn't specify indication type → Ask for clarification
+
+**Use Cases**:
+- Identifying welds with specific CRI indication types
+- Finding welds with quality issues (specific CRI indications)
+- Analyzing CRI indication patterns across welds
+- Prioritizing welds for repair based on indication counts
+- Quality control and defect tracking from CRI inspections
+
+**Query Detection Examples**:
+- "Show me all the welds that had Porosity CRI indication on work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "CRIIndication": "Porosity"}}
+- "Which welds have Slag Inclusions CRI indication in work order 100500514"
+  → Parameters: {{"WorkOrderNumber": "100500514", "CRIIndication": "Slag Inclusions"}}
+- "Welds that had Burn Through CRI indication"
+  → Parameters: {{"WorkOrderNumber": "[extracted from context]", "CRIIndication": "Burn Through"}}
 
 **Follow-up Detection** (same as other work order APIs):
 - Contextual references: "which of those", "from those", etc. → Apply cumulative filters
@@ -809,6 +997,14 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show completed reshoot updates for work order 100500514" → {{"type": "api_call", "function_name": "GetReshootDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "UpdateCompleted": "Yes"}}}}
 - "Show me all the welds that had Porosity on work order 100500514" → {{"type": "api_call", "function_name": "GetWeldsbyNDEIndicationandWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514", "NDEIndication": "Porosity"}}}}
 - "Which welds have Concavity in work order 100500514" → {{"type": "api_call", "function_name": "GetWeldsbyNDEIndicationandWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514", "NDEIndication": "Concavity"}}}}
+- "Show CRI indications for work order 100500514" → {{"type": "api_call", "function_name": "GetWorkOrderCRIIndicationsbyCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WorkOrderNumber"]}}}}
+- "Show CRI indications for weld serial 250129" → {{"type": "api_call", "function_name": "GetWorkOrderCRIIndicationsbyCriteria", "parameters": {{"WeldSerialNumber": "250129", "GroupBy": ["WeldSerialNumber"]}}}}
+- "Show CRI indications by inspector for work order 100500514" → {{"type": "api_call", "function_name": "GetWorkOrderCRIIndicationsbyCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["CRIName"]}}}}
+- "Show rejectable CRI indications for work order 100500514" → {{"type": "api_call", "function_name": "GetWorkOrderRejactableCRIIndicationsbyCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["WorkOrderNumber"]}}}}
+- "Show rejectable CRI indications for weld serial 240911" → {{"type": "api_call", "function_name": "GetWorkOrderRejactableCRIIndicationsbyCriteria", "parameters": {{"WeldSerialNumber": "240911", "GroupBy": ["WeldSerialNumber"]}}}}
+- "Show rejectable CRI indications by inspector for work order 100500514" → {{"type": "api_call", "function_name": "GetWorkOrderRejactableCRIIndicationsbyCriteria", "parameters": {{"WorkOrderNumber": "100500514", "GroupBy": ["CRIName"]}}}}
+- "Show me all the welds that had Porosity CRI indication on work order 100500514" → {{"type": "api_call", "function_name": "GetWeldsbyCRIIndicationandWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514", "CRIIndication": "Porosity"}}}}
+- "Which welds have Slag Inclusions CRI indication in work order 100500514" → {{"type": "api_call", "function_name": "GetWeldsbyCRIIndicationandWorkOrderNumber", "parameters": {{"WorkOrderNumber": "100500514", "CRIIndication": "Slag Inclusions"}}}}
 - "Show NDE reports for weld serial 250129" → {{"type": "api_call", "function_name": "GetNDEReportProcessingDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250129"}}}}
 - "Get NDE report processing details for weld 250129" → {{"type": "api_call", "function_name": "GetNDEReportProcessingDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250129"}}}}
 - "Show me weld details for weld 250520" → {{"type": "api_call", "function_name": "GetDetailsbyWeldSerialNumber", "parameters": {{"WeldSerialNumber": "250520"}}}}
