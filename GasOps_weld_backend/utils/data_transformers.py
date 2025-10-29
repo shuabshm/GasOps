@@ -10,6 +10,8 @@ from utils.weld_api_data_processor.GetUnlockWeldDetailsbyWorkOrderNumberandCrite
 from utils.weld_api_data_processor.GetWeldDetailsbyWorkOrderNumberandCriteria import analyze_GetWeldDetailsbyWorkOrderNumberandCriteria
 from utils.weld_api_data_processor.GetWelderNameDetailsbyWorkOrderNumberandCriteria import analyze_GetWelderNameDetailsbyWorkOrderNumberandCriteria
 from utils.weld_api_data_processor.GetWeldsbyNDEIndicationandWorkOrderNumber import analyze_GetWeldsbyNDEIndicationandWorkOrderNumber
+from utils.weld_api_data_processor.GetWorkOrderCRIIndicationsbyCriteria import analyze_GetWorkOrderCRIIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderRejactableCRIIndicationsbyCriteria import analyze_GetWorkOrderRejactableCRIIndicationsbyCriteria
 from utils.weld_api_data_processor.GetWorkOrderDetailsbyCriteria import analyze_GetWorkOrderDetailsbyCriteria
 from utils.weld_api_data_processor.GetWorkOrderInformation import analyze_GetWorkOrderInformation
 from utils.weld_api_data_processor.GetWorkOrderNDEIndicationsbyCriteria import analyze_GetWorkOrderNDEIndicationsbyCriteria
@@ -42,6 +44,10 @@ def get_transformer(api_name):
         return analyze_GetWelderNameDetailsbyWorkOrderNumberandCriteria
     elif api_name == "GetWeldsbyNDEIndicationandWorkOrderNumber":
         return analyze_GetWeldsbyNDEIndicationandWorkOrderNumber
+    elif api_name == "GetWorkOrderCRIIndicationsbyCriteria":
+        return analyze_GetWorkOrderCRIIndicationsbyCriteria
+    elif api_name == "GetWorkOrderRejactableCRIIndicationsbyCriteria":
+        return analyze_GetWorkOrderRejactableCRIIndicationsbyCriteria
     elif api_name == "GetWorkOrderDetailsbyCriteria":
         return analyze_GetWorkOrderDetailsbyCriteria
     elif api_name == "GetWorkOrderInformation":
