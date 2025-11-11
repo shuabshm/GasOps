@@ -279,6 +279,46 @@ def GetWorkOrderRejactableCRIIndicationsbyCriteria(WorkOrderNumber=None,
     return execute_api(api_path, "GetWorkOrderRejactableCRIIndicationsbyCriteria", parameters, auth_token, method="POST")
 
 
+def GetWorkOrderTRIndicationsbyCriteria(WorkOrderNumber=None,
+                                        WeldSerialNumber=None,
+                                        WelderName=None,
+                                        TRName=None,
+                                        GroupBy=None,
+                                        auth_token=None,
+                                        api_path="AITransmissionWorkOrder"):
+    """Tool function to get TR indication details with grouping by specified fields"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "WeldSerialNumber": WeldSerialNumber,
+        "WelderName": WelderName,
+        "TRName": TRName,
+        "GroupBy": GroupBy
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWorkOrderTRIndicationsbyCriteria", parameters, auth_token, method="POST")
+
+
+def GetWorkOrderRejactableTRIndicationsbyCriteria(WorkOrderNumber=None,
+                                                   WeldSerialNumber=None,
+                                                   WelderName=None,
+                                                   TRName=None,
+                                                   GroupBy=None,
+                                                   auth_token=None,
+                                                   api_path="AITransmissionWorkOrder"):
+    """Tool function to get rejectable TR indication details for requested work order number/weld serial number with grouping by specified fields"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "WeldSerialNumber": WeldSerialNumber,
+        "WelderName": WelderName,
+        "TRName": TRName,
+        "GroupBy": GroupBy
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWorkOrderRejactableTRIndicationsbyCriteria", parameters, auth_token, method="POST")
+
+
 def GetWeldsbyCRIIndicationandWorkOrderNumber(WorkOrderNumber,
                                                 CRIIndication,
                                                 auth_token=None,
@@ -291,6 +331,20 @@ def GetWeldsbyCRIIndicationandWorkOrderNumber(WorkOrderNumber,
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetWeldsbyCRIIndicationandWorkOrderNumber", parameters, auth_token, method="POST")
+
+
+def GetWeldsbyTRIndicationandWorkOrderNumber(WorkOrderNumber,
+                                              TRIndication,
+                                              auth_token=None,
+                                              api_path="AITransmissionWorkOrder"):
+    """Tool function to get welds for requested work order number filtered by specific TR indication type"""
+
+    parameters = {
+        "WorkOrderNumber": WorkOrderNumber,
+        "TRIndication": TRIndication
+    }
+    parameters = {k: v for k, v in parameters.items() if v is not None}
+    return execute_api(api_path, "GetWeldsbyTRIndicationandWorkOrderNumber", parameters, auth_token, method="POST")
 
 
 def GetNDEReportProcessingDetailsbyWeldSerialNumber(WeldSerialNumber,
@@ -355,6 +409,267 @@ def GetWorkOrdersbyWelderName(WelderName,
     }
     parameters = {k: v for k, v in parameters.items() if v is not None}
     return execute_api(api_path, "GetWorkOrdersbyWelderName", parameters, auth_token, method="POST")
+
+
+def GetWorkOrderSummary(WorkOrderNumber,
+                        auth_token=None,
+                        api_path="AITransmissionWorkOrder"):
+    """
+    Tool function to get comprehensive work order summary using existing transformers.
+
+    This approach:
+    1. Calls 8 different APIs to get all work order data
+    2. Uses existing API-specific transformers to process each API's data
+    3. Combines all pre-processed data and makes ONE AI call for final synthesis
+    4. Returns a cohesive, well-structured comprehensive work order summary
+
+    Benefits:
+    - Reuses existing API-specific prompts and transformers (DRY principle)
+    - Makes only ONE AI call instead of 9 (more efficient)
+    - 100% data coverage (uses existing analyzers that extract all fields)
+    - Token-efficient (AI sees pre-processed data, not massive raw data)
+    - Scalable to any work order size
+    - Maintainable (no duplicate prompt logic)
+    """
+    import logging
+    from config.azure_client import get_azure_chat_openai
+    from utils.data_extractor import extract_clean_data
+    from utils.data_transformers import get_transformer
+    from prompts.weld_apis_prompts.GetWorkOrderSummary import get_api_prompt
+
+    logger = logging.getLogger(__name__)
+
+    # Initialize Azure OpenAI client for AI calls
+    try:
+        azure_client, azureopenai = get_azure_chat_openai()
+    except Exception as e:
+        logger.error(f"Failed to initialize Azure OpenAI client: {str(e)}")
+        return {
+            "success": False,
+            "error": f"AI client initialization failed: {str(e)}",
+            "status_code": 500
+        }
+
+    logger.info(f"Starting work order summary for WorkOrderNumber: {WorkOrderNumber}")
+
+    # Define all APIs to call in sequence
+    apis_to_call = [
+        {
+            "name": "GetWorkOrderInformation",
+            "function": GetWorkOrderInformation,
+            "params": {"WorkOrderNumber": WorkOrderNumber},
+            "section_title": "Work Order Information"
+        },
+        {
+            "name": "GetWeldDetailsbyWorkOrderNumberandCriteria",
+            "function": GetWeldDetailsbyWorkOrderNumberandCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber},
+            "section_title": "Weld Details & Inspection Results"
+        },
+        {
+            "name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria",
+            "function": GetWelderNameDetailsbyWorkOrderNumberandCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber},
+            "section_title": "Welder Performance"
+        },
+        {
+            "name": "GetWorkOrderNDEIndicationsbyCriteria",
+            "function": GetWorkOrderNDEIndicationsbyCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber, "GroupBy": ["WorkOrderNumber"]},
+            "section_title": "NDE Indications"
+        },
+        {
+            "name": "GetWorkOrderRejactableNDEIndicationsbyCriteria",
+            "function": GetWorkOrderRejactableNDEIndicationsbyCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber, "GroupBy": ["WorkOrderNumber"]},
+            "section_title": "Rejectable NDE Indications"
+        },
+        {
+            "name": "GetWorkOrderCRIIndicationsbyCriteria",
+            "function": GetWorkOrderCRIIndicationsbyCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber, "GroupBy": ["WorkOrderNumber"]},
+            "section_title": "CRI Indications"
+        },
+        {
+            "name": "GetWorkOrderRejactableCRIIndicationsbyCriteria",
+            "function": GetWorkOrderRejactableCRIIndicationsbyCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber, "GroupBy": ["WorkOrderNumber"]},
+            "section_title": "Rejectable CRI Indications"
+        },
+        {
+            "name": "GetWorkOrderTRIndicationsbyCriteria",
+            "function": GetWorkOrderTRIndicationsbyCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber, "GroupBy": ["WorkOrderNumber"]},
+            "section_title": "TR Indications"
+        },
+        {
+            "name": "GetWorkOrderRejactableTRIndicationsbyCriteria",
+            "function": GetWorkOrderRejactableTRIndicationsbyCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber, "GroupBy": ["WorkOrderNumber"]},
+            "section_title": "Rejectable TR Indications"
+        },
+        {
+            "name": "GetReshootDetailsbyWorkOrderNumberandCriteria",
+            "function": GetReshootDetailsbyWorkOrderNumberandCriteria,
+            "params": {"WorkOrderNumber": WorkOrderNumber},
+            "section_title": "Reshoot Details"
+        }
+    ]
+
+    processed_apis = []
+
+    try:
+        # Step 1: Call all APIs and process with their existing transformers
+        for i, api_config in enumerate(apis_to_call, 1):
+            api_name = api_config["name"]
+            api_function = api_config["function"]
+            api_params = api_config["params"]
+            section_title = api_config["section_title"]
+
+            logger.info(f"[{i}/8] Processing {api_name}...")
+
+            # Call the API
+            try:
+                api_result = api_function(**api_params, auth_token=auth_token, api_path=api_path)
+
+                if not api_result.get("success"):
+                    logger.warning(f"[{i}/8] {api_name} returned no data or error")
+                    processed_apis.append({
+                        "section_title": section_title,
+                        "api_name": api_name,
+                        "analysis_results": {},
+                        "total_records": 0
+                    })
+                    continue
+
+                # Extract clean data
+                clean_data = extract_clean_data([{
+                    "api_name": api_name,
+                    "parameters": api_params,
+                    "data": api_result
+                }])
+
+                if not clean_data or len(clean_data) == 0:
+                    logger.warning(f"[{i}/8] {api_name} returned empty data")
+                    processed_apis.append({
+                        "section_title": section_title,
+                        "api_name": api_name,
+                        "analysis_results": {},
+                        "total_records": 0
+                    })
+                    continue
+
+                # Use existing transformer to process data
+                transformer = get_transformer(api_name)
+                if transformer:
+                    analyzed_data = transformer(clean_data, api_params)
+                else:
+                    analyzed_data = {
+                        "total_records": len(clean_data),
+                        "raw_data": clean_data,
+                        "filter_applied": api_params
+                    }
+
+                total_records = analyzed_data.get("total_records", 0)
+                logger.info(f"[{i}/8] {api_name} processed: {total_records} records")
+
+                processed_apis.append({
+                    "section_title": section_title,
+                    "api_name": api_name,
+                    "analysis_results": analyzed_data,
+                    "total_records": total_records
+                })
+
+            except Exception as e:
+                logger.error(f"[{i}/8] Error processing {api_name}: {str(e)}", exc_info=True)
+                processed_apis.append({
+                    "section_title": section_title,
+                    "api_name": api_name,
+                    "analysis_results": {"error": str(e)},
+                    "total_records": 0
+                })
+
+        # Log API execution summary
+        logger.info("=" * 80)
+        logger.info("API EXECUTION SUMMARY")
+        logger.info("=" * 80)
+
+        successful_apis = []
+        failed_apis = []
+        no_data_apis = []
+
+        for api_data in processed_apis:
+            api_name = api_data["api_name"]
+            total_records = api_data["total_records"]
+            has_error = "error" in api_data["analysis_results"]
+
+            if has_error:
+                failed_apis.append(api_name)
+            elif total_records == 0:
+                no_data_apis.append(api_name)
+            else:
+                successful_apis.append(api_name)
+
+        logger.info(f"[SUCCESS] Successfully executed: {len(successful_apis)}/{len(processed_apis)} APIs")
+        for api in successful_apis:
+            logger.info(f"  [OK] {api}")
+
+        if no_data_apis:
+            logger.info(f"[WARNING] No data returned: {len(no_data_apis)} APIs")
+            for api in no_data_apis:
+                logger.info(f"  [NO DATA] {api}")
+
+        if failed_apis:
+            logger.info(f"[FAILED] Failed: {len(failed_apis)} APIs")
+            for api in failed_apis:
+                logger.info(f"  [ERROR] {api}")
+
+        logger.info("=" * 80)
+
+        # Step 2: Generate comprehensive summary with ONE AI call
+        logger.info("Generating comprehensive summary from pre-processed data...")
+
+        # Use the existing prompt that knows how to handle pre-processed data
+        summary_prompt = get_api_prompt(WorkOrderNumber, processed_apis)
+
+        # Single AI call for final synthesis
+        final_response = azure_client.chat.completions.create(
+            model=azureopenai,
+            messages=[{"role": "user", "content": summary_prompt}],
+            temperature=0.2
+        )
+
+        final_summary = final_response.choices[0].message.content
+        logger.info("Comprehensive summary generated successfully")
+
+        # Return in standard API response format
+        return {
+            "success": True,
+            "data": {
+                "Data": {
+                    "WorkOrderNumber": WorkOrderNumber,
+                    "ComprehensiveSummary": final_summary,
+                    "ExecutionSummary": {
+                        "total_apis": len(processed_apis),
+                        "successful": len(successful_apis),
+                        "no_data": len(no_data_apis),
+                        "failed": len(failed_apis),
+                        "successful_apis": successful_apis,
+                        "no_data_apis": no_data_apis,
+                        "failed_apis": failed_apis
+                    }
+                }
+            },
+            "status_code": 200
+        }
+
+    except Exception as e:
+        logger.error(f"Error in GetWorkOrderSummary: {str(e)}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e),
+            "status_code": 500
+        }
 
 
 # Define all tools for OpenAI
@@ -749,6 +1064,78 @@ def get_weldinsights_tools():
         {
             "type": "function",
             "function": {
+                "name": "GetWorkOrderTRIndicationsbyCriteria",
+                "description": "Get TR (Test Results) indication details for requested work order number/weld serial number with grouping by specified fields. At least one of WorkOrderNumber or WeldSerialNumber must be provided, and GroupBy is required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number"
+                        },
+                        "WeldSerialNumber": {
+                            "type": "string",
+                            "description": "Weld serial number"
+                        },
+                        "WelderName": {
+                            "type": "string",
+                            "description": "Welder name for filtering"
+                        },
+                        "TRName": {
+                            "type": "string",
+                            "description": "TR inspector name for filtering"
+                        },
+                        "GroupBy": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Fields to group results by (e.g., WorkOrderNumber, WeldSerialNumber, Indication, TRName, WelderName). This parameter is required."
+                        }
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWorkOrderRejactableTRIndicationsbyCriteria",
+                "description": "Get rejectable TR (Tertiary Review) indication details for requested work order number/weld serial number with grouping by specified fields. At least one of WorkOrderNumber or WeldSerialNumber must be provided, and GroupBy is required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number"
+                        },
+                        "WeldSerialNumber": {
+                            "type": "string",
+                            "description": "Weld serial number"
+                        },
+                        "WelderName": {
+                            "type": "string",
+                            "description": "Welder name for filtering"
+                        },
+                        "TRName": {
+                            "type": "string",
+                            "description": "TR inspector name for filtering"
+                        },
+                        "GroupBy": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Fields to group results by (e.g., WorkOrderNumber, WeldSerialNumber, Indication, TRName, WelderName). This parameter is required."
+                        }
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
                 "name": "GetReshootDetailsbyWorkOrderNumberandCriteria",
                 "description": "Get reshoot weld details for requested work order number with filtering by update completion status. WorkOrderNumber is required.",
                 "parameters": {
@@ -785,6 +1172,27 @@ def get_weldinsights_tools():
                         }
                     },
                     "required": ["WorkOrderNumber", "NDEIndication"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWeldsbyTRIndicationandWorkOrderNumber",
+                "description": "Get welds for requested work order number filtered by specific TR indication type. Both WorkOrderNumber and TRIndication are required.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        },
+                        "TRIndication": {
+                            "type": "string",
+                            "description": "TR indication type to filter by (e.g., Porosity, Slag Inclusions, Foreign Material, Burn Through, Undercut, Other (enter in remarks), etc.) - required"
+                        }
+                    },
+                    "required": ["WorkOrderNumber", "TRIndication"]
                 }
             }
         },
@@ -885,6 +1293,23 @@ def get_weldinsights_tools():
                         }
                     },
                     "required": ["WelderName"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "GetWorkOrderSummary",
+                "description": "Get comprehensive work order summary aggregating ALL data from multiple APIs. Performs complete server-side aggregation with 100% data coverage (no sampling). Returns full summary with weld statistics, welder performance, CWI/NDE/CRI inspection results, quality metrics, reshoot details, heat numbers, and exceptions. Use this for work order overview, summary, or report queries.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "WorkOrderNumber": {
+                            "type": "string",
+                            "description": "Work order number (required)"
+                        }
+                    },
+                    "required": ["WorkOrderNumber"]
                 }
             }
         }

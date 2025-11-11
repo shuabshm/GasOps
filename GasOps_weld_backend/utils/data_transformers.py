@@ -11,13 +11,17 @@ from utils.weld_api_data_processor.GetWeldDetailsbyWorkOrderNumberandCriteria im
 from utils.weld_api_data_processor.GetWelderNameDetailsbyWorkOrderNumberandCriteria import analyze_GetWelderNameDetailsbyWorkOrderNumberandCriteria
 from utils.weld_api_data_processor.GetWeldsbyNDEIndicationandWorkOrderNumber import analyze_GetWeldsbyNDEIndicationandWorkOrderNumber
 from utils.weld_api_data_processor.GetWeldsbyCRIIndicationandWorkOrderNumber import analyze_GetWeldsbyCRIIndicationandWorkOrderNumber
+from utils.weld_api_data_processor.GetWeldsbyTRIndicationandWorkOrderNumber import analyze_GetWeldsbyTRIndicationandWorkOrderNumber
 from utils.weld_api_data_processor.GetWorkOrderCRIIndicationsbyCriteria import analyze_GetWorkOrderCRIIndicationsbyCriteria
 from utils.weld_api_data_processor.GetWorkOrderRejactableCRIIndicationsbyCriteria import analyze_GetWorkOrderRejactableCRIIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderTRIndicationsbyCriteria import analyze_GetWorkOrderTRIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderRejactableTRIndicationsbyCriteria import analyze_GetWorkOrderRejactableTRIndicationsbyCriteria
 from utils.weld_api_data_processor.GetWorkOrderDetailsbyCriteria import analyze_GetWorkOrderDetailsbyCriteria
 from utils.weld_api_data_processor.GetWorkOrderInformation import analyze_GetWorkOrderInformation
 from utils.weld_api_data_processor.GetWorkOrderNDEIndicationsbyCriteria import analyze_GetWorkOrderNDEIndicationsbyCriteria
 from utils.weld_api_data_processor.GetWorkOrderRejactableNDEIndicationsbyCriteria import analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria
 from utils.weld_api_data_processor.GetWorkOrdersbyWelderName import analyze_GetWorkOrdersbyWelderName
+# GetWorkOrderSummary no longer uses a data analyzer - it uses sequential AI calls instead
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +51,16 @@ def get_transformer(api_name):
         return analyze_GetWeldsbyNDEIndicationandWorkOrderNumber
     elif api_name == "GetWeldsbyCRIIndicationandWorkOrderNumber":
         return analyze_GetWeldsbyCRIIndicationandWorkOrderNumber
+    elif api_name == "GetWeldsbyTRIndicationandWorkOrderNumber":
+        return analyze_GetWeldsbyTRIndicationandWorkOrderNumber
     elif api_name == "GetWorkOrderCRIIndicationsbyCriteria":
         return analyze_GetWorkOrderCRIIndicationsbyCriteria
     elif api_name == "GetWorkOrderRejactableCRIIndicationsbyCriteria":
         return analyze_GetWorkOrderRejactableCRIIndicationsbyCriteria
+    elif api_name == "GetWorkOrderTRIndicationsbyCriteria":
+        return analyze_GetWorkOrderTRIndicationsbyCriteria
+    elif api_name == "GetWorkOrderRejactableTRIndicationsbyCriteria":
+        return analyze_GetWorkOrderRejactableTRIndicationsbyCriteria
     elif api_name == "GetWorkOrderDetailsbyCriteria":
         return analyze_GetWorkOrderDetailsbyCriteria
     elif api_name == "GetWorkOrderInformation":
@@ -61,6 +71,9 @@ def get_transformer(api_name):
         return analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria
     elif api_name == "GetWorkOrdersbyWelderName":
         return analyze_GetWorkOrdersbyWelderName
+    elif api_name == "GetWorkOrderSummary":
+        # GetWorkOrderSummary handles its own analysis with sequential AI calls
+        return None
     # Add other API transformers here
     # elif api_name == "GetWorkOrderInformation":
     #     return analyze_work_order_data

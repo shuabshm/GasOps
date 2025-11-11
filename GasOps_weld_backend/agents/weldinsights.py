@@ -1370,7 +1370,84 @@ def api_router_step(user_input, auth_token=None):
     except Exception as e:
         logger.error(f"API Router error: {str(e)}")
         return [{"error": f"API Router error: {str(e)}"}]
-        
+
+
+def process_multi_api_data(api_results, user_input, is_follow_up=False):
+    """
+    Process multiple different APIs separately, each with its own transformer and prompt.
+    This is used for multi-API scenarios like comparisons, summaries, or multi-question queries.
+
+    Args:
+        api_results (list): List of API result objects from different APIs
+        user_input (str): Original user query
+        is_follow_up (bool): Whether this is a follow-up query
+
+    Returns:
+        str: AI-generated response combining data from all APIs
+    """
+    from utils.data_extractor import extract_clean_data
+    from utils.data_transformers import get_transformer
+    from prompts.weld_analysis_prompt import build_multi_api_prompt
+
+    logger.info(f"Processing {len(api_results)} different APIs for multi-API analysis")
+
+    processed_apis = []
+
+    # Process each API separately
+    for api_result in api_results:
+        api_name = api_result.get("api_name", "Unknown")
+        api_params = api_result.get("parameters", {})
+
+        # Extract clean data for THIS specific API only
+        single_api_clean_data = extract_clean_data([api_result])
+
+        logger.info(f"Multi-API processing {api_name}: {len(single_api_clean_data)} records")
+
+        # Apply THIS API's specific transformer
+        transformer = get_transformer(api_name)
+
+        if transformer:
+            analysis = transformer(single_api_clean_data, api_params)
+        else:
+            analysis = {
+                "total_records": len(single_api_clean_data),
+                "raw_data": single_api_clean_data,
+                "filter_applied": api_params
+            }
+
+        processed_apis.append({
+            "api_name": api_name,
+            "parameters": api_params,
+            "analysis_results": analysis,
+            "total_records": analysis.get("total_records", 0)
+        })
+
+        logger.info(f"Completed processing {api_name}: {analysis.get('total_records', 0)} records")
+
+    # Build combined multi-API prompt
+    logger.info("Building multi-API analysis prompt...")
+    multi_api_prompt = build_multi_api_prompt(user_input, processed_apis, is_follow_up)
+
+    # Send to AI for analysis
+    logger.info("Sending multi-API data to AI for analysis...")
+    messages = [{"role": "user", "content": multi_api_prompt}]
+
+    try:
+        response = azure_client.chat.completions.create(
+            model=azureopenai,
+            messages=messages,
+            temperature=0.2
+        )
+
+        final_response = response.choices[0].message.content
+        logger.info("Multi-API analysis completed successfully")
+        return final_response
+
+    except Exception as e:
+        logger.error(f"Multi-API analysis failed: {str(e)}")
+        return f"Error in multi-API analysis: {str(e)}"
+
+
 def data_analysis_step(user_input, clean_data_array, api_name=None, api_parameters=None, is_follow_up=False):
     if api_parameters is None:
         api_parameters = {}
@@ -1445,16 +1522,44 @@ def handle_weldinsights(user_input, auth_token=None, is_follow_up=False):
         if not api_results or (len(api_results) == 1 and "error" in api_results[0]):
             return api_results[0].get("error", "No data retrieved from APIs")
 
-        logger.info("Step 1.5: Extracting clean data...")
-        clean_data_array = extract_clean_data(api_results)
-
+        # Detect multi-API scenario
         if len(api_results) > 1:
-            logger.info(f"Multiple API calls detected ({len(api_results)} calls), applying deduplication...")
-            clean_data_array = deduplicate_data_by_json(clean_data_array)
-            
+            # Get unique API names to determine if we have different APIs
+            unique_api_names = list(set([r.get("api_name") for r in api_results]))
+
+            if len(unique_api_names) > 1:
+                # MULTI-API MODE: Different APIs called (e.g., NDE + CRI, or multiple data sources)
+                logger.info(f"Multi-API mode detected: {len(unique_api_names)} different APIs")
+                logger.info(f"APIs called: {', '.join(unique_api_names)}")
+
+                # Process each API separately with its own transformer and send all to AI
+                final_response = process_multi_api_data(api_results, user_input, is_follow_up)
+                return final_response
+            else:
+                # SAME API MULTIPLE TIMES: Deduplicate and merge (e.g., same API for different work orders)
+                logger.info(f"Same API called {len(api_results)} times, applying deduplication...")
+                logger.info("Step 1.5: Extracting clean data...")
+                clean_data_array = extract_clean_data(api_results)
+                clean_data_array = deduplicate_data_by_json(clean_data_array)
+        else:
+            # SINGLE API CALL: Original flow
+            logger.info("Step 1.5: Extracting clean data...")
+            clean_data_array = extract_clean_data(api_results)
+
+        # Continue with single-API flow
         api_name = api_results[0].get("api_name", "Unknown") if api_results else "Unknown"
         api_parameters = api_results[0].get("parameters", {}) if api_results else {}
         logger.info(f"Processing data for API: {api_name}")
+
+        # Special handling for GetWorkOrderSummary - it already returns a complete summary
+        if api_name == "GetWorkOrderSummary":
+            logger.info("GetWorkOrderSummary detected - returning comprehensive summary directly")
+            if clean_data_array and len(clean_data_array) > 0:
+                summary_data = clean_data_array[0]
+                if isinstance(summary_data, dict) and "ComprehensiveSummary" in summary_data:
+                    return summary_data["ComprehensiveSummary"]
+            logger.warning("GetWorkOrderSummary returned unexpected format")
+            return "Work order summary generated but in unexpected format. Please check the logs."
 
         logger.info("Step 2: Data Analysis - Analyzing clean data...")
         final_response = data_analysis_step(user_input, clean_data_array, api_name, api_parameters, is_follow_up)

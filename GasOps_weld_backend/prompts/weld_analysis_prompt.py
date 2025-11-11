@@ -4397,30 +4397,71 @@ from prompts.weld_apis_prompts.GetWorkOrderRejactableNDEIndicationsbyCriteria im
 from prompts.weld_apis_prompts.GetReshootDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_reshoot_details_prompt
 from prompts.weld_apis_prompts.GetWeldsbyNDEIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_nde_indication_prompt
 from prompts.weld_apis_prompts.GetWeldsbyCRIIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_cri_indication_prompt
+from prompts.weld_apis_prompts.GetWeldsbyTRIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_tr_indication_prompt
 from prompts.weld_apis_prompts.GetWorkOrderCRIIndicationsbyCriteria import get_api_prompt as get_work_order_cri_indications_prompt
 from prompts.weld_apis_prompts.GetWorkOrderRejactableCRIIndicationsbyCriteria import get_api_prompt as get_rejectable_cri_indications_prompt
+from prompts.weld_apis_prompts.GetWorkOrderTRIndicationsbyCriteria import get_api_prompt as get_work_order_tr_indications_prompt
+from prompts.weld_apis_prompts.GetWorkOrderRejactableTRIndicationsbyCriteria import get_api_prompt as get_rejectable_tr_indications_prompt
 from prompts.weld_apis_prompts.GetNDEReportProcessingDetailsbyWeldSerialNumber import get_api_prompt as get_nde_report_processing_details_prompt
 from prompts.weld_apis_prompts.GetDetailsbyWeldSerialNumber import get_api_prompt as get_details_by_weld_serial_prompt
 from prompts.weld_apis_prompts.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_heat_number_details_prompt
 from prompts.weld_apis_prompts.GetWorkOrdersbyWelderName import get_api_prompt as get_work_orders_by_welder_name_prompt
+from prompts.weld_apis_prompts.GetWorkOrderSummary import get_api_prompt as get_work_order_summary_prompt
 
 
 def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_follow_up=False):
     """
     Constructs the final, AI-ready prompt based on pre-processed analysis results.
     """
+    import logging
+    import json
+    logger = logging.getLogger(__name__)
+
     total_records = analysis_results.get("total_records", 0)
     api_parameters = analysis_results.get("filter_applied", {})
+
+    # Log data structure for debugging
+    logger.info(f"=== DATA ANALYSIS PROMPT - API: {api_name} ===")
+    logger.info(f"Total records: {total_records}")
+    logger.info(f"API parameters: {api_parameters}")
+
+    # Log the size and structure of raw_data
+    raw_data = analysis_results.get('raw_data')
+    if raw_data:
+        raw_data_str = json.dumps(raw_data, indent=2)
+        raw_data_size = len(raw_data_str)
+        logger.info(f"Raw data size: {raw_data_size} characters")
+        logger.info(f"Raw data type: {type(raw_data)}")
+        if isinstance(raw_data, dict):
+            logger.info(f"Raw data keys: {list(raw_data.keys())}")
+        elif isinstance(raw_data, list):
+            logger.info(f"Raw data length: {len(raw_data)}")
+            if len(raw_data) > 0:
+                logger.info(f"First item type: {type(raw_data[0])}")
+                if isinstance(raw_data[0], dict):
+                    logger.info(f"First item keys: {list(raw_data[0].keys())}")
+
+        # Log first 1000 chars of raw data for inspection
+        logger.info(f"Raw data preview (first 1000 chars):\n{raw_data_str[:1000]}")
+    else:
+        logger.warning("No raw_data in analysis_results")
+
+    # Log counts/analysis data
+    counts = analysis_results.get("counts")
+    if counts:
+        counts_str = json.dumps(counts, indent=2)
+        logger.info(f"Counts data size: {len(counts_str)} characters")
+        logger.info(f"Counts data preview (first 500 chars):\n{counts_str[:500]}")
 
     # Use the common prompt for consistent instructions. The common prompt uses 'raw_data'
     # but does not need to parse it, only include it in the prompt text.
     common_prompt_text = get_common_prompt(user_input, analysis_results['raw_data'], api_name, str(api_parameters))
-    
+
     # Check for empty data first to handle the no-results case
     if total_records == 0:
         # If no data, the common prompt handles the instructions for the AI response
         return common_prompt_text
-        
+
     # Build a concise, factual representation of the data to send to the AI
     data_representation = {
         "total_records": total_records,
@@ -4429,6 +4470,12 @@ def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_fol
         "distinct_counts": analysis_results.get("distinct_counts", {}),
         "is_follow_up": is_follow_up
     }
+
+    # Log data_representation size
+    data_repr_str = json.dumps(data_representation, indent=2, default=str)
+    logger.info(f"Final data_representation size: {len(data_repr_str)} characters")
+    logger.info(f"=== END DATA ANALYSIS PROMPT ===")
+
 
     # Special handling for GetWelderNameDetailsbyWorkOrderNumberandCriteria API
     # This API pre-aggregates data, so we pass the aggregated_data instead of raw_data
@@ -4460,10 +4507,16 @@ def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_fol
         api_specific_prompt = get_welds_by_nde_indication_prompt(api_parameters)
     elif api_name == "GetWeldsbyCRIIndicationandWorkOrderNumber":
         api_specific_prompt = get_welds_by_cri_indication_prompt(api_parameters)
+    elif api_name == "GetWeldsbyTRIndicationandWorkOrderNumber":
+        api_specific_prompt = get_welds_by_tr_indication_prompt(api_parameters)
     elif api_name == "GetWorkOrderCRIIndicationsbyCriteria":
         api_specific_prompt = get_work_order_cri_indications_prompt(api_parameters)
     elif api_name == "GetWorkOrderRejactableCRIIndicationsbyCriteria":
         api_specific_prompt = get_rejectable_cri_indications_prompt(api_parameters)
+    elif api_name == "GetWorkOrderTRIndicationsbyCriteria":
+        api_specific_prompt = get_work_order_tr_indications_prompt(api_parameters)
+    elif api_name == "GetWorkOrderRejactableTRIndicationsbyCriteria":
+        api_specific_prompt = get_rejectable_tr_indications_prompt(api_parameters)
     elif api_name == "GetNDEReportProcessingDetailsbyWeldSerialNumber":
         api_specific_prompt = get_nde_report_processing_details_prompt(api_parameters)
     elif api_name == "GetDetailsbyWeldSerialNumber":
@@ -4472,6 +4525,8 @@ def get_data_analysis_prompt(user_input, analysis_results, api_name=None, is_fol
         api_specific_prompt = get_heat_number_details_prompt()
     elif api_name == "GetWorkOrdersbyWelderName":
         api_specific_prompt = get_work_orders_by_welder_name_prompt(api_parameters)
+    elif api_name == "GetWorkOrderSummary":
+        api_specific_prompt = get_work_order_summary_prompt(api_parameters)
     else:
         api_specific_prompt = f"""
 === GENERIC API GUIDELINES ===
@@ -4492,3 +4547,194 @@ ACTUAL PRE-PROCESSED DATA AND ANALYSIS:
 Answer the user's request based ONLY on the data and rules provided above.
 """
     return final_prompt
+
+
+def build_multi_api_prompt(user_input, processed_apis, is_follow_up=False):
+    """
+    Builds a prompt for multi-API analysis where data from multiple different APIs needs to be analyzed together.
+    This handles comparisons, summaries, and multi-question queries dynamically.
+
+    Args:
+        user_input (str): The user's original question
+        processed_apis (list): List of dicts, each containing:
+            - api_name: Name of the API
+            - parameters: Parameters used for the API call
+            - analysis_results: Transformed/analyzed data from the API
+            - total_records: Number of records from the API
+        is_follow_up (bool): Whether this is a follow-up query
+
+    Returns:
+        str: The complete multi-API prompt for AI analysis
+    """
+    import logging
+    import json
+
+    logger = logging.getLogger(__name__)
+
+    # Import API-specific prompt functions
+    from prompts.weld_apis_prompts.GetWorkOrderInformation import get_api_prompt as get_work_order_info_prompt
+    from prompts.weld_apis_prompts.GetWeldDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_weld_details_prompt
+    from prompts.weld_apis_prompts.GetWelderNameDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_welder_name_details_prompt
+    from prompts.weld_apis_prompts.GetWorkOrderNDEIndicationsbyCriteria import get_api_prompt as get_work_order_nde_indications_prompt
+    from prompts.weld_apis_prompts.GetWorkOrderCRIIndicationsbyCriteria import get_api_prompt as get_work_order_cri_indications_prompt
+    from prompts.weld_apis_prompts.GetWorkOrderRejactableNDEIndicationsbyCriteria import get_api_prompt as get_rejectable_nde_indications_prompt
+    from prompts.weld_apis_prompts.GetWorkOrderRejactableCRIIndicationsbyCriteria import get_api_prompt as get_rejectable_cri_indications_prompt
+    from prompts.weld_apis_prompts.GetReshootDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_reshoot_details_prompt
+    from prompts.weld_apis_prompts.GetWeldsbyNDEIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_nde_indication_prompt
+    from prompts.weld_apis_prompts.GetWeldsbyCRIIndicationandWorkOrderNumber import get_api_prompt as get_welds_by_cri_indication_prompt
+    from prompts.weld_apis_prompts.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import get_api_prompt as get_heat_number_details_prompt
+    from prompts.weld_apis_prompts.GetWorkOrdersbyWelderName import get_api_prompt as get_work_orders_by_welder_name_prompt
+    from prompts.weld_apis_prompts.GetWorkOrderSummary import get_api_prompt as get_work_order_summary_prompt
+
+    # API description mapping
+    api_descriptions = {
+        "GetWorkOrderNDEIndicationsbyCriteria": "NDE (Non-Destructive Examination) inspection indications - defects found during X-ray/ultrasonic testing",
+        "GetWorkOrderCRIIndicationsbyCriteria": "CRI (Certified Radiographic Interpreter) inspection indications - defects found during radiographic review",
+        "GetWorkOrderInformation": "Basic work order information - status, location, contractor details",
+        "GetWeldDetailsbyWorkOrderNumberandCriteria": "Detailed weld records - weld serial numbers, statuses, inspection results",
+        "GetWelderNameDetailsbyWorkOrderNumberandCriteria": "Welder performance data - which welders worked on the work order and their weld counts",
+        "GetWorkOrderRejactableNDEIndicationsbyCriteria": "Rejectable NDE indications - critical defects that require action",
+        "GetWorkOrderRejactableCRIIndicationsbyCriteria": "Rejectable CRI indications - critical defects that require action",
+        "GetReshootDetailsbyWorkOrderNumberandCriteria": "Reshoot details - welds that required re-radiography",
+        "GetWeldsbyNDEIndicationandWorkOrderNumber": "Welds with specific NDE indications",
+        "GetWeldsbyCRIIndicationandWorkOrderNumber": "Welds with specific CRI indications",
+        "GetHeatNumberDetailsbyWorkOrderNumberandCriteria": "Heat number traceability - material tracking information",
+        "GetWorkOrdersbyWelderName": "Work orders associated with specific welders",
+        "GetWorkOrderSummary": "Comprehensive work order summary - aggregated data from all aspects"
+    }
+
+    # Build the multi-API prompt
+    prompt_parts = [
+        "="*80,
+        "MULTI-API DATA ANALYSIS",
+        "="*80,
+        f"\nUser Question: {user_input}\n",
+        f"You have data from {len(processed_apis)} different APIs to analyze.\n",
+        "Your task is to analyze ALL the data below and determine the BEST way to answer the user's question.\n",
+        "\n**RESPONSE STRATEGIES:**",
+        "- **COMPARISON**: If user asks to compare (e.g., 'NDE vs CRI'), use a UNIFIED TABLE with columns for each API",
+        "- **MULTI-QUESTION**: If question has multiple parts, answer each part in clear sections",
+        "- **SUMMARY**: If user wants complete overview, synthesize all data into comprehensive report",
+        "- **RELATED DATA**: If APIs provide complementary information, combine into single meaningful view",
+        "\n**CRITICAL RULES:**",
+        "- Show FULL DETAIL - never summarize or truncate data",
+        "- NO follow-up questions - provide complete answer",
+        "- Use clear formatting with headers and structure",
+        "- Present data in the most logical format for the question\n",
+        "="*80 + "\n"
+    ]
+
+    # Add each API's data with its specific guidelines
+    for idx, api_data in enumerate(processed_apis, 1):
+        api_name = api_data["api_name"]
+        api_params = api_data["parameters"]
+        analysis_results = api_data["analysis_results"]
+        total_records = api_data["total_records"]
+
+        # Get API description
+        description = api_descriptions.get(api_name, "Additional work order data")
+
+        # Get API-specific prompt/guidelines
+        api_specific_prompt = get_api_specific_guidelines(api_name, api_params,
+                                                          get_work_order_info_prompt,
+                                                          get_weld_details_prompt,
+                                                          get_welder_name_details_prompt,
+                                                          get_work_order_nde_indications_prompt,
+                                                          get_work_order_cri_indications_prompt,
+                                                          get_rejectable_nde_indications_prompt,
+                                                          get_rejectable_cri_indications_prompt,
+                                                          get_reshoot_details_prompt,
+                                                          get_welds_by_nde_indication_prompt,
+                                                          get_welds_by_cri_indication_prompt,
+                                                          get_heat_number_details_prompt,
+                                                          get_work_orders_by_welder_name_prompt,
+                                                          get_work_order_summary_prompt)
+
+        prompt_parts.append(f"\n{'='*80}")
+        prompt_parts.append(f"API {idx}: {api_name}")
+        prompt_parts.append(f"{'='*80}")
+        prompt_parts.append(f"Description: {description}")
+        prompt_parts.append(f"Parameters: {json.dumps(api_params)}")
+        prompt_parts.append(f"Total Records: {total_records}\n")
+        prompt_parts.append(f"{api_specific_prompt}\n")
+        prompt_parts.append(f"PROCESSED DATA FROM {api_name}:")
+        prompt_parts.append(json.dumps(analysis_results, indent=2))
+        prompt_parts.append(f"\n{'-'*80}\n")
+
+    # Add final instructions
+    prompt_parts.append("\n" + "="*80)
+    prompt_parts.append("FINAL INSTRUCTIONS")
+    prompt_parts.append("="*80)
+    prompt_parts.append("1. Analyze what the user is asking for")
+    prompt_parts.append("2. Determine how the APIs' data relates to each other")
+    prompt_parts.append("3. Choose the presentation format that best answers the question:")
+    prompt_parts.append("   - For COMPARISON queries: Use unified table with columns for each API")
+    prompt_parts.append("   - For MULTI-QUESTION queries: Answer each part in clear sections")
+    prompt_parts.append("   - For SUMMARY queries: Synthesize into comprehensive structured report")
+    prompt_parts.append("   - For RELATED DATA: Combine intelligently to tell complete story")
+    prompt_parts.append("4. Present FULL DETAIL from all APIs - do not truncate or summarize")
+    prompt_parts.append("5. Use proper formatting (tables, headers, bullets) for clarity")
+    prompt_parts.append("6. NO follow-up questions - provide complete, self-contained answer")
+    prompt_parts.append("7. Follow each API's specific formatting guidelines when presenting its data")
+    prompt_parts.append("\nAnswer the user's question using ALL the data provided above.")
+
+    return "\n".join(prompt_parts)
+
+
+def get_api_specific_guidelines(api_name, api_params, *prompt_functions):
+    """
+    Helper function to get API-specific guidelines/prompts.
+
+    Args:
+        api_name: Name of the API
+        api_params: Parameters for the API
+        *prompt_functions: All imported API prompt functions
+
+    Returns:
+        str: API-specific prompt/guidelines
+    """
+    # Unpack the prompt functions
+    (get_work_order_info_prompt, get_weld_details_prompt, get_welder_name_details_prompt,
+     get_work_order_nde_indications_prompt, get_work_order_cri_indications_prompt,
+     get_rejectable_nde_indications_prompt, get_rejectable_cri_indications_prompt,
+     get_reshoot_details_prompt, get_welds_by_nde_indication_prompt,
+     get_welds_by_cri_indication_prompt, get_heat_number_details_prompt,
+     get_work_orders_by_welder_name_prompt, get_work_order_summary_prompt) = prompt_functions
+
+    # Route to appropriate API prompt
+    if api_name == "GetWorkOrderInformation":
+        return get_work_order_info_prompt(api_params)
+    elif api_name == "GetWeldDetailsbyWorkOrderNumberandCriteria":
+        return get_weld_details_prompt(api_params)
+    elif api_name == "GetWelderNameDetailsbyWorkOrderNumberandCriteria":
+        return get_welder_name_details_prompt(api_params)
+    elif api_name == "GetWorkOrderNDEIndicationsbyCriteria":
+        return get_work_order_nde_indications_prompt(api_params)
+    elif api_name == "GetWorkOrderCRIIndicationsbyCriteria":
+        return get_work_order_cri_indications_prompt(api_params)
+    elif api_name == "GetWorkOrderRejactableNDEIndicationsbyCriteria":
+        return get_rejectable_nde_indications_prompt(api_params)
+    elif api_name == "GetWorkOrderRejactableCRIIndicationsbyCriteria":
+        return get_rejectable_cri_indications_prompt(api_params)
+    elif api_name == "GetWorkOrderTRIndicationsbyCriteria":
+        return get_work_order_tr_indications_prompt(api_params)
+    elif api_name == "GetWorkOrderRejactableTRIndicationsbyCriteria":
+        return get_rejectable_tr_indications_prompt(api_params)
+    elif api_name == "GetHeatNumberDetailsbyWorkOrderNumberandCriteria":
+        return get_rejectable_cri_indications_prompt(api_params)
+    elif api_name == "GetReshootDetailsbyWorkOrderNumberandCriteria":
+        return get_reshoot_details_prompt(api_params)
+    elif api_name == "GetWeldsbyNDEIndicationandWorkOrderNumber":
+        return get_welds_by_nde_indication_prompt(api_params)
+    elif api_name == "GetWeldsbyCRIIndicationandWorkOrderNumber":
+        return get_welds_by_cri_indication_prompt(api_params)
+    elif api_name == "GetWeldsbyTRIndicationandWorkOrderNumber":
+        return get_welds_by_tr_indication_prompt(api_params)
+    elif api_name == "GetHeatNumberDetailsbyWorkOrderNumberandCriteria":
+        return get_heat_number_details_prompt()
+    elif api_name == "GetWorkOrdersbyWelderName":
+        return get_work_orders_by_welder_name_prompt(api_params)
+    elif api_name == "GetWorkOrderSummary":
+        return get_work_order_summary_prompt(api_params)
+    else:
+        return "Present this data clearly based on the user's question."
