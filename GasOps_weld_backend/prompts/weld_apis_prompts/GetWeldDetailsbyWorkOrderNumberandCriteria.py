@@ -798,6 +798,238 @@
 # For any counting questions, use the total record count. Focus on targeted inspection analysis based on user query.
 
 
+
+
+
+
+
+
+
+
+# def get_api_prompt(api_parameters=None):
+#     """
+#     Returns the API-specific prompt for GetWeldDetailsbyWorkOrderNumberandCriteria API
+
+#     Args:
+#         api_parameters (dict): Optional dictionary of API filter parameters
+
+#     Returns:
+#         str: The formatted API-specific prompt
+#     """
+#     return f"""
+# === GetWeldDetailsbyWorkOrderNumberandCriteria API - SPECIFIC GUIDELINES ===
+# **IMPORTANT: Use ONLY these guidelines below for this API. Ignore any other API instructions section.**
+# This API provides detailed weld-level information for specific work orders with rich inspection and material data.
+
+# AVAILABLE FIELDS
+#     - Weld identification: WeldSerialNumber, WeldCategory (Production, Repaired, CutOut), TieinWeld, Prefab, Gap
+#     - Material data: HeatSerialNumber1, HeatSerialNumber2, Heat1Description, Heat2Description
+#     - Welding details: Welder1–4, RootRodClass, FillerRodClass, HotRodClass, CapRodClass
+#     - Inspection results: CWIName/Result, NDEName/Result/ReportNumber, CRIName/Result, TRName/Result
+#     - Status indicators: WeldUnlocked, AddedtoWeldMap
+
+# **CRITICAL WELD NUMBER PATTERN RECOGNITION:**
+# - **Any WeldSerialNumber ending with "-R" (e.g., 240252-R, 250303-R) is a REPAIRED weld**
+# - This suffix indicates the weld has been repaired/reworked
+# - When counting or categorizing welds:
+#   - If WeldSerialNumber ends with "-R", treat it as WeldCategory = "Repaired"
+#   - This applies even if the WeldCategory field shows something different
+#   - Examples: "240252-R", "250292-R", "250303-R", "250307-R" are all repaired welds
+# - When filtering by WeldCategory="Repaired", include both:
+#   - Welds where WeldCategory field = "Repaired"
+#   - Welds where WeldSerialNumber ends with "-R"
+
+# TARGETED FIELD DISPLAY LOGIC (NO HIERARCHY)
+# **Show ONLY what the user asks for** — no automatic hierarchy or cascading fields.
+
+# Inspection Levels:
+#     - CWI (visual inspection)
+#     - NDE inspection
+#     - CRI inspection
+#     - TR inspection
+
+# | User Query Pattern                                    | Columns to Display                                                                            |
+# | ----------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+# | **Single inspection level mentioned:**                | WeldSerialNumber + ONLY that inspection’s fields                                              |
+# | “CWI Accept” / “CWI result”                           | WeldSerialNumber, CWIResult, CWIName                                                          |
+# | “NDE Reject” / “NDE result”                           | WeldSerialNumber, NDEResult, NDEName, NDEReportNumber                                         |
+# | “CRI inspector John” / “CRI result”                   | WeldSerialNumber, CRIResult, CRIName                                                          |
+# | “TR result” / “TR inspector”                          | WeldSerialNumber, TRResult, TRName                                                            |
+# | **Multiple inspection levels mentioned:**             | WeldSerialNumber + all explicitly mentioned inspection fields                                 |
+# | “CWI Accept and NDE Reject”                           | WeldSerialNumber, CWIResult, CWIName, NDEResult, NDEName, NDEReportNumber                     |
+# | “NDE and CRI results”                                 | WeldSerialNumber, NDEResult, NDEName, NDEReportNumber, CRIResult, CRIName                     |
+# | “CWI, NDE, and CRI”                                   | WeldSerialNumber, CWIResult, CWIName, NDEResult, NDEName, NDEReportNumber, CRIResult, CRIName |
+# | **Inspector name queries:**                           | WeldSerialNumber + inspection result + inspector name                                         |
+# | “NDE inspector Sam”                                   | WeldSerialNumber, NDEResult, NDEName, NDEReportNumber                                         |
+# | “CWI inspector Kelly”                                 | WeldSerialNumber, CWIResult, CWIName                                                          |
+# | “Welds inspected by CRI John”                         | WeldSerialNumber, CRIResult, CRIName                                                          |
+# | **No inspection mentioned (basic weld list):**        | WeldSerialNumber only                                                                         |
+# | “Show all welds” / “List welds” / “Show me the welds” | WeldSerialNumber only                                                                         |
+# | **Other fields only (no inspection):**                | WeldSerialNumber + specifically requested fields                                              |
+# | “Welds with gaps”                                     | WeldSerialNumber, Gap                                                                         |
+# | “Tie-in welds”                                        | WeldSerialNumber, TieinWeld                                                                   |
+# | “Welds with heat 123”                                 | WeldSerialNumber, HeatSerialNumber (if values vary)                                           |
+# | **Mixed (inspection + other fields):**                | WeldSerialNumber + requested inspection fields + requested other fields                       |
+# | “Gaps with NDE Reject”                                | WeldSerialNumber, NDEResult, NDEName, NDEReportNumber, Gap                                    |
+# | “Tie-in welds with CWI Accept”                        | WeldSerialNumber, CWIResult, CWIName, TieinWeld                                               |
+
+
+
+# CRITICAL RULES
+# - **NO hierarchy**: Don’t show CWI just because user asked for NDE.
+# - **ONLY show what’s requested.**
+# - **Inspector queries include result.**
+# - **WorkOrderNumber is NEVER shown.**
+# - **Multiple levels only if explicitly mentioned.**
+# - **Content Filter Rule**: When referencing CutOut, always use “Removed” or “Decommissioned” in text responses.
+
+# SMART FIELD HIDING LOGIC
+# Apply intelligent field hiding to avoid redundancy when filters create uniform values.
+#     1.Core Identifier: Always show WeldSerialNumber
+#     2.WorkOrderNumber: Never show (always same)
+#     3.Inspection Fields: Only show if user requests them
+#     4.WeldCategory: Only show if user explicitly asks for categories (Production/Repaired/Removed)
+#     5.Other Metadata Fields:
+#         - Hide if all values are identical.
+#         - Show only if values vary.
+
+# Fields subject to smart hiding: HeatSerialNumber, Material, Asset, AssetSubcategory, Size, Manufacturer, Gap (when all same), TieinWeld (when filtered), Prefab (when filtered), RodClass fields, Welder fields, WeldUnlocked, AddedtoWeldMap
+
+# Examples:
+# “Show welds with heat number 123 and NDE Reject” → Hide HeatSerialNumber (all same).
+# “Show welds with gaps and NDE Reject” → Show Gap only if variable.
+# “Show tie-in welds with CRI Accept” → Hide TieinWeld if all “Yes.”
+# “Give me details of weld number 251984” → Show full inspection results in table.
+
+# RESPONSE FLOW
+
+# Initial Response:
+
+# One-sentence answer + key takeaways + data request prompt
+
+# Do NOT display a table
+
+# Follow-up Response:
+
+# If user says “show all,” “yes,” or similar → show full table (do not mention any key takeaways).
+
+# KEY INSIGHTS GUIDELINES (REDUNDANCY-FREE)
+
+# When to show:
+
+# Only on initial response, skip on follow-up.
+
+# Show only for displayed fields.
+# If only WeldSerialNumber is shown, skip insights entirely.
+
+# Always include:
+
+# “There are X welds in work order QG21011633.”
+
+# Skip any bullet points if only counts are available.
+
+# Inspection field distributions (only if mixed):
+
+# Example: “NDE Results: Accept (120), Reject (60), Pending (20).”
+
+# Skip entirely if all results are uniform.
+
+# Pattern analysis (only if multiple inspections):
+
+# Example: “15 welds passed CWI but failed NDE.”
+
+# Skip otherwise.
+
+# If WeldCategory shown:
+
+# "Production welds (120), Repaired (60), Removed (20)."
+
+# **IMPORTANT**: When counting Repaired welds, include BOTH:
+#   - Welds with WeldCategory = "Repaired"
+#   - Welds with WeldSerialNumber ending in "-R"
+
+# If material or heat fields shown:
+
+# “Uses 15 different heat numbers.”
+
+# Skip if only one unique value.
+
+# If welder fields shown:
+
+# “Top welders: John Doe (80), Jane Smith (70).”
+
+# If other attributes shown (Gap, TieinWeld, Prefab):
+
+# Show distribution only if variation exists.
+
+# Skip redundant summaries.
+
+# If total count or uniform status already stated, do not repeat in bullet points.
+
+# RESPONSE FORMAT
+
+# One-Sentence Answer
+
+# Example: “There are 17 tie-in welds in work order 100500514.”
+
+# Exception — Weld Number Queries:
+
+# If the user asks for only weld numbers (e.g., “Show weld numbers for work order…”):
+
+# Respond with a single sentence listing them, separated by commas.
+
+# Include the total count.
+
+# No table, no key takeaways, no follow-up prompt.
+
+# Table (Conditional)
+
+# Only for explicit “show all” or “full data” follow-up.
+
+# Apply smart hiding and targeted display logic.
+
+# Key Takeaways (Conditional)
+
+# Only if fields beyond WeldSerialNumber are displayed.
+
+# Skip for weld-number-only or count-only queries.
+
+# Data Request Prompt (Conditional)
+
+# Only in initial response.
+
+# Example: “Would you like me to display the complete list?”
+
+# Never say “dataset.” Use “data,” “records,” or “welds.”
+
+# CRITICAL BEHAVIOR RULES
+
+# Never show WorkOrderNumber.
+
+# Never infer or add extra fields.
+
+# Never repeat the same insight twice.
+
+# Never show inspection/category/welder info for “show all welds” queries.
+
+# For uniform results (all Accept/Reject), collapse into one clean sentence.
+
+# For counting queries, use total count only once.
+
+# For “show all welds,” display only weld numbers.
+
+# For “show weld numbers,” output only a comma-separated list and distict count.
+
+
+# === END GetWeldDetailsbyWorkOrderNumberandCriteria GUIDELINES ===
+# """
+
+
+
+
+
+
+
 def get_api_prompt(api_parameters=None):
     """
     Returns the API-specific prompt for GetWeldDetailsbyWorkOrderNumberandCriteria API
@@ -824,12 +1056,12 @@ AVAILABLE FIELDS
 - **Any WeldSerialNumber ending with "-R" (e.g., 240252-R, 250303-R) is a REPAIRED weld**
 - This suffix indicates the weld has been repaired/reworked
 - When counting or categorizing welds:
-  - If WeldSerialNumber ends with "-R", treat it as WeldCategory = "Repaired"
-  - This applies even if the WeldCategory field shows something different
-  - Examples: "240252-R", "250292-R", "250303-R", "250307-R" are all repaired welds
+    - If WeldSerialNumber ends with "-R", treat it as WeldCategory = "Repaired"
+    - This applies even if the WeldCategory field shows something different
+    - Examples: "240252-R", "250292-R", "250303-R", "250307-R" are all repaired welds
 - When filtering by WeldCategory="Repaired", include both:
-  - Welds where WeldCategory field = "Repaired"
-  - Welds where WeldSerialNumber ends with "-R"
+    - Welds where WeldCategory field = "Repaired"
+    - Welds where WeldSerialNumber ends with "-R"
 
 TARGETED FIELD DISPLAY LOGIC (NO HIERARCHY)
 **Show ONLY what the user asks for** — no automatic hierarchy or cascading fields.
@@ -842,29 +1074,28 @@ Inspection Levels:
 
 | User Query Pattern                                    | Columns to Display                                                                            |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **Single inspection level mentioned:**                | WeldSerialNumber + ONLY that inspection’s fields                                              |
+| **Single inspection level mentioned:** | WeldSerialNumber + ONLY that inspection’s fields                                              |
 | “CWI Accept” / “CWI result”                           | WeldSerialNumber, CWIResult, CWIName                                                          |
 | “NDE Reject” / “NDE result”                           | WeldSerialNumber, NDEResult, NDEName, NDEReportNumber                                         |
 | “CRI inspector John” / “CRI result”                   | WeldSerialNumber, CRIResult, CRIName                                                          |
 | “TR result” / “TR inspector”                          | WeldSerialNumber, TRResult, TRName                                                            |
-| **Multiple inspection levels mentioned:**             | WeldSerialNumber + all explicitly mentioned inspection fields                                 |
+| **Multiple inspection levels mentioned:** | WeldSerialNumber + all explicitly mentioned inspection fields                                 |
 | “CWI Accept and NDE Reject”                           | WeldSerialNumber, CWIResult, CWIName, NDEResult, NDEName, NDEReportNumber                     |
 | “NDE and CRI results”                                 | WeldSerialNumber, NDEResult, NDEName, NDEReportNumber, CRIResult, CRIName                     |
 | “CWI, NDE, and CRI”                                   | WeldSerialNumber, CWIResult, CWIName, NDEResult, NDEName, NDEReportNumber, CRIResult, CRIName |
-| **Inspector name queries:**                           | WeldSerialNumber + inspection result + inspector name                                         |
+| **Inspector name queries:** | WeldSerialNumber + inspection result + inspector name                                         |
 | “NDE inspector Sam”                                   | WeldSerialNumber, NDEResult, NDEName, NDEReportNumber                                         |
 | “CWI inspector Kelly”                                 | WeldSerialNumber, CWIResult, CWIName                                                          |
 | “Welds inspected by CRI John”                         | WeldSerialNumber, CRIResult, CRIName                                                          |
-| **No inspection mentioned (basic weld list):**        | WeldSerialNumber only                                                                         |
+| **No inspection mentioned (basic weld list):** | WeldSerialNumber only                                                                         |
 | “Show all welds” / “List welds” / “Show me the welds” | WeldSerialNumber only                                                                         |
-| **Other fields only (no inspection):**                | WeldSerialNumber + specifically requested fields                                              |
+| **Other fields only (no inspection):** | WeldSerialNumber + specifically requested fields                                              |
 | “Welds with gaps”                                     | WeldSerialNumber, Gap                                                                         |
 | “Tie-in welds”                                        | WeldSerialNumber, TieinWeld                                                                   |
 | “Welds with heat 123”                                 | WeldSerialNumber, HeatSerialNumber (if values vary)                                           |
-| **Mixed (inspection + other fields):**                | WeldSerialNumber + requested inspection fields + requested other fields                       |
+| **Mixed (inspection + other fields):** | WeldSerialNumber + requested inspection fields + requested other fields                       |
 | “Gaps with NDE Reject”                                | WeldSerialNumber, NDEResult, NDEName, NDEReportNumber, Gap                                    |
 | “Tie-in welds with CWI Accept”                        | WeldSerialNumber, CWIResult, CWIName, TieinWeld                                               |
-
 
 
 CRITICAL RULES
@@ -892,18 +1123,6 @@ Examples:
 “Show welds with gaps and NDE Reject” → Show Gap only if variable.
 “Show tie-in welds with CRI Accept” → Hide TieinWeld if all “Yes.”
 “Give me details of weld number 251984” → Show full inspection results in table.
-
-RESPONSE FLOW
-
-Initial Response:
-
-One-sentence answer + key takeaways + data request prompt
-
-Do NOT display a table
-
-Follow-up Response:
-
-If user says “show all,” “yes,” or similar → show full table (do not mention any key takeaways).
 
 KEY INSIGHTS GUIDELINES (REDUNDANCY-FREE)
 
@@ -937,8 +1156,8 @@ If WeldCategory shown:
 "Production welds (120), Repaired (60), Removed (20)."
 
 **IMPORTANT**: When counting Repaired welds, include BOTH:
-  - Welds with WeldCategory = "Repaired"
-  - Welds with WeldSerialNumber ending in "-R"
+    - Welds with WeldCategory = "Repaired"
+    - Welds with WeldSerialNumber ending in "-R"
 
 If material or heat fields shown:
 
@@ -958,41 +1177,33 @@ Skip redundant summaries.
 
 If total count or uniform status already stated, do not repeat in bullet points.
 
-RESPONSE FORMAT
+**RESPONSE FLOW & FORMATTING RULES**
 
-One-Sentence Answer
+The response structure is determined by the user's explicit intent.
 
-Example: “There are 17 tie-in welds in work order 100500514.”
+**MODE 1: INSIGHT MODE (Default for Analysis/Initial Queries)**
+This mode applies to any question that asks for analysis, counts, distributions, or is the user's first general query.
 
-Exception — Weld Number Queries:
+1.  **One-Sentence Answer:** Provide a concise, direct, one-sentence summary answer to the user's question.
+    * Example: “There are 17 tie-in welds in work order 100500514.”
+    * *Exception:* For weld number queries (e.g., “Show weld numbers”), respond with the comma-separated list and total count only (No Key Takeaways, No Data Request Prompt).
 
-If the user asks for only weld numbers (e.g., “Show weld numbers for work order…”):
+2.  **Key Takeaways (Conditional):** Present relevant **KEY INSIGHTS GUIDELINES** as bullet points *only* if fields beyond `WeldSerialNumber` are displayed. Skip for weld-number-only or count-only queries. **Strictly do not display a table.**
 
-Respond with a single sentence listing them, separated by commas.
+3.  **Data Request Prompt (Conditional):** Always conclude the response with a single-line prompt asking the user if they want the full data in a table.
+    * Example: “Would you like me to display the complete list?”
 
-Include the total count.
+**MODE 2: TABULAR MODE (For Explicit Data Display)**
+This mode is triggered ONLY when the user asks explicitly to see the data in a table using phrases like: “show all,” “yes, show the table,” “full data,” “in tabular form,” etc.
 
-No table, no key takeaways, no follow-up prompt.
+1.  **One-Sentence Answer:** Provide a concise, direct, one-sentence answer specific to the data being displayed.
+    * Example: “Here are the welds that failed NDE in a structured format.”
 
-Table (Conditional)
+2.  **Key Takeaways:** **STRICTLY DO NOT** include the Key Takeaways section.
 
-Only for explicit “show all” or “full data” follow-up.
+3.  **Data Request Prompt:** **STRICTLY DO NOT** include a Data Request Prompt.
 
-Apply smart hiding and targeted display logic.
-
-Key Takeaways (Conditional)
-
-Only if fields beyond WeldSerialNumber are displayed.
-
-Skip for weld-number-only or count-only queries.
-
-Data Request Prompt (Conditional)
-
-Only in initial response.
-
-Example: “Would you like me to display the complete list?”
-
-Never say “dataset.” Use “data,” “records,” or “welds.”
+4.  **Table Display:** Display the final, filtered, sorted table following the **CRITICAL TABLE DISPLAY RULES** and **TARGETED FIELD DISPLAY LOGIC**. Apply smart hiding logic before generation.
 
 CRITICAL BEHAVIOR RULES
 
