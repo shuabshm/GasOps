@@ -906,8 +906,8 @@ AVAILABLE FIELDS BY SECTION:
 - WeldCompletionDate, AddedtoWeldMap, TieInWeld, Prefab, Gap
 - RootRodClass, HotRodClass, FillerRodClass, CapRodClass, WeldUnlocked
 - Welder1, Welder2, Welder3, Welder4 (consolidate into "Welders" column)
-- CWIName, CWIResult, NDEReportNumber, NDEName, NDEResult
-- CRIName, CRIResult, TRName, TRResult
+- CWIName, CWIResult, CWICompletionDate, NDEReportNumber, NDEName, NDEResult, NDECompletionDate
+- CRIName, CRIResult, CRICompletionDate, TRName, TRResult, TRCompletionDate
 - **NOTE: Heat Serial Number/Description fields are AVAILABLE here, but are deliberately placed in the Asset Details section's output to prevent redundancy.**
 
 **Asset Details Fields**:
@@ -920,8 +920,8 @@ AVAILABLE FIELDS BY SECTION:
 - WeldSerialNumber (filter parameter - hide)
 - ProjectNumber (optional filter - hide if used)
 - WorkOrderNumber, WeldCategory
-- CWIName, CWIResult, NDEReportNumber, NDEName, NDEResult
-- CRIName, CRIResult, TRName, TRResult
+- CWIName, CWIResult, CWICompletionDate, NDEReportNumber, NDEName, NDEResult, NDECompletionDate
+- CRIName, CRIResult, CRICompletionDate, TRName, TRResult, TRCompletionDate
 
 **NDE Report Film Details Fields**:
 - WeldSerialNumber (filter parameter - hide)
@@ -947,7 +947,7 @@ TARGETED FIELD DISPLAY PER SECTION:
 **Overall Details Section**:
 Core Fields (Always Include):
 - WorkOrderNumber, WeldCategory, ContractorName
-- CWIName, CWIResult, NDEReportNumber, NDEName, NDEResult, CRIName, CRIResult, TRName, TRResult (All Inspection Results/Personnel)
+- CWIName, CWIResult, CWICompletionDate, NDEReportNumber, NDEName, NDEResult, NDECompletionDate, CRIName, CRIResult, CRICompletionDate, TRName, TRResult, TRCompletionDate (All Inspection Results/Personnel/Completion Dates)
 
 Additional fields based on query keywords:
 - "welder" → Add Welders column (consolidate Welder1-4)
@@ -1102,17 +1102,16 @@ Rules for NDE Indication summary
 ```
 ## Overall Details
 
-## Overall Details
 | Field | Value |
 |-------|-------|
 | Work Order No. | QG21011633 |
 | Weld Category | Production |
 | Contractor | Network |
 | Welders | Cooke Timothy (430829), Sweeney John (419013) |
-| CWI Name / Result | Victor Morales — Accept |
-| NDE Name / Result / Report No. | Roberto Meza — Accept — NDE2025-01890 (Conv) |
-| CRI Name / Result | Damien Hall — Accept |
-| TR Name / Result | – |
+| CWI Name / Result / Completion | Victor Morales — Accept — 04/25/2025 |
+| NDE Name / Result / Completion / Report No. | Roberto Meza — Accept — 05/15/2025 — NDE2025-01890 (Conv) |
+| CRI Name / Result / Completion | Damien Hall — Accept — 05/15/2025 |
+| TR Name / Result / Completion | – — – — – |
 | Completion Date | 09/05/2025 |
 | Tie-In Weld | No |
 | Prefab | Yes |
@@ -1141,15 +1140,10 @@ Rules for NDE Indication summary
 |-------|-------|
 | Work Order No. | 100139423 |
 | Weld Category | Production |
-| CWI Result | Accept |
-| CWI Name | Bob Williams |
-| NDE Result | Reject |
-| NDE Name | Mary Jones |
-| NDE Report No. | NDE2025-00571 |
-| CRI Result | Reject |
-| CRI Name | Tom Lee |
-| TR Result | - |
-| TR Name | - |
+| CWI Name / Result / Completion | Bob Williams — Accept — 04/25/2025 |
+| NDE Name / Result / Completion / Report No. | Mary Jones — Reject — 05/15/2025 — NDE2025-00571 |
+| CRI Name / Result / Completion | Tom Lee — Reject — 05/15/2025 |
+| TR Name / Result / Completion | – — – — – |
 ```
 
 **NDE Report Film Details Section** (Multiple rows possible, keep clock positions ordered):
