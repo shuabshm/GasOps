@@ -182,6 +182,31 @@ Analyze if user's query requires ONE API call OR MULTIPLE calls to the SAME API.
 }}
 ```
 
+- "Show welds where there is disagrement in work order 100500514" →
+```json
+{{
+  "type": "api_call",
+  "calls": [
+    {{
+      "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria",
+      "parameters": {{"WorkOrderNumber": "100500514", "NDEResult": "Accept", "CWIResult": "Reject"}}
+    }},
+    {{
+      "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria",
+      "parameters": {{"WorkOrderNumber": "100500514", "NDEResult": "Reject", "CWIResult": "Accept"}}
+    }},
+    {{
+      "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria",
+      "parameters": {{"WorkOrderNumber": "100500514", "NDEResult": "Accept", "CRIResult": "Reject"}}
+    }},
+    {{
+      "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria",
+      "parameters": {{"WorkOrderNumber": "100500514", "NDEResult": "Reject", "CRIResult": "Accept"}}
+    }}
+  ]
+}}
+```
+
 - "Show Production OR Repaired welds in work order 100500514" →
 ```json
 {{
@@ -258,7 +283,8 @@ Once clarified, generate the filter JSON as per the confirmed field(s).
 
 --- GetWeldDetailsbyWorkOrderNumberandCriteria ---
 For complete API details, parameters, and constraints, refer to the available tools in weldinsights_tools:
-- GetWeldDetailsbyWorkOrderNumberandCriteria: Get detailed weld information for specific work orders with weld-level filtering criteria
+- GetWeldDetailsbyWorkOrderNu
+mberandCriteria: Get detailed weld information for specific work orders with weld-level filtering criteria
 
 **Work Order Number Extraction**:
 - WorkOrderNumber is REQUIRED for this API
@@ -1156,11 +1182,13 @@ For complete API details, parameters, and constraints, refer to the available to
 - "Problems only" or "issues" queries (shows full summary with emphasis on exceptions)
 
 **API Selection Logic**:
-- Use THIS API when user asks for "summary", "overview", "report", or "complete picture" of a work order
-- Use THIS API when user asks for "problems", "issues", or "exceptions" for a work order
-- Use THIS API when user wants multiple aspects aggregated (welds + welders + inspections + quality)
-- Use specific APIs when user asks for ONE specific aspect (just welds, just NDE, just welders, etc.)
-- Key distinction: This API aggregates 8+ APIs server-side with 100% data coverage
+- Use THIS API only when the user explicitly asks for an aggregated, complete view of the work order using one of the following high-level terms:"summary", "report", "overview", "complete picture", "everything about", "consolidated", "routesheet"
+
+- Use THIS API when the user asks for "problems," "issues," or "exceptions," as the tool provides the full summary of workorder with the dedicated exceptions section.
+
+- Otherwise, at any cost, THIS API should NOT be selected. If the query asks for any single, specific aspect (welds, welders, NDE, status only), the specific, dedicated API must be chosen instead.
+
+- Key distinction: This API aggregates 8+ APIs server-side. It must only be chosen when the user indicates they want that full aggregation.
 
 **Query Detection Examples**:
 - "Give me a summary for work order 100500514"
@@ -1180,6 +1208,16 @@ For complete API details, parameters, and constraints, refer to the available to
   → Parameters: {{"WorkOrderNumber": "100500514"}}
 - "What issues exist in work order 100500514"
   → Parameters: {{"WorkOrderNumber": "100500514"}}
+-"What is the status of work order 100500514?"	
+ → DO NOT SELECT GetWorkOrderSummary (Too specific)
+"How many welders worked on 100500514?"	
+→ DO NOT SELECT GetWorkOrderSummary (Too specific)
+"What are the NDE results for 100500514?"	
+→ DO NOT SELECT GetWorkOrderSummary (Too specific)
+"List out the disagreements/conflicts in work order"	
+→ DO NOT SELECT GetWorkOrderSummary (Too specific)
+"show me the inspection status of work order"	
+→ DO NOT SELECT GetWorkOrderSummary (Too specific)
 
 **Response Structure**:
 This API returns pre-aggregated summary with ALL sections:
@@ -1202,14 +1240,23 @@ This API returns pre-aggregated summary with ALL sections:
 
 **DO NOT use this API when**:
 - User asks for ONE specific aspect only (use specific API instead):
-  - Just welds → Use GetWeldDetailsbyWorkOrderNumberandCriteria
-  - Just welders → Use GetWelderNameDetailsbyWorkOrderNumberandCriteria
-  - Just NDE → Use GetWorkOrderNDEIndicationsbyCriteria
-  - Just CRI → Use GetWorkOrderCRIIndicationsbyCriteria
-  - Just TR → Use GetWorkOrderTRIndicationsbyCriteria
-  - Just reshoots → Use GetReshootDetailsbyWorkOrderNumberandCriteria
-- User wants to filter or drill down (use specific API with filters)
-- User wants specific weld serial numbers or detailed inspection data
+  - Just welds
+
+  - Just welders
+
+  - Just NDE/CRI/TR
+
+  - Just reshoots
+
+  - Just inspection results
+
+  - Just the status or just the region or just the contractor
+
+- User wants to filter or drill down (use specific API with filters).
+
+- User wants specific weld serial numbers or detailed inspection data.
+
+- If none of the keywords (summary, report, overview, complete picture, problems, issues, exceptions, everything, routesheet, consolidated) are present, do not select this API.
 
 ---
 
@@ -1236,6 +1283,7 @@ You MUST respond with EXACTLY ONE of these two JSON formats:
 - "Show weld details for work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "Show production welds with CWI result Accept for work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Production", "CWIResult": "Accept"}}}}
 - "Show welds pending NDE review in work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "NDEResult": "Pending"}}}}
+- "Show me the status of inspections for work order 100500514" → {{"type": "api_call", "function_name": "GetWeldDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "Show welder assignments for work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514"}}}}
 - "Show production welder details for work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Production"}}}}
 - "Who are the welders for repaired welds in work order 100500514" → {{"type": "api_call", "function_name": "GetWelderNameDetailsbyWorkOrderNumberandCriteria", "parameters": {{"WorkOrderNumber": "100500514", "WeldCategory": "Repaired"}}}}
