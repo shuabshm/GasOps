@@ -1,0 +1,190 @@
+# import logging
+# from collections import defaultdict
+# import json
+# from utils.weld_api_data_processor.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import analyze_GetHeatNumberDetailsbyWorkOrderNumberandCriteria
+# from utils.weld_api_data_processor.GetDetailsbyWeldSerialNumber import analyze_GetDetailsbyWeldSerialNumber
+# from utils.weld_api_data_processor.GetNDEReportNumbersbyWorkOrderNumber import analyze_GetNDEReportNumbersbyWorkOrderNumber
+# from utils.weld_api_data_processor.GetNDEReportProcessingDetailsbyWeldSerialNumber import analyze_GetNDEReportProcessingDetailsbyWeldSerialNumber
+# from utils.weld_api_data_processor.GetReshootDetailsbyWorkOrderNumberandCriteria import analyze_GetReshootDetailsbyWorkOrderNumberandCriteria   
+# from utils.weld_api_data_processor.GetUnlockWeldDetailsbyWorkOrderNumberandCriteria import analyze_GetUnlockWeldDetailsbyWorkOrderNumberandCriteria
+# from utils.weld_api_data_processor.GetWeldDetailsbyWorkOrderNumberandCriteria import analyze_GetWeldDetailsbyWorkOrderNumberandCriteria
+# from utils.weld_api_data_processor.GetWelderNameDetailsbyWorkOrderNumberandCriteria import analyze_GetWelderNameDetailsbyWorkOrderNumberandCriteria
+# from utils.weld_api_data_processor.GetWeldsbyNDEIndicationandWorkOrderNumber import analyze_GetWeldsbyNDEIndicationandWorkOrderNumber
+# from utils.weld_api_data_processor.GetWeldsbyCRIIndicationandWorkOrderNumber import analyze_GetWeldsbyCRIIndicationandWorkOrderNumber
+# from utils.weld_api_data_processor.GetWeldsbyTRIndicationandWorkOrderNumber import analyze_GetWeldsbyTRIndicationandWorkOrderNumber
+# from utils.weld_api_data_processor.GetWorkOrderCRIIndicationsbyCriteria import analyze_GetWorkOrderCRIIndicationsbyCriteria
+# from utils.weld_api_data_processor.GetWorkOrderRejactableCRIIndicationsbyCriteria import analyze_GetWorkOrderRejactableCRIIndicationsbyCriteria
+# from utils.weld_api_data_processor.GetWorkOrderTRIndicationsbyCriteria import analyze_GetWorkOrderTRIndicationsbyCriteria
+# from utils.weld_api_data_processor.GetWorkOrderRejactableTRIndicationsbyCriteria import analyze_GetWorkOrderRejactableTRIndicationsbyCriteria
+# from utils.weld_api_data_processor.GetWorkOrderDetailsbyCriteria import analyze_GetWorkOrderDetailsbyCriteria
+# from utils.weld_api_data_processor.GetWorkOrderInformation import analyze_GetWorkOrderInformation
+# from utils.weld_api_data_processor.GetWorkOrderNDEIndicationsbyCriteria import analyze_GetWorkOrderNDEIndicationsbyCriteria
+# from utils.weld_api_data_processor.GetWorkOrderRejactableNDEIndicationsbyCriteria import analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria
+# from utils.weld_api_data_processor.GetWorkOrdersbyWelderName import analyze_GetWorkOrdersbyWelderName
+
+
+# # GetWorkOrderSummary no longer uses a data analyzer - it uses sequential AI calls instead
+
+# logger = logging.getLogger(__name__)
+
+
+# def get_transformer(api_name):
+#     """
+#     Acts as a router to get the correct data transformer for an API.
+#     This pattern makes it easy to add support for new APIs.
+#     """
+#     if api_name == "GetHeatNumberDetailsbyWorkOrderNumberandCriteria":
+#         return analyze_GetHeatNumberDetailsbyWorkOrderNumberandCriteria
+#     elif api_name == "GetDetailsbyWeldSerialNumber":
+#         return analyze_GetDetailsbyWeldSerialNumber
+#     elif api_name == "GetNDEReportNumbersbyWorkOrderNumber":
+#         return analyze_GetNDEReportNumbersbyWorkOrderNumber
+#     elif api_name == "GetNDEReportProcessingDetailsbyWeldSerialNumber":
+#         return analyze_GetNDEReportProcessingDetailsbyWeldSerialNumber
+#     elif api_name == "GetReshootDetailsbyWorkOrderNumberandCriteria":
+#         return analyze_GetReshootDetailsbyWorkOrderNumberandCriteria
+#     elif api_name == "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria":
+#         return analyze_GetUnlockWeldDetailsbyWorkOrderNumberandCriteria
+#     elif api_name == "GetWeldDetailsbyWorkOrderNumberandCriteria":
+#         return analyze_GetWeldDetailsbyWorkOrderNumberandCriteria
+#     elif api_name == "GetWelderNameDetailsbyWorkOrderNumberandCriteria":
+#         return analyze_GetWelderNameDetailsbyWorkOrderNumberandCriteria
+#     elif api_name == "GetWeldsbyNDEIndicationandWorkOrderNumber":
+#         return analyze_GetWeldsbyNDEIndicationandWorkOrderNumber
+#     elif api_name == "GetWeldsbyCRIIndicationandWorkOrderNumber":
+#         return analyze_GetWeldsbyCRIIndicationandWorkOrderNumber
+#     elif api_name == "GetWeldsbyTRIndicationandWorkOrderNumber":
+#         return analyze_GetWeldsbyTRIndicationandWorkOrderNumber
+#     elif api_name == "GetWorkOrderCRIIndicationsbyCriteria":
+#         return analyze_GetWorkOrderCRIIndicationsbyCriteria
+#     elif api_name == "GetWorkOrderRejactableCRIIndicationsbyCriteria":
+#         return analyze_GetWorkOrderRejactableCRIIndicationsbyCriteria
+#     elif api_name == "GetWorkOrderTRIndicationsbyCriteria":
+#         return analyze_GetWorkOrderTRIndicationsbyCriteria
+#     elif api_name == "GetWorkOrderRejactableTRIndicationsbyCriteria":
+#         return analyze_GetWorkOrderRejactableTRIndicationsbyCriteria
+#     elif api_name == "GetWorkOrderDetailsbyCriteria":
+#         return analyze_GetWorkOrderDetailsbyCriteria
+#     elif api_name == "GetWorkOrderInformation":
+#         return analyze_GetWorkOrderInformation
+#     elif api_name == "GetWorkOrderNDEIndicationsbyCriteria":
+#         return analyze_GetWorkOrderNDEIndicationsbyCriteria
+#     elif api_name == "GetWorkOrderRejactableNDEIndicationsbyCriteria":
+#         return analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria
+#     elif api_name == "GetWorkOrdersbyWelderName":
+#         return analyze_GetWorkOrdersbyWelderName
+#     elif api_name == "GetWorkOrderSummary":
+#         # GetWorkOrderSummary handles its own analysis with sequential AI calls
+#         return None
+#     # Add other API transformers here
+#     # elif api_name == "GetWorkOrderInformation":
+#     #     return analyze_work_order_data
+#     else:
+#         logger.warning(f"No specific transformer found for API: {api_name}")
+#         return None
+
+
+
+
+
+import logging
+from collections import defaultdict
+import json
+from utils.weld_api_data_processor.GetHeatNumberDetailsbyWorkOrderNumberandCriteria import analyze_GetHeatNumberDetailsbyWorkOrderNumberandCriteria
+from utils.weld_api_data_processor.GetDetailsbyWeldSerialNumber import analyze_GetDetailsbyWeldSerialNumber
+from utils.weld_api_data_processor.GetNDEReportNumbersbyWorkOrderNumber import analyze_GetNDEReportNumbersbyWorkOrderNumber
+from utils.weld_api_data_processor.GetNDEReportProcessingDetailsbyWeldSerialNumber import analyze_GetNDEReportProcessingDetailsbyWeldSerialNumber
+from utils.weld_api_data_processor.GetReshootDetailsbyWorkOrderNumberandCriteria import analyze_GetReshootDetailsbyWorkOrderNumberandCriteria   
+from utils.weld_api_data_processor.GetUnlockWeldDetailsbyWorkOrderNumberandCriteria import analyze_GetUnlockWeldDetailsbyWorkOrderNumberandCriteria
+from utils.weld_api_data_processor.GetWeldDetailsbyWorkOrderNumberandCriteria import analyze_GetWeldDetailsbyWorkOrderNumberandCriteria
+from utils.weld_api_data_processor.GetWelderNameDetailsbyWorkOrderNumberandCriteria import analyze_GetWelderNameDetailsbyWorkOrderNumberandCriteria
+from utils.weld_api_data_processor.GetWeldsbyNDEIndicationandWorkOrderNumber import analyze_GetWeldsbyNDEIndicationandWorkOrderNumber
+from utils.weld_api_data_processor.GetWeldsbyCRIIndicationandWorkOrderNumber import analyze_GetWeldsbyCRIIndicationandWorkOrderNumber
+from utils.weld_api_data_processor.GetWeldsbyTRIndicationandWorkOrderNumber import analyze_GetWeldsbyTRIndicationandWorkOrderNumber
+from utils.weld_api_data_processor.GetWorkOrderCRIIndicationsbyCriteria import analyze_GetWorkOrderCRIIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderRejactableCRIIndicationsbyCriteria import analyze_GetWorkOrderRejactableCRIIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderTRIndicationsbyCriteria import analyze_GetWorkOrderTRIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderRejactableTRIndicationsbyCriteria import analyze_GetWorkOrderRejactableTRIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderDetailsbyCriteria import analyze_GetWorkOrderDetailsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderInformation import analyze_GetWorkOrderInformation
+from utils.weld_api_data_processor.GetWorkOrderNDEIndicationsbyCriteria import analyze_GetWorkOrderNDEIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrderRejactableNDEIndicationsbyCriteria import analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria
+from utils.weld_api_data_processor.GetWorkOrdersbyWelderName import analyze_GetWorkOrdersbyWelderName
+
+from utils.weld_map_transformer import transform_weld_map_data
+
+# GetWorkOrderSummary no longer uses a data analyzer - it uses sequential AI calls instead
+
+logger = logging.getLogger(__name__)
+
+
+def get_transformer(api_name, api_parameters=None):
+    """
+    Acts as a router to get the correct data transformer for an API.
+    This pattern makes it easy to add support for new APIs.
+    
+    Args:
+        api_name (str): Name of the API that was called
+        api_parameters (dict): Optional dictionary of API filter parameters used in the call
+        
+    Returns:
+        function: Transformer function or None
+    """
+    if api_parameters is None:
+        api_parameters = {}
+    
+    # Special case: Check if this is a weld map query
+    if api_name == "GetWeldDetailsbyWorkOrderNumberandCriteria":
+        is_weld_map = api_parameters.get("IsWeldMap") == "Yes"
+        if is_weld_map:
+            logger.info("Detected weld map query - using weld map transformer")
+            return transform_weld_map_data
+        # Otherwise use the standard transformer for this API
+        return analyze_GetWeldDetailsbyWorkOrderNumberandCriteria
+    
+    # Standard API routing (existing code)
+    if api_name == "GetHeatNumberDetailsbyWorkOrderNumberandCriteria":
+        return analyze_GetHeatNumberDetailsbyWorkOrderNumberandCriteria
+    elif api_name == "GetDetailsbyWeldSerialNumber":
+        return analyze_GetDetailsbyWeldSerialNumber
+    elif api_name == "GetNDEReportNumbersbyWorkOrderNumber":
+        return analyze_GetNDEReportNumbersbyWorkOrderNumber
+    elif api_name == "GetNDEReportProcessingDetailsbyWeldSerialNumber":
+        return analyze_GetNDEReportProcessingDetailsbyWeldSerialNumber
+    elif api_name == "GetReshootDetailsbyWorkOrderNumberandCriteria":
+        return analyze_GetReshootDetailsbyWorkOrderNumberandCriteria
+    elif api_name == "GetUnlockWeldDetailsbyWorkOrderNumberandCriteria":
+        return analyze_GetUnlockWeldDetailsbyWorkOrderNumberandCriteria
+    elif api_name == "GetWelderNameDetailsbyWorkOrderNumberandCriteria":
+        return analyze_GetWelderNameDetailsbyWorkOrderNumberandCriteria
+    elif api_name == "GetWeldsbyNDEIndicationandWorkOrderNumber":
+        return analyze_GetWeldsbyNDEIndicationandWorkOrderNumber
+    elif api_name == "GetWeldsbyCRIIndicationandWorkOrderNumber":
+        return analyze_GetWeldsbyCRIIndicationandWorkOrderNumber
+    elif api_name == "GetWeldsbyTRIndicationandWorkOrderNumber":
+        return analyze_GetWeldsbyTRIndicationandWorkOrderNumber
+    elif api_name == "GetWorkOrderCRIIndicationsbyCriteria":
+        return analyze_GetWorkOrderCRIIndicationsbyCriteria
+    elif api_name == "GetWorkOrderRejactableCRIIndicationsbyCriteria":
+        return analyze_GetWorkOrderRejactableCRIIndicationsbyCriteria
+    elif api_name == "GetWorkOrderTRIndicationsbyCriteria":
+        return analyze_GetWorkOrderTRIndicationsbyCriteria
+    elif api_name == "GetWorkOrderRejactableTRIndicationsbyCriteria":
+        return analyze_GetWorkOrderRejactableTRIndicationsbyCriteria
+    elif api_name == "GetWorkOrderDetailsbyCriteria":
+        return analyze_GetWorkOrderDetailsbyCriteria
+    elif api_name == "GetWorkOrderInformation":
+        return analyze_GetWorkOrderInformation
+    elif api_name == "GetWorkOrderNDEIndicationsbyCriteria":
+        return analyze_GetWorkOrderNDEIndicationsbyCriteria
+    elif api_name == "GetWorkOrderRejactableNDEIndicationsbyCriteria":
+        return analyze_GetWorkOrderRejactableNDEIndicationsbyCriteria
+    elif api_name == "GetWorkOrdersbyWelderName":
+        return analyze_GetWorkOrdersbyWelderName
+    elif api_name == "GetWorkOrderSummary":
+        # GetWorkOrderSummary handles its own analysis with sequential AI calls
+        return None
+    # Add other API transformers here
+    else:
+        logger.warning(f"No specific transformer found for API: {api_name}")
+        return None

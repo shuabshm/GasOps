@@ -1,0 +1,66 @@
+# Known Contractor Names - Reference for API Router
+# Format: Short Name | Full Company Name
+
+AB - OIL | AB Oil Service Ltd
+AccuWeld | AccuWeld Technologies Inc.
+Alisto | Alisto Engineering Group
+BANCKER | Bancker Construction Corp.
+Bond | Bond Civil & Utility Construction Inc.
+BURNS | Burns Construction
+CAC | CAC Industries Inc.
+Callahan | Callahan Weld Inspection LLC
+CCI | Certa-Cote, Inc.
+Champion | Champion Environmental Services
+Colonnelli | Colonnelli Brothers Inc
+Composite | Composite Technology & Infrastructure, LLC
+CRMSANZ | Creamer-Sanzari, A Joint Venture
+Danella | Danella Construction Corporation
+Donofrio | Donofrio General Contractors Corp
+ECI | E.C.I. Bldg. Corp.
+ETI | Eastern Testing & Inspections
+EJ | EJ Energy
+Hawkeye | Elecnor Hawkeye LLC
+ELQ | ELQ Industries, Inc.
+FERREIRA | Ferreira Construction (NY)
+Gianfia | Gianfia Corp.
+Grace | Grace Industries
+Hallen | Hallen Construction
+HEATH | Heath Consultants
+HMI | HMI Technical Solutions
+Local137 | IUOE Local 137
+JFCS | J. Fletcher Creamer & Son
+J-TRACK | J-Track LLC.
+Local60 | Laborers Local 60 Training Fund
+Local15 | Local 15
+Locak731 | Local 731
+MANETTA | Manetta Enterprises Inc.
+MECC | Mecc. Contracting Inc.
+MFM | MFM Contracting
+MILLER | Miller Pipeline
+Network | Network Infrastructure
+Ooga Technologies | Ooga Technologies
+PCMCC | PCM Contracting Corp
+PEDUTO | Peduto Construction Corp
+Posillico | Posillico
+PPS | Precision Pipeline Solutions
+Progressive Pipeline Management | Progressive Pipeline
+Quality Inspection and Auditing Services (QIAS) | Quality Inspection and Auditing Services (QIAS)
+Reconn | Reconn Holdings, LLC
+Restani | Restani Construction Corp
+RIGGS | Riggs Distler
+Safeway | Safeway Construction Enterprises, Inc.
+Shaw Pipeline Services | Shaw Pipeline Services, Inc.
+Sky Testing | Sky Testing
+SCTS | Southern Cross Technical Services
+STEPMAR | Step-Mar Contracting Corp
+Storti | Storti Quality Consulting Inc. - AP
+TDW (US) | TDW (US)
+Team | Team Industrial Services
+TechCorr USA Management LLC | TechCorr USA Management LLC
+TPFCNY | The Plumbing Foundation City of New York, Inc.
+Triumph | Triumph Construction Corp
+ULC Technologies | ULC Technologies
+USIC - Con Ed | USIC - Con Ed
+WSS | Williams Specialty Services, LLC
+Yonkers | Yonkers Contracting Company
+Young Management | Young Management & Consulting
